@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.ConditionCheck;
 import software.amazon.awssdk.services.dynamodb.model.Delete;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
@@ -186,16 +187,13 @@ public class DynamodbTest {
 
             Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
             Assert.assertNotNull("No such payload detected", query.get("artist"));
-            Assert.assertNotNull("No such payload detected", query.get("year"));
             if (i==0) {
                 Assert.assertEquals("Invalid payload value.", "Monu",query.get("artist").s());
-                Assert.assertEquals("Invalid payload value.", "1998",query.get("year").n());
             }
             else if (i==1) {
                 Assert.assertEquals("Invalid payload value.", "Red",query.get("artist").s());
-                Assert.assertEquals("Invalid payload value.", "1999",query.get("year").n());
             }
-            Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
+            Assert.assertEquals("Invalid payload value.", "artist,Genre",request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
             i++;
         }
@@ -232,6 +230,88 @@ public class DynamodbTest {
                 Assert.assertNotNull("No such payload detected", query.get("year"));
                 Assert.assertEquals("Invalid payload value.", "1998",query.get("year").n());
                 Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
+            }
+            i++;
+        }
+    }
+
+    @Test
+    public void testTransactWriteItemsAsync() {
+        transactWriteItemsAsync();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "transactWriteItems", operation.getMethodName());
+        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.DQL, operation.getCategory());
+        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
+
+        int i = 0;
+        for(DynamoDBRequest request: operation.getPayload()) {
+            if (i==0) {
+                Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+                Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+                Assert.assertNotNull("No such payload detected", query.get("artist"));
+                Assert.assertEquals("Invalid payload value.", "Monu",query.get("artist").s());
+                Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
+            }
+            else if (i==1) {
+                DynamoDBRequest.Query query = request.getQuery();
+                Map<String, AttributeValue> data = (Map<String, AttributeValue>) query.getKey();
+                Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+                Assert.assertNotNull("No such payload detected", data.get("year"));
+                Assert.assertEquals("Invalid payload value.", "1998", data.get("year").n());
+                Assert.assertEquals("Invalid condition expression.", "#y = :a", query.getConditionExpression());
+                Assert.assertNotNull("No expression attribute name.", query.getExpressionAttributeNames());
+                Assert.assertEquals("Invalid expression attribute name.", "artist", ((Map<String, String>)query.getExpressionAttributeNames()).get("#y"));
+                Assert.assertNotNull("No expression attribute value.", query.getExpressionAttributeValues());
+                Assert.assertEquals("Invalid expression attribute value.", "Monu", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":a").s());
+                Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
+            }
+            else if (i==2) {
+                Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
+                Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+                Assert.assertNotNull("No such payload detected", query.get("artist"));
+                Assert.assertEquals("Invalid payload value.", "Red",query.get("artist").s());
+                Assert.assertNotNull("No such payload detected", query.get("year"));
+                Assert.assertEquals("Invalid payload value.", "1998",query.get("year").n());
+                Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
+            }
+            i++;
+        }
+    }
+
+    @Test
+    public void testTransactWriteItemsConditionCheck() {
+        transactWriteItemsConditionCheck();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "transactWriteItems", operation.getMethodName());
+        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.DQL, operation.getCategory());
+        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
+
+        int i = 0;
+        for(DynamoDBRequest request: operation.getPayload()) {
+            if (i==0) {
+                DynamoDBRequest.Query query = request.getQuery();
+                Map<String, AttributeValue> data = (Map<String, AttributeValue>) query.getKey();
+                Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+                Assert.assertNotNull("No such payload detected", data.get("artist"));
+                Assert.assertEquals("Invalid payload value.", "Red", data.get("artist").s());
+                Assert.assertEquals("Invalid condition expression.", "#y = :a", query.getConditionExpression());
+                Assert.assertNotNull("No expression attribute name.", query.getExpressionAttributeNames());
+                Assert.assertEquals("Invalid expression attribute name.", "year", ((Map<String, String>)query.getExpressionAttributeNames()).get("#y"));
+                Assert.assertNotNull("No expression attribute value.", query.getExpressionAttributeValues());
+                Assert.assertEquals("Invalid expression attribute value.", "1998", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":a").n());
+                Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
             }
             i++;
         }
@@ -771,14 +851,12 @@ public class DynamodbTest {
 
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("artist", AttributeValue.builder().s("Monu").build());
-        key.put("year", AttributeValue.builder().n("1998").build());
         Map<String, AttributeValue> key2 = new HashMap<>();
         key2.put("artist", AttributeValue.builder().s("Red").build());
-        key2.put("year", AttributeValue.builder().n("1999").build());
 
         TransactGetItemsRequest queryRequest = TransactGetItemsRequest.builder().transactItems(
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist").build()).build(),
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist").build()).build()).build();
+                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist,Genre").build()).build(),
+                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist,Genre").build()).build()).build();
 
         client.transactGetItems(queryRequest);
     }
@@ -793,6 +871,41 @@ public class DynamodbTest {
         TransactWriteItemsRequest queryRequest = TransactWriteItemsRequest.builder().transactItems(
                 TransactWriteItem.builder().delete(Delete.builder().tableName(DynamoUtil.TABLE).key(key).build()).build(),
                 TransactWriteItem.builder().put(Put.builder().tableName(DynamoUtil.TABLE).item(key2).build()).build()).build();
+
+        client.transactWriteItems(queryRequest);
+    }
+
+    public void transactWriteItemsAsync() {
+        Map<String, AttributeValue> key1 = new HashMap<>();
+        key1.put("artist", AttributeValue.builder().s("Monu").build());
+        Map<String, AttributeValue> key2 = new HashMap<>();
+        key2.put("year", AttributeValue.builder().n("1998").build());
+        Map<String, AttributeValue> key3 = new HashMap<>();
+        key3.put("artist", AttributeValue.builder().s("Red").build());
+        key3.put("year", AttributeValue.builder().n("1998").build());
+
+        TransactWriteItemsRequest queryRequest = TransactWriteItemsRequest.builder().transactItems(
+                TransactWriteItem.builder().delete(Delete.builder().tableName(DynamoUtil.TABLE).key(key1).build()).build(),
+                TransactWriteItem.builder().conditionCheck(ConditionCheck.builder().tableName(DynamoUtil.TABLE).key(key2)
+                        .conditionExpression("#y = :a")
+                        .expressionAttributeNames(Collections.singletonMap("#y","artist"))
+                        .expressionAttributeValues(Collections.singletonMap(":a", AttributeValue.builder().s("Monu").build()))
+                        .build()).build(),
+                TransactWriteItem.builder().put(Put.builder().tableName(DynamoUtil.TABLE).item(key3).build()).build()).build();
+
+        asyncClient.transactWriteItems(queryRequest);
+    }
+
+    public void transactWriteItemsConditionCheck() {
+        Map<String, AttributeValue> key2 = new HashMap<>();
+        key2.put("artist", AttributeValue.builder().s("Red").build());
+
+        TransactWriteItemsRequest queryRequest = TransactWriteItemsRequest.builder().transactItems(
+                TransactWriteItem.builder().conditionCheck(ConditionCheck.builder().tableName(DynamoUtil.TABLE).key(key2)
+                        .conditionExpression("#y = :a")
+                        .expressionAttributeNames(Collections.singletonMap("#y","year"))
+                        .expressionAttributeValues(Collections.singletonMap(":a", AttributeValue.builder().n("1998").build()))
+                        .build()).build()).build();
 
         client.transactWriteItems(queryRequest);
     }

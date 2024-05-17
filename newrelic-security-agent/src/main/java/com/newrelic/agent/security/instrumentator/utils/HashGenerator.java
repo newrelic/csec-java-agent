@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import net.openhft.hashing.LongHashFunction;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -144,6 +144,10 @@ public class HashGenerator {
 
     public static String getSHA256HexDigest(List<String> data) {
         data.removeAll(Collections.singletonList(null));
+        String input = StringUtils.join(data);
+        return getChecksum(input);
+    }
+    public static String getSHA256HexDigest(String data) {
         String input = StringUtils.join(data);
         return getChecksum(input);
     }

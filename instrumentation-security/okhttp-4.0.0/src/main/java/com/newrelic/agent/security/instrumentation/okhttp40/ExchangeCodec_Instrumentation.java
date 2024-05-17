@@ -7,7 +7,10 @@
 
 package com.newrelic.agent.security.instrumentation.okhttp40;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -17,7 +20,6 @@ import java.io.IOException;
 
 @Weave(type = MatchType.Interface, originalName = "okhttp3.internal.http.ExchangeCodec")
 public abstract class ExchangeCodec_Instrumentation {
-
 
     private void releaseLock() {
         try {
@@ -37,7 +39,9 @@ public abstract class ExchangeCodec_Instrumentation {
             if (originalRequest != null) {
                 return originalRequest.url().toString();
             }
-        }catch (Exception ignored){}
+        }catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, OkhttpHelper.OKHTTP_4_0_0, e.getMessage()), e, this.getClass().getName());
+        }
         return null;
     }
 

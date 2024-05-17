@@ -2,6 +2,7 @@ package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.helper.RedisCommands;
 
 import java.util.List;
 
@@ -21,6 +22,17 @@ public class RedisOperation extends AbstractOperation {
         this.category = REDIS;
         this.type = type;
         this.arguments = arguments;
+        this.mode = getMode(type);
+    }
+
+    private String getMode(String type) {
+        if(RedisCommands.writeCommands.contains(type)){
+            return RedisCommands.WRITE_COMMAND;
+        } else if (RedisCommands.deleteCommands.contains(type)) {
+            return RedisCommands.DELETE_COMMAND;
+        } else {
+            return RedisCommands.READ_COMMAND;
+        }
     }
 
     public String getType() {

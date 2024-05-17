@@ -43,8 +43,6 @@ public abstract class AmazonDynamoDBClient_Instrumentation extends AmazonWebServ
         Response<X> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(request.hashCode());

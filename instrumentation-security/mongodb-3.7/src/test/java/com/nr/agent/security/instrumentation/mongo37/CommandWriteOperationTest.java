@@ -1,9 +1,26 @@
 package com.nr.agent.security.instrumentation.mongo37;
 
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.ReadPreference;
+import com.mongodb.ServerAddress;
+import com.mongodb.binding.AsyncClusterBinding;
+import com.mongodb.binding.ClusterBinding;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import com.mongodb.connection.Cluster;
+import com.mongodb.connection.ClusterSettings;
+import com.mongodb.connection.ConnectionPoolSettings;
+import com.mongodb.connection.DefaultClusterFactory;
+import com.mongodb.connection.ServerSettings;
+import com.mongodb.connection.SocketSettings;
+import com.mongodb.connection.SocketStreamFactory;
+import com.mongodb.connection.SslSettings;
+import com.mongodb.event.ConnectionListener;
+import com.mongodb.internal.event.EventListenerHelper;
+import com.mongodb.management.JMXConnectionPoolListener;
 import com.mongodb.operation.CommandWriteOperation;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -19,6 +36,7 @@ import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
+import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -34,6 +52,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -44,6 +63,9 @@ public class CommandWriteOperationTest {
     private static MongodExecutable mongodExecutable;
     private static MongodProcess mongodProcess;
     private static MongoClient mongoClient;
+    private static Cluster cluster;
+    private static final String dbName = "test";
+    private static Decoder<DBObject> decoder;
 
     @BeforeClass
     public static void startMongo() throws Exception {
@@ -56,16 +78,37 @@ public class CommandWriteOperationTest {
         mongodExecutable = mongodStarter.prepare(mongodConfig);
         mongodProcess = mongodExecutable.start();
         mongoClient = new MongoClient("localhost", port);
-        MongoDatabase database = mongoClient.getDatabase("test");
-        database.createCollection("test");
-        MongoCollection mcollection = database.getCollection("test");
+
+
+        MongoDatabase database = mongoClient.getDatabase(dbName);
+        database.createCollection(dbName);
+        MongoCollection mcollection = database.getCollection(dbName);
         Document doc = new Document("name", "MongoDB").append("type", "database").append("count", 1).append("info",
                 new Document("x", 203).append("y", 102));
         mcollection.insertOne(doc);
+
+        MongoClientOptions options = MongoClientOptions.builder().build();
+        cluster = new DefaultClusterFactory().create(
+                ClusterSettings.builder().hosts(Collections.singletonList(new ServerAddress("localhost", port))).build(),
+                ServerSettings.builder().build(),
+                ConnectionPoolSettings.builder().build(),
+                new SocketStreamFactory(SocketSettings.builder().build(), SslSettings.builder().enabled(false).build(), options.getSocketFactory()),
+                new SocketStreamFactory(SocketSettings.builder().build(), SslSettings.builder().build(), options.getSocketFactory()),
+                new ArrayList<>(), EventListenerHelper.NO_OP_CLUSTER_LISTENER, new JMXConnectionPoolListener(), (ConnectionListener)null);
+
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                MongoClient.getDefaultCodecRegistry(),
+                CodecRegistries.fromCodecs(new DBPersonCodec())
+        );
+
+        decoder = codecRegistry.get(DBObject.class);
     }
 
     @AfterClass
     public static void stopMongo() {
+        if (!cluster.isClosed()){
+            cluster.close();
+        }
         if (mongoClient != null) {
             mongoClient.close();
         }
@@ -78,48 +121,37 @@ public class CommandWriteOperationTest {
     }
     @Test
     public void testExecute(){
-    CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-            MongoClient.getDefaultCodecRegistry(),
-            CodecRegistries.fromCodecs(new DBPersonCodec())
-    );
+        BsonDocument document = new BsonDocument();
+        document.put("insert", new BsonString("name"));
+        document.put("documents", new BsonArray(Collections.singletonList(new BsonDocument("name", new BsonString("MongoDB")))));
 
-    Decoder<DBPerson> decoder = codecRegistry.get(DBPerson.class);
-    BsonDocument document = new BsonDocument();
-    document.put("name", new BsonString("MongoDB"));
+        CommandWriteOperation<DBObject> cmd = new CommandWriteOperation<>("test", document, decoder);
+        cmd.execute(new ClusterBinding(cluster, ReadPreference.primary()));
 
-    CommandWriteOperation<DBPerson> cmd = new CommandWriteOperation<DBPerson>("test", document, decoder);
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
-    Document out = cmd.execute(null);
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
-    SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-
-    List<AbstractOperation> operations = introspector.getOperations();
-    Assert.assertTrue("No operations detected", operations.size() > 0);
-    NoSQLOperation operation = (NoSQLOperation) operations.get(0);
-
-    Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
-    Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-    Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
-    List<Object> expected = new ArrayList<>();
-    expected.add("{ \"name\" : \"MongoDB\" }");
-    Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
-
-}
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
+        String expected = "[{ \"insert\" : \"name\", \"documents\" : [{ \"name\" : \"MongoDB\" }] }]";
+        Assert.assertEquals("No data Found", expected, operation.getPayload().toString());
+    }
 
     @Test
     public void testExecuteAsync(){
-        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-                MongoClient.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(new DBPersonCodec())
-        );
-
-        Decoder<DBPerson> decoder = codecRegistry.get(DBPerson.class);
         BsonDocument document = new BsonDocument();
-        document.put("name", new BsonString("MongoDB"));
+        document.put("insert", new BsonString("name"));
+        document.put("documents", new BsonArray(Collections.singletonList(new BsonDocument("name", new BsonString("MongoDB")))));
 
-        CommandWriteOperation<DBPerson> cmd = new CommandWriteOperation<DBPerson>("test", document, decoder);
 
-         cmd.executeAsync(null,(final DBPerson doc,final Throwable t)->{
+        CommandWriteOperation<DBObject> cmd = new CommandWriteOperation<>("test", document, decoder);
+
+        cmd.executeAsync(new AsyncClusterBinding(cluster, ReadPreference.primary()),(
+                final DBObject doc,final Throwable t)->{
             System.out.println("Execution completed");
         });
 
@@ -132,10 +164,9 @@ public class CommandWriteOperationTest {
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
-        List<Object> expected = new ArrayList<>();
-        expected.add("{ \"name\" : \"MongoDB\" }");
-        Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
 
+        String expected = "[{ \"insert\" : \"name\", \"documents\" : [{ \"name\" : \"MongoDB\" }] }]";
+        Assert.assertEquals("No data Found", expected, operation.getPayload().toString());
     }
 
 

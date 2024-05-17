@@ -3,6 +3,10 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation('org.glassfish.jersey.core:jersey-server:2.28')
+    testImplementation("org.glassfish.jersey.containers:jersey-container-servlet:2.28")
+    testImplementation("org.glassfish.jersey.test-framework:jersey-test-framework-core:2.28")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.28")
+    testImplementation("org.glassfish.jersey.inject:jersey-hk2:2.28")
 }
 
 

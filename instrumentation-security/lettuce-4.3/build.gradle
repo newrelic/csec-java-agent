@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("biz.paluch.redis:lettuce:4.4.0.Final")
+    testImplementation('org.testcontainers:testcontainers:1.17.1')
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.lettuce-4.3'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'biz.paluch.redis:lettuce:[4.4.0.Final,4.5.0.Final]'
+    excludeRegex '.*SNAPSHOT'
+}
+
+site {
+    title 'Lettuce 4.3'
+    type 'Framework'
+}

@@ -31,7 +31,6 @@ import java.util.Set;
  * DeployedApplication model contains fields to identify all deployed
  * application inside a server.
  *
- * @author Team AppPerfect
  * @version 1.0
  */
 public class DeployedApplication {

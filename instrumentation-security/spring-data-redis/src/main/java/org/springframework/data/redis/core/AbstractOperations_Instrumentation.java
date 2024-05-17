@@ -57,7 +57,6 @@ abstract class AbstractOperations_Instrumentation {
     }
 
     private void createRedisArgumentEntry(int hashCode, Object entry) {
-        System.out.println("Arguments hash call for obj "+ hashCode + ":" + entry);
         if (!NewRelicSecurity.isHookProcessingActive() ||
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
             return;
