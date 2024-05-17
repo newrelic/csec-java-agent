@@ -13,13 +13,14 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.BinaryClient;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
-import redis.embedded.RedisServer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
