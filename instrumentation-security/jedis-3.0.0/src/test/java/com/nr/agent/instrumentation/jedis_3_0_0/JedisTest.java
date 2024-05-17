@@ -13,14 +13,14 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import redis.clients.jedis.BinaryClient;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
-import redis.embedded.RedisServer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -33,15 +33,20 @@ import java.util.UUID;
 @InstrumentationTestConfig(includePrefixes = "redis.clients.jedis")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JedisTest {
-    private static RedisServer redisServer;
     private static int PORT = 0;
 
+    public static GenericContainer<?> redis;
+
     @BeforeClass
-    public static void setup() throws Exception {
-        PORT = getRandomPort();
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-        System.out.println(redisServer);
+    public static void setup() {
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        redis = new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine"));
+        redis.setPortBindings(Collections.singletonList(PORT + ":6379"));
+        redis.start();
+    }
+    @AfterClass
+    public static void tearDown() {
+        redis.stop();
     }
 
     @Test
@@ -587,11 +592,6 @@ public class JedisTest {
 
         operation = (RedisOperation) operations.get(4);
         verifier(Protocol.Command.SREM, operation, Arrays.asList(keyValuePair1.getKey(), "test"));
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        redisServer.stop();
     }
 
     private static void opVerifier(List<AbstractOperation> operations, int expected) {
