@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-220](https://github.com/newrelic/csec-java-agent/pull/220) Netty Reactor Server support : The security agent now also supports Netty Reactor Server version 0.7.0.RELEASE and above. [NR-249812](https://new-relic.atlassian.net/browse/NR-249812)
 - [PR-239](https://github.com/newrelic/csec-java-agent/pull/239) Spring WebClient Support : The security agent now also supports Spring WebClient version 5.0.0.RELEASE and above. [NR-258894](https://new-relic.atlassian.net/browse/NR-258894), [NR-258895](https://new-relic.atlassian.net/browse/NR-258895)
 - [PR-219](https://github.com/newrelic/csec-java-agent/pull/219) Enable functionality to scan NewRelic applications using `security.is_home_app` config, default value is false
+- [PR-217](https://github.com/newrelic/csec-java-agent/pull/217) Revamp user class detection technique, use server level endpoints. [NR-211161](https://new-relic.atlassian.net/browse/NR-211161)
 - Resin Support : The security agent now also supports resin server [NR-171577](https://new-relic.atlassian.net/browse/NR-171577)
 - Anorm Support : The security agent now also supports Anorm Datastore version 2.0 to 2.5 [NR-171575](https://new-relic.atlassian.net/browse/NR-171575)
 
