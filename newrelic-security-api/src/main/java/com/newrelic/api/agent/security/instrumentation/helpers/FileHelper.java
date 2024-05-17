@@ -141,6 +141,8 @@ public class FileHelper {
                     if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
                         FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
                         if(fbean.isIntegrityBreached(file)){
+                            //Lock release is required here, as this register operation inside lock is intentional
+                            ThreadLocalLockHelper.releaseLock();
                             NewRelicSecurity.getAgent().registerOperation(fbean);
                         }
                     }

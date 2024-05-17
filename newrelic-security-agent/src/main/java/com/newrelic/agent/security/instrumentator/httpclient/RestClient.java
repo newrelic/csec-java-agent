@@ -26,7 +26,7 @@ public class RestClient {
 
     public static final String REQUEST_FIRED_SUCCESS = "Request Fired successfuly : %s ";
     public static final String REQUEST_SUCCESS_S_RESPONSE_S_S = "Request Fired successfuly : %s :: response : %s : %s";
-    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
+    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : %s ";
 
     public static final String CALL_FAILED_REQUEST_S_REASON_S = "Call failed : request %s reason : %s : body : %s";
     public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
@@ -71,7 +71,7 @@ public class RestClient {
             try {
                 ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
                 builder = builder.connectionPool(connectionPool);
-                builder = builder.callTimeout(10, TimeUnit.SECONDS);
+                builder = builder.callTimeout(5, TimeUnit.SECONDS);
 
                 // Install the all-trusting trust manager
                 final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
@@ -134,9 +134,9 @@ public class RestClient {
                     NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
                             e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), fuzzRequestId,
                             String.format(IAgentConstants.SSL_EXCEPTION_FAILURE_MESSAGE, request.url()));
-                    logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+                    logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request, e.getMessage()), e, RestClient.class.getName());
                     logger.postLogMessageIfNecessary(LogLevel.WARNING,
-                            String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
+                            String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId, e.getMessage()),
                             e, RestRequestProcessor.class.getName());
                     RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                     // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
@@ -156,11 +156,33 @@ public class RestClient {
                 if(responseCode == 301){continue;}
                 break;
             } catch (SSLException e){
-                logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+                logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
             }
         }
 
 
+    }
+
+    public boolean isListening(Request request) {
+        if(request == null){
+            return false;
+        }
+
+        OkHttpClient client = clientThreadLocal.get();
+        Call call = client.newCall(request);
+        try(Response response = call.execute()) {
+            if(response.isSuccessful()){
+                logger.log(LogLevel.FINER, String.format("Server is reachable url: %s", request.url()), RestClient.class.getName());
+                return true;
+            }
+            if (client.connectionPool() != null) {
+                client.connectionPool().evictAll();
+            }
+        } catch (IOException e) {
+            logger.log(LogLevel.FINER, String.format("Server is not reachable url: %s", request.url()), RestClient.class.getName());
+            return false;
+        }
+        return false;
     }
 
     public int fireRequest(Request request, int repeatCount, String fuzzRequestId) throws SSLException {
@@ -171,8 +193,7 @@ public class RestClient {
         logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
-        try {
-            Response response = call.execute();
+        try (Response response = call.execute()){
             logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
             if (response.code() >= 500) {
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
@@ -199,7 +220,7 @@ public class RestClient {
             }
             return response.code();
         } catch (SSLException e){
-            logger.log(LogLevel.FINE, String.format("Request failed due to SSL Exception %s ", request, e), RestClient.class.getName());
+            logger.log(LogLevel.FINE, String.format("Request failed due to SSL Exception %s : reason %s", request, e.getMessage()), e, RestClient.class.getName());
             throw e;
         } catch (InterruptedIOException e){
             if(repeatCount >= 0){
@@ -210,15 +231,17 @@ public class RestClient {
                     e, RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
                     IAgentConstants.REQUEST_FAILURE_DUE_TO_IOEXCEPTION);
 
-            logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+            logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
-                    String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
+                    String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), fuzzRequestId),
                     e, RestRequestProcessor.class.getName());
             RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
             // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
+        } catch (Exception e){
+            logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
         }
 
         return 999;
