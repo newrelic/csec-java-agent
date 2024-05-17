@@ -9,18 +9,18 @@ public class HttpResponse {
 
     private StringBuilder responseBody;
 
-    private String responseContentType;
+    private String contentType;
 
     public HttpResponse() {
         this.headers = new ConcurrentHashMap<>();
         this.responseBody = new StringBuilder();
-        this.responseContentType = StringUtils.EMPTY;
+        this.contentType = StringUtils.EMPTY;
     }
 
     public HttpResponse(HttpResponse httpResponse) {
         this.headers = new ConcurrentHashMap<>(httpResponse.getHeaders());
         this.responseBody = new StringBuilder(httpResponse.responseBody);
-        this.responseContentType = new String(httpResponse.responseContentType.trim());
+        this.contentType = new String(httpResponse.contentType.trim());
     }
 
     public Map<String, String> getHeaders() {
@@ -40,18 +40,18 @@ public class HttpResponse {
     }
 
     public String getResponseContentType() {
-        return responseContentType;
+        return contentType;
     }
 
     public void setResponseContentType(String responseContentType) {
         if (StringUtils.isNotBlank(responseContentType)) {
-            this.responseContentType = StringUtils.substringBefore(responseContentType, ";").trim().toLowerCase();
+            this.contentType = StringUtils.substringBefore(responseContentType, ";").trim().toLowerCase();
         } else {
-            this.responseContentType = StringUtils.EMPTY;
+            this.contentType = StringUtils.EMPTY;
         }
     }
 
     public boolean isEmpty() {
-        return StringUtils.isAnyBlank(responseBody, responseContentType);
+        return StringUtils.isAnyBlank(responseBody, contentType);
     }
 }

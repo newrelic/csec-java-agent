@@ -35,14 +35,21 @@ public class AgentMetaData {
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 
+    private int fromJumpRequiredInStackTrace = 2;
+
+    private boolean foundAnnotedUserLevelServiceMethod = false;
+
     @JsonIgnore
     private Set<String> ips;
+
+    private AppServerInfo appServerInfo;
 
     public AgentMetaData() {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
         this.userDataTranslationMap = new HashMap<>();
         this.reflectedMetaData = new HashMap<>();
+        this.appServerInfo = new AppServerInfo();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -57,6 +64,10 @@ public class AgentMetaData {
         this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
+        this.appServerInfo = agentMetaData.appServerInfo;
+        this.triggerViaXXE = agentMetaData.triggerViaXXE;
+        this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
+        this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
     }
 
     public boolean isTriggerViaRCI() {
@@ -107,6 +118,13 @@ public class AgentMetaData {
         this.reflectedMetaData = reflectedMetaData;
     }
 
+    public void addReflectedMetaData(String metaKey, String metaData) {
+        if(this.reflectedMetaData==null) {
+            this.reflectedMetaData = new HashMap<>();
+        }
+        this.reflectedMetaData.put(metaKey, metaData);
+    }
+
     public StackTraceElement[] getServiceTrace() {
         return serviceTrace;
     }
@@ -150,5 +168,32 @@ public class AgentMetaData {
 
     public void setUserLevelServiceMethodEncountered(boolean userLevelServiceMethodEncountered) {
         this.userLevelServiceMethodEncountered = userLevelServiceMethodEncountered;
+    }
+
+    public void setUserLevelServiceMethodEncounteredFramework(String userLevelServiceMethodEncounteredFramework) {
+        this.userLevelServiceMethodEncounteredFramework = userLevelServiceMethodEncounteredFramework;
+    }
+
+    public AppServerInfo getAppServerInfo() {
+        return appServerInfo;
+    }
+
+    public void setAppServerInfo(AppServerInfo appServerInfo) {
+        this.appServerInfo = appServerInfo;
+    }
+
+    public int getFromJumpRequiredInStackTrace() {
+        return fromJumpRequiredInStackTrace;
+    }
+
+    public void setFromJumpRequiredInStackTrace(int fromJumpRequiredInStackTrace) {
+        this.fromJumpRequiredInStackTrace = fromJumpRequiredInStackTrace;
+    }
+    public boolean isFoundAnnotedUserLevelServiceMethod() {
+        return foundAnnotedUserLevelServiceMethod;
+    }
+
+    public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
+        this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
     }
 }

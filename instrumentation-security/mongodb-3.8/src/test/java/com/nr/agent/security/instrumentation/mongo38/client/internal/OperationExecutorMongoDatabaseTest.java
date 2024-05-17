@@ -204,8 +204,10 @@ public class OperationExecutorMongoDatabaseTest {
 
         MongoCollection mcollection=database.getCollection("test");
         Bson query = eq("name", "MongoDB");
-        Bson update=eq("name","db");
-        mcollection.findOneAndUpdate(query,update);
+
+        Document updateQuery = new Document("$set", new Document("type","db"));
+
+        mcollection.findOneAndUpdate(query, updateQuery);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
@@ -215,25 +217,23 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
-        List<Object> queryData = new ArrayList<>();
-        queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"db\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
-        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
+        String expected = "[{ \"name\" : \"MongoDB\" }, { \"$set\" : { \"type\" : \"db\" } }]";
+        Assert.assertEquals("No data Found", expected,operation.getPayload().toString());
     }
 
     @Test
     public void testFindOneAndUpdate1()  {
-
+        FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
+        options.sort(Sorts.descending("count"));
         MongoDatabase database=  mongoClient.getDatabase("test");
 
         MongoCollection mcollection=database.getCollection("test");
         Bson query = eq("name", "MongoDB");
-        Bson update=eq("name","db");
-        FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
-        options.sort(Sorts.descending("count"));
-        mcollection.findOneAndUpdate(query,update,options);
+
+        Document updateQuery = new Document("$set", new Document("type","db"));
+
+        mcollection.findOneAndUpdate(query, updateQuery, options);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
@@ -243,12 +243,9 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
-        List<Object> queryData = new ArrayList<>();
-        queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"db\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
-        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
+        String expected = "[{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"$set\" : { \"type\" : \"db\" } }]";
+        Assert.assertEquals("No data Found", expected,operation.getPayload().toString());
     }
     @Test
     public void testUpdateOne()  {

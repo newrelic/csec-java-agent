@@ -8,6 +8,7 @@
 package jakarta.servlet;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -15,12 +16,14 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.servlet6.HttpServletHelper;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Arrays;
 
 @Weave(type = MatchType.Interface, originalName = "jakarta.servlet.Servlet")
 public abstract class Servlet_Instrumentation {
@@ -82,30 +85,38 @@ public abstract class Servlet_Instrumentation {
                 securityRequest.setUrl(securityRequest.getUrl() + HttpServletHelper.QUESTION_MARK + queryString);
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, this.getClass().getName());
+        }
     }
 
     private void postProcessSecurityHook(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
+            if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
             }
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
-            RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
-                    this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);
-            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
+                RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                        this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);
+                NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, Servlet_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, Servlet_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, Servlet_Instrumentation.class.getName());
         }
     }
 

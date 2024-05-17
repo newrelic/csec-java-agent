@@ -7,8 +7,11 @@
 
 package jakarta.servlet;
 
+import com.newrelic.agent.security.instrumentation.servlet5.HttpServletHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -80,8 +83,8 @@ public abstract class ServletInputStream_Instrumentation{
                 }
 //                    System.out.println("Writing from IS 4" + this.hashCode() + " : " + String.valueOf(data));
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(data);
-            } catch (Throwable ignored) {
-//                ignored.printStackTrace(System.out);
+            } catch (Throwable e) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(IOStreamHelper.ERROR_WHILE_READING_STREAM, HttpServletHelper.SERVLET_5_0, e.getMessage()), e, ServletInputStream_Instrumentation.class.getName());
             }
         }
         // Normal return
