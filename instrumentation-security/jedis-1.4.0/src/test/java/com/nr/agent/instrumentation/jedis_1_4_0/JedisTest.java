@@ -32,15 +32,20 @@ import java.util.UUID;
 @InstrumentationTestConfig(includePrefixes = "redis.clients.jedis")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JedisTest {
-    private static RedisServer redisServer;
     private static int PORT = 0;
 
+    public static GenericContainer<?> redis;
+
     @BeforeClass
-    public static void setup() throws Exception {
-        PORT = getRandomPort();
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-        System.out.println(redisServer);
+    public static void setup() {
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        redis = new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine"));
+        redis.setPortBindings(Collections.singletonList(PORT + ":6379"));
+        redis.start();
+    }
+    @AfterClass
+    public static void tearDown() {
+        redis.stop();
     }
 
     @Test
@@ -588,12 +593,6 @@ public class JedisTest {
         operation = (RedisOperation) operations.get(4);
         verifier(Protocol.Command.SREM, operation, Arrays.asList(keyValuePair1.getKey(), "test"));
     }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        redisServer.stop();
-    }
-
     private static void opVerifier(List<AbstractOperation> operations, int expected) {
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         Assert.assertEquals("Unexpected number of operations detected.", expected, operations.size());
