@@ -7,7 +7,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("redis.clients:jedis:2.7.1")
-    testImplementation("com.github.codemonstur:embedded-redis:1.0.0")
+    testImplementation('org.testcontainers:testcontainers:1.17.1')
 }
 
 verifyInstrumentation {

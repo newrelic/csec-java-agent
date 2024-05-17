@@ -13,16 +13,16 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.BinaryClient;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
-import redis.embedded.RedisServer;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,15 +32,20 @@ import java.util.UUID;
 @InstrumentationTestConfig(includePrefixes = "redis.clients.jedis")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JedisTest {
-    private static RedisServer redisServer;
     private static int PORT = 0;
 
+    public static GenericContainer<?> redis;
+
     @BeforeClass
-    public static void setup() throws Exception {
-        PORT = getRandomPort();
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-        System.out.println(redisServer);
+    public static void setup() {
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        redis = new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine"));
+        redis.setPortBindings(Collections.singletonList(PORT + ":6379"));
+        redis.start();
+    }
+    @AfterClass
+    public static void tearDown() {
+        redis.stop();
     }
 
     @Test
@@ -588,11 +593,6 @@ public class JedisTest {
         verifier(Protocol.Command.SREM, operation, Arrays.asList(keyValuePair1.getKey(), "test"));
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        redisServer.stop();
-    }
-
     private static void opVerifier(List<AbstractOperation> operations, int expected) {
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         Assert.assertEquals("Unexpected number of operations detected.", expected, operations.size());
@@ -605,19 +605,6 @@ public class JedisTest {
         Assert.assertEquals(String.format("[%s] Invalid event category.", cmd), VulnerabilityCaseType.CACHING_DATA_STORE, operation.getCaseType());
         Assert.assertEquals(String.format("[%s] Invalid executed class name.", cmd), Client.class.getName(), operation.getClassName());
         Assert.assertEquals(String.format("[%s] Invalid executed method name.", cmd), "sendCommand", operation.getMethodName());
-    }
-
-    private static int getRandomPort() {
-        int port;
-
-        try {
-            ServerSocket socket = new ServerSocket(0);
-            port = socket.getLocalPort();
-            socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to allocate ephemeral port");
-        }
-        return port;
     }
 
     static class KeyValuePair {
