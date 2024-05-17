@@ -9,6 +9,7 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.FuzzRequestEmptyEntry;
+import com.newrelic.api.agent.security.schema.RequestCategory;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -17,6 +18,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides NoOps for API objects to avoid returning <code>null</code>. Do not call these objects directly.
@@ -127,7 +129,7 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry emptyEntry) {
+    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry, RequestCategory category) {
 
     }
 

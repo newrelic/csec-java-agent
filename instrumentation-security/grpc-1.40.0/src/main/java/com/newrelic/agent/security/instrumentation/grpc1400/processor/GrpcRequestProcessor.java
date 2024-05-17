@@ -1,19 +1,23 @@
 package com.newrelic.agent.security.instrumentation.grpc1400.processor;
 
 import com.newrelic.agent.security.instrumentation.grpc1400.client.GrpcClient;
-import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.ControlCommandDto;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 public class GrpcRequestProcessor implements Callable<Object> {
     public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
     private ControlCommandDto controlCommandDto;
     private int repeatCount;
     private static final int MAX_REPETITION = 3;
+
+    private boolean isSuccessful = false;
+
+    private int responseCode;
+
+    private boolean exceptionRaised = false;
+
+    private Throwable error;
 
     public GrpcRequestProcessor(ControlCommandDto controlCommandDto, int repeatCount) {
         this.controlCommandDto = controlCommandDto;
@@ -22,33 +26,55 @@ public class GrpcRequestProcessor implements Callable<Object> {
 
     @Override
     public Object call() throws Exception {
-        return GrpcClient.getInstance().fireRequest(controlCommandDto, repeatCount);
+        return GrpcClient.getInstance().fireRequest(this);
     }
 
     public static void executeGrpcRequest(ControlCommandDto controlCommandDto) {
-        Future<Object> future = GrpcRequestThreadPool.getInstance().executor
+        GrpcRequestThreadPool.getInstance().executor
                 .submit(new GrpcRequestProcessor(controlCommandDto, MAX_REPETITION));
-        try {
-            Object futureResult = future.get();
-            if (futureResult instanceof Throwable) {
-                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getRequestBean()), (Throwable) futureResult, GrpcClient.class.getName());
-                NewRelicSecurity.getAgent().reportIncident(LogLevel.WARNING,
-                        String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getId()),
-                        (Throwable) futureResult, GrpcClient.class.getName());
-                GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(controlCommandDto.getRequestBean(), (Throwable) futureResult);
-            } else {
-                GrpcClientRequestReplayHelper.getInstance().getPendingIds().remove(controlCommandDto.getId());
-            }
-        } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getRequestBean()), e, GrpcRequestProcessor.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE,
-                    String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getId()),
-                    e, GrpcRequestProcessor.class.getName());
-            GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(controlCommandDto.getRequestBean(), e);
-        }
     }
 
     public ControlCommandDto getPartialControlCommand() {
         return controlCommandDto;
+    }
+
+    public void setSuccessful(boolean successful) {
+        isSuccessful = successful;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
+    public void setExceptionRaised(boolean exceptionRaised) {
+        this.exceptionRaised = exceptionRaised;
+    }
+
+    public void setError(Throwable error) {
+        this.error = error;
+    }
+
+    public ControlCommandDto getControlCommandDto() {
+        return controlCommandDto;
+    }
+
+    public int getRepeatCount() {
+        return repeatCount;
+    }
+
+    public boolean isSuccessful() {
+        return isSuccessful;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public boolean isExceptionRaised() {
+        return exceptionRaised;
+    }
+
+    public Throwable getError() {
+        return error;
     }
 }

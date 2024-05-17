@@ -4,6 +4,7 @@ import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.FuzzRequestEmptyEntry;
+import com.newrelic.api.agent.security.schema.RequestCategory;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -194,7 +195,8 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry emptyEntry) {
+    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry, RequestCategory category) {
 
     }
+
 }
