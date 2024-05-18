@@ -1,8 +1,10 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ControlCommandDto;
 import com.newrelic.api.agent.security.schema.FuzzRequestBean;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Collections;
 import java.util.Map;
@@ -17,9 +19,23 @@ public class GrpcClientRequestReplayHelper {
     private BlockingQueue<?> inProcessRequestQueue = new LinkedBlockingQueue(1000);
     private BlockingQueue<Map<FuzzRequestBean, Throwable>> fuzzFailRequestQueue = new LinkedBlockingQueue(1000);
     private boolean isGrpcRequestExecutorStarted = false;
-    private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
-    private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
+
     private final Set<String> rejectedIds = ConcurrentHashMap.newKeySet();
+
+    private Set<String> completedReplay = ConcurrentHashMap.newKeySet();
+
+    private Set<String> errorInReplay = ConcurrentHashMap.newKeySet();
+
+    private Set<String> clearFromPending = ConcurrentHashMap.newKeySet();
+
+    /**
+     * "generatedEvents":
+     *     {
+     *         "ORIGIN_APPUUID_1" : {"FUZZ_ID_1":["EVENT_ID_1"], "FUZZ_ID_2":["EVENT_ID_2"]},
+     *     }
+     * */
+    private final Map<String, Map<String, Set<String>>> generatedEvent = new ConcurrentHashMap();
+
     private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     public static GrpcClientRequestReplayHelper getInstance(){
@@ -30,11 +46,22 @@ public class GrpcClientRequestReplayHelper {
         static final GrpcClientRequestReplayHelper instance = new GrpcClientRequestReplayHelper();
     }
 
-    //TODO Update MicrosService Arch
+    private void getAllControlCommandID(Map<String, Map<String, Set<String>>> generatedEvents) {
+        if(generatedEvents == null || generatedEvents.isEmpty()) {
+            return;
+        }
+
+        for (Map<String, Set<String>> applicationMap : generatedEvents.values()) {
+            rejectedIds.addAll(applicationMap.keySet());
+        }
+    }
+
     public void resetIASTProcessing() {
-        rejectedIds.addAll(processedIds.keySet());
-        processedIds.clear();
-        pendingIds.clear();
+        getAllControlCommandID(generatedEvent);
+        generatedEvent.clear();
+        completedReplay.clear();
+        clearFromPending.clear();
+        errorInReplay.clear();
         requestQueue.clear();
     }
 
@@ -82,33 +109,48 @@ public class GrpcClientRequestReplayHelper {
         return fuzzFailRequestQueue.take();
     }
 
-    public Map<String, Set<String>> getProcessedIds() {
-        return processedIds;
-    }
-
     public Set<String> getRejectedIds() {
         return rejectedIds;
     }
 
-    public Set<String> getPendingIds() {
-        return pendingIds;
-    }
-
-    public void registerEventForProcessedCC(String controlCommandId, String eventId) {
-        //TODO Update MicrosService Arch
+    public void registerEventForProcessedCC(String controlCommandId, String eventId, String originAppUuid) {
         if(StringUtils.isAnyBlank(controlCommandId, eventId)){
             return;
         }
-        Set<String> registeredEvents = processedIds.get(controlCommandId);
-        if(registeredEvents != null) {
-            registeredEvents.add(eventId);
+        if(!generatedEvent.containsKey(originAppUuid)){
+            NewRelicSecurity.getAgent().log(LogLevel.FINE, String.format("Entry from map of generatedEvents for %s is missing. generatedEvents are : %s", originAppUuid, generatedEvent), GrpcClientRequestReplayHelper.class.getName());
+        }
+
+        if(generatedEvent.get(originAppUuid).containsKey(controlCommandId)) {
+            generatedEvent.get(originAppUuid).get(controlCommandId).add(eventId);
         }
     }
 
-    public void removeFromProcessedCC(String controlCommandId) {
-        //TODO Update MicrosService Arch
-        if(StringUtils.isNotBlank(controlCommandId)){
-            processedIds.remove(controlCommandId);
-        }
+    public Set<String> getCompletedReplay() {
+        return completedReplay;
+    }
+
+    public void setCompletedReplay(Set<String> completedReplay) {
+        this.completedReplay = completedReplay;
+    }
+
+    public Set<String> getErrorInReplay() {
+        return errorInReplay;
+    }
+
+    public void setErrorInReplay(Set<String> errorInReplay) {
+        this.errorInReplay = errorInReplay;
+    }
+
+    public Set<String> getClearFromPending() {
+        return clearFromPending;
+    }
+
+    public void setClearFromPending(Set<String> clearFromPending) {
+        this.clearFromPending = clearFromPending;
+    }
+
+    public Map<String, Map<String, Set<String>>> getGeneratedEvent() {
+        return generatedEvent;
     }
 }

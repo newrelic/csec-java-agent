@@ -5,10 +5,9 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequest
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
-import java.util.HashSet;
+import java.io.InterruptedIOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
@@ -47,21 +46,22 @@ public class GrpcRequestThreadPool {
                     GrpcClientRequestReplayHelper.getInstance().setInProcessRequestQueue(getQueue());
                     String controlCommandId = null;
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof GrpcRequestProcessor) {
-                        Object result = (Object) ((CustomFutureTask<?>) r).get();
                         GrpcRequestProcessor task = (GrpcRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getPartialControlCommand().getId();
-                        if (t != null || result != null) {
-                            if (StringUtils.isNotBlank(controlCommandId)) {
-                                GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(controlCommandId);
-                            }
+                        if (task.isSuccessful()) {
+                            GrpcClientRequestReplayHelper.getInstance().getCompletedReplay().add(controlCommandId);
+                        } else if (task.isExceptionRaised() && task.getError() instanceof InterruptedIOException) {
+                            GrpcClientRequestReplayHelper.getInstance().getClearFromPending().add(controlCommandId);
+                        } else if(task.isExceptionRaised()) {
+                            GrpcClientRequestReplayHelper.getInstance().getErrorInReplay().add(controlCommandId);
                         } else {
-                            GrpcClientRequestReplayHelper.getInstance().getProcessedIds().putIfAbsent(controlCommandId, new HashSet<>());
+                            GrpcClientRequestReplayHelper.getInstance().getClearFromPending().add(controlCommandId);
+                        }
+                        if (StringUtils.isBlank(controlCommandId)) {
+                            GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(controlCommandId);
                         }
                     }
-                    if (StringUtils.isNotBlank(controlCommandId)) {
-                        GrpcClientRequestReplayHelper.getInstance().getPendingIds().remove(controlCommandId);
-                    }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (Exception e) {
                 }
             }
 

@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequest
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -73,7 +74,6 @@ public class IASTDataTransferRequestProcessor {
             int currentFetchThreshold = NewRelic.getAgent().getConfig()
                     .getValue(SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD, 300);
 
-            //TODO Update MicrosService Arch
             int remainingRecordCapacityRest = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
             int currentRecordBacklogRest = RestRequestThreadPool.getInstance().getQueue().size();
             int remainingRecordCapacityGrpc = GrpcClientRequestReplayHelper.getInstance().getRequestQueue().remainingCapacity();
@@ -92,9 +92,9 @@ public class IASTDataTransferRequestProcessor {
 
                 request.setBatchSize(batchSize);
                 request.setGeneratedEvent(getEffectiveCompletedRequests());
-                request.setClearFromPending(RestRequestThreadPool.getInstance().getClearFromPending());
-                request.setCompletedReplay(RestRequestThreadPool.getInstance().getCompletedReplay());
-                request.setErrorInReplay(RestRequestThreadPool.getInstance().getErrorInReplay());
+                request.setClearFromPending(getEffectiveClearFromPending());
+                request.setCompletedReplay(getEffectiveCompletedReplay());
+                request.setErrorInReplay(getEffectiveErrorInReplay());
                 WSClient.getInstance().send(request.toString());
             }
         } catch (Throwable e) {
@@ -104,20 +104,52 @@ public class IASTDataTransferRequestProcessor {
         }
     }
 
+    private Set<String> getEffectiveErrorInReplay() {
+        Set<String> errorInReplay = new HashSet<>();
+        errorInReplay.addAll(RestRequestThreadPool.getInstance().getErrorInReplay());
+        errorInReplay.addAll(GrpcClientRequestReplayHelper.getInstance().getErrorInReplay());
+        return errorInReplay;
+    }
+
+    private Set<String> getEffectiveCompletedReplay() {
+        Set<String> effectiveReplay = new HashSet<>();
+        effectiveReplay.addAll(RestRequestThreadPool.getInstance().getCompletedReplay());
+        effectiveReplay.addAll(GrpcClientRequestReplayHelper.getInstance().getCompletedReplay());
+        return effectiveReplay;
+    }
+
+    private Set<String> getEffectiveClearFromPending() {
+        Set<String> effectiveClearFromPending = new HashSet<>();
+        effectiveClearFromPending.addAll(RestRequestThreadPool.getInstance().getClearFromPending());
+        effectiveClearFromPending.addAll(GrpcClientRequestReplayHelper.getInstance().getClearFromPending());
+        return effectiveClearFromPending;
+    }
+
     private Map<String, Map<String, Set<String>>> getEffectiveCompletedRequests() {
         Map<String, Map<String, Set<String>>> generatedEvents = new HashMap<>();
-        generatedEvents.putAll(RestRequestThreadPool.getInstance().getGeneratedEvents());
+
         for (String rejectedId : RestRequestThreadPool.getInstance().getRejectedIds()) {
-            for (Map.Entry<String, Map<String, Set<String>>> applicationMap : generatedEvents.entrySet()) {
+            for (Map.Entry<String, Map<String, Set<String>>> applicationMap : RestRequestThreadPool.getInstance().getGeneratedEvent().entrySet()) {
                 applicationMap.getValue().remove(rejectedId);
             }
         }
+        generatedEvents.putAll(RestRequestThreadPool.getInstance().getGeneratedEvent());
         RestRequestThreadPool.getInstance().getRejectedIds().clear();
+
         for (String rejectedId : GrpcClientRequestReplayHelper.getInstance().getRejectedIds()) {
-            for (Map.Entry<String, Map<String, Set<String>>> applicationMap : generatedEvents.entrySet()) {
+            for (Map.Entry<String, Map<String, Set<String>>> applicationMap : GrpcClientRequestReplayHelper.getInstance().getGeneratedEvent().entrySet()) {
                 applicationMap.getValue().remove(rejectedId);
             }
         }
+
+        for (Map.Entry<String, Map<String, Set<String>>> applicationMap : GrpcClientRequestReplayHelper.getInstance().getGeneratedEvent().entrySet()) {
+            if(generatedEvents.containsKey(applicationMap.getKey())){
+                generatedEvents.get(applicationMap.getKey()).putAll(applicationMap.getValue());
+            } else {
+                generatedEvents.put(applicationMap.getKey(),applicationMap.getValue());
+            }
+        }
+
         GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
         return generatedEvents;
     }

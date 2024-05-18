@@ -684,7 +684,20 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry) {
+    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry, RequestCategory category) {
+        switch (category) {
+            case GRPC:
+                setEmptyIastDataRequestEntry(fuzzRequestEmptyEntry, GrpcClientRequestReplayHelper.getInstance().getGeneratedEvent());
+                break;
+            case HTTP:
+            default:
+                setEmptyIastDataRequestEntry(fuzzRequestEmptyEntry, RestRequestThreadPool.getInstance().getGeneratedEvent());
+                break;
+        }
+    }
+
+
+    private void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry, Map<String, Map<String, Set<String>>> generatedEvent) {
         String currentEntityGuid = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
         String originAppUUID = fuzzRequestEmptyEntry.getOriginAppUuid();
         if(StringUtils.isBlank(originAppUUID)){
@@ -692,13 +705,14 @@ public class Agent implements SecurityAgent {
         }
         String shaDigestOfCurrentEntityGuid = HashGenerator.getSHA256HexDigest(currentEntityGuid);
         if(StringUtils.equals(shaDigestOfCurrentEntityGuid, fuzzRequestEmptyEntry.getOriginEntityGuid())){
-            if(RestRequestThreadPool.getInstance().getGeneratedEvents().containsKey(originAppUUID)) {
-                RestRequestThreadPool.getInstance().getGeneratedEvents().get(originAppUUID).put(fuzzRequestEmptyEntry.getControlCommandId(), ConcurrentHashMap.newKeySet());
+            if(generatedEvent.containsKey(originAppUUID)) {
+                generatedEvent.get(originAppUUID).put(fuzzRequestEmptyEntry.getControlCommandId(), ConcurrentHashMap.newKeySet());
             } else {
                 Map<String, Set<String>> emptyEntry = new ConcurrentHashMap<>();
                 emptyEntry.put(fuzzRequestEmptyEntry.getControlCommandId(), ConcurrentHashMap.newKeySet());
-                RestRequestThreadPool.getInstance().getGeneratedEvents().put(originAppUUID, emptyEntry);
+                generatedEvent.put(originAppUUID, emptyEntry);
             }
         }
     }
+
 }

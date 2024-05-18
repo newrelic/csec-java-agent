@@ -261,10 +261,8 @@ public class ControlCommandProcessor implements Runnable {
                         controlCommand.getArguments().size()), this.getClass().getName());
                 logger.log(LogLevel.FINEST, String.format(PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S,
                         controlCommand.getArguments()), this.getClass().getName());
-                //TODO Update MicrosService Arch
                 IASTDataTransferRequest requestForPurge = objectMapper.convertValue(controlCommand.getData(), IASTDataTransferRequest.class);
                 purgeIastDataTransferRequest(requestForPurge);
-                controlCommand.getArguments().forEach(GrpcClientRequestReplayHelper.getInstance().getProcessedIds()::remove);
                 break;
             default:
                 logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
@@ -274,10 +272,21 @@ public class ControlCommandProcessor implements Runnable {
     }
 
     private static void purgeIastDataTransferRequest(IASTDataTransferRequest requestForPurge) {
+
+        GrpcClientRequestReplayHelper.getInstance().getCompletedReplay().removeAll(requestForPurge.getCompletedReplay());
+        GrpcClientRequestReplayHelper.getInstance().getErrorInReplay().removeAll(requestForPurge.getErrorInReplay());
+        GrpcClientRequestReplayHelper.getInstance().getClearFromPending().removeAll(requestForPurge.getClearFromPending());
+        for (Map.Entry<String, Map<String, Set<String>>> applicationMap : GrpcClientRequestReplayHelper.getInstance().getGeneratedEvent().entrySet()) {
+            String originAppUUID = applicationMap.getKey();
+            Map<String, Set<String>> purgeApplicationMap = requestForPurge.getGeneratedEvent().get(originAppUUID);
+            purgeApplicationMap.forEach(applicationMap.getValue()::remove);
+        }
+
+
         RestRequestThreadPool.getInstance().getCompletedReplay().removeAll(requestForPurge.getCompletedReplay());
         RestRequestThreadPool.getInstance().getErrorInReplay().removeAll(requestForPurge.getErrorInReplay());
         RestRequestThreadPool.getInstance().getClearFromPending().removeAll(requestForPurge.getClearFromPending());
-        for (Map.Entry<String, Map<String, Set<String>>> applicationMap : RestRequestThreadPool.getInstance().getGeneratedEvents().entrySet()) {
+        for (Map.Entry<String, Map<String, Set<String>>> applicationMap : RestRequestThreadPool.getInstance().getGeneratedEvent().entrySet()) {
             String originAppUUID = applicationMap.getKey();
             Map<String, Set<String>> purgeApplicationMap = requestForPurge.getGeneratedEvent().get(originAppUUID);
             purgeApplicationMap.forEach(applicationMap.getValue()::remove);

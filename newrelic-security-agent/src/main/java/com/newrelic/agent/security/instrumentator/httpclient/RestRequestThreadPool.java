@@ -43,12 +43,12 @@ public class RestRequestThreadPool {
      *         "ORIGIN_APPUUID_1" : {"FUZZ_ID_1":["EVENT_ID_1"], "FUZZ_ID_2":["EVENT_ID_2"]},
      *     }
      * */
-    private final Map<String, Map<String, Set<String>>> generatedEvents = new ConcurrentHashMap();
+    private final Map<String, Map<String, Set<String>>> generatedEvent = new ConcurrentHashMap();
 
 
     public void resetIASTProcessing() {
-        getAllControlCommandID(generatedEvents);
-        generatedEvents.clear();
+        getAllControlCommandID(generatedEvent);
+        generatedEvent.clear();
         completedReplay.clear();
         clearFromPending.clear();
         errorInReplay.clear();
@@ -180,18 +180,16 @@ public class RestRequestThreadPool {
         if(StringUtils.isAnyBlank(controlCommandId, eventId)){
             return;
         }
-        if(!generatedEvents.containsKey(originAppUuid)){
-            logger.log(LogLevel.FINE, String.format("Entry from map of generatedEvents for %s is missing. generatedEvents are : %s", originAppUuid, generatedEvents), RestRequestThreadPool.class.getName());
+        if(!generatedEvent.containsKey(originAppUuid)){
+            logger.log(LogLevel.FINE, String.format("Entry from map of generatedEvents for %s is missing. generatedEvents are : %s", originAppUuid, generatedEvent), RestRequestThreadPool.class.getName());
         }
 
-        if(generatedEvents.get(originAppUuid).containsKey(controlCommandId)) {
-            generatedEvents.get(originAppUuid).get(controlCommandId).add(eventId);
-        } else {
-            System.out.println("controlCommandId is not present for : "+controlCommandId);
+        if(generatedEvent.get(originAppUuid).containsKey(controlCommandId)) {
+            generatedEvent.get(originAppUuid).get(controlCommandId).add(eventId);
         }
     }
 
-    public Map<String, Map<String, Set<String>>> getGeneratedEvents() {
-        return generatedEvents;
+    public Map<String, Map<String, Set<String>>> getGeneratedEvent() {
+        return generatedEvent;
     }
 }
