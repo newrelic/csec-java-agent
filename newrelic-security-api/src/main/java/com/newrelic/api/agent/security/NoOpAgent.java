@@ -10,6 +10,7 @@ package com.newrelic.api.agent.security;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
@@ -94,12 +95,12 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public String getApplicationConnectionConfig(int port) {
+    public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
         return null;
     }
 
     @Override
-    public Map<Integer, String> getApplicationConnectionConfig() {
+    public Map<Integer, ServerConnectionConfiguration> getApplicationConnectionConfig() {
         return Collections.emptyMap();
     }
 
@@ -115,6 +116,11 @@ class NoOpAgent implements SecurityAgent {
 
     @Override
     public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
+
+    }
+
+    @Override
+    public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception, String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
 
     }
 

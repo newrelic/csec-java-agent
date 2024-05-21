@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.HttpRequest;
 import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -180,6 +181,9 @@ public class AkkaCoreUtils {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey).get().value());
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
             String headerFullValue = nextHeader.value();
             if (headerFullValue != null && !headerFullValue.trim().isEmpty()) {
