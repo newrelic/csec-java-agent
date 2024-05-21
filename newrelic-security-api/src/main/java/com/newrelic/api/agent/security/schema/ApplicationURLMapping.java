@@ -49,9 +49,7 @@ public class ApplicationURLMapping {
         }
         if (obj instanceof ApplicationURLMapping) {
             ApplicationURLMapping mapping = (ApplicationURLMapping) obj;
-            return Objects.equals(this.path, mapping.path) &&
-                    Objects.equals(this.method, mapping.method) &&
-                    Objects.equals(this.handler, mapping.handler);
+            return Objects.equals(this.path, mapping.path) && Objects.equals(this.method, mapping.method);
         }
         return false;
     }
@@ -63,6 +61,6 @@ public class ApplicationURLMapping {
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, path, handler);
+        return Objects.hash(this.method, this.path);
     }
 }
