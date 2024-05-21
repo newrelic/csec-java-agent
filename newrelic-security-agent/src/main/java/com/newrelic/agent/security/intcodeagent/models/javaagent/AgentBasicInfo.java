@@ -25,6 +25,8 @@ public class AgentBasicInfo {
     public static final String NR_ENTITY_GUID = "entityGuid";
     public static final String EXCEPTION_INCIDENT = "exception-incident";
 
+    public static final String IAST_SCAN_FAILURE = "iast-scan-failure";
+
     /**
      * Tool id for Language Agent.
      */
@@ -99,6 +101,9 @@ public class AgentBasicInfo {
         } else if (this instanceof ErrorIncident) {
             setJsonName(EXCEPTION_INCIDENT);
             setEventType(EXCEPTION_INCIDENT);
+        } else if (this instanceof IASTScanFailure) {
+            setJsonName(IAST_SCAN_FAILURE);
+            setEventType(IAST_SCAN_FAILURE);
         }
     }
 

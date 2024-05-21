@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentation.jersey2;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -151,6 +152,9 @@ public class HttpRequestHelper {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, headerFullValue);
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
 
             for (String headerValue : header.getValue()) {
