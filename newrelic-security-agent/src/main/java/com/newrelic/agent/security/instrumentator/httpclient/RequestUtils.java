@@ -2,7 +2,8 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import okhttp3.*;
@@ -10,7 +11,9 @@ import okhttp3.Request.Builder;
 import okhttp3.internal.http.HttpMethod;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,12 +26,14 @@ public class RequestUtils {
 
     public static Request generateHeadRequest(FuzzRequestBean httpRequest, String endpoint) {
         try {
-            logger.log(LogLevel.FINEST, String.format("Generate HEAD request : %s", JsonConverter.toJSON(httpRequest.getUrl())), RequestUtils.class.getName());
+            logger.log(LogLevel.FINEST, String.format("Generate HEAD request : %s%s", endpoint, httpRequest.getUrl()), RequestUtils.class.getName());
             StringBuilder url = new StringBuilder(endpoint);
             url.append(httpRequest.getUrl());
             Request request = new Request.Builder()
                     .url(url.toString())
                     .head() // Use HEAD to fetch only headers without the body
+                    .headers(Headers.of((Map<String, String>) httpRequest.getHeaders()))
+                    .addHeader(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, "true")
                     .build();
             return request;
         } catch (Exception e) {
@@ -37,15 +42,10 @@ public class RequestUtils {
         return null;
     }
 
-    public static List<String> refineEndpoints(FuzzRequestBean httpRequest, List<String> endpoints) {
-        List<String> refinedEndpoints = new ArrayList<>();
-        for (String endpoint : endpoints) {
-            Request request = generateHeadRequest(httpRequest, endpoint);
-            if(RestClient.getInstance().isListening(request)){
-                refinedEndpoints.add(endpoint);
-            }
-        }
-        return refinedEndpoints;
+
+    public static boolean refineEndpoints(FuzzRequestBean httpRequest, String endpoint) {
+        Request request = generateHeadRequest(httpRequest, endpoint);
+        return RestClient.getInstance().isListening(request);
     }
 
     public static Request generateK2Request(FuzzRequestBean httpRequest, String endpoint) {
@@ -89,5 +89,38 @@ public class RequestUtils {
         }
         return null;
     }
+    public static String extractNRCsecFuzzReqHeader(FuzzRequestBean httpRequest) {
+        if( httpRequest == null) {
+            return null;
+        }
+        try {
+            for (Map.Entry<String, String> header : httpRequest.getHeaders().entrySet()) {
+                String key = header.getKey().toLowerCase();
+                if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(key)){
+                    return header.getValue();
+                }
+            }
+        } catch (Exception e){
+            return null;
+        }
+        return null;
+    }
+    public static String extractNRCsecFuzzReqHeader(Headers headers) {
+        if (headers == null){
+            return null;
+        }
+        try{
+            for (Map.Entry<String, List<String>> header : headers.toMultimap().entrySet()) {
+                String key = header.getKey().toLowerCase();
+                if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(key)){
+                    return com.newrelic.api.agent.security.schema.StringUtils.join(header.getValue().toArray(new String[0]));
+                }
+            }
+        } catch (Exception e){
+            return null;
+        }
+        return null;
+    }
+
 
 }

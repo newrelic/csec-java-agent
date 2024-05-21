@@ -510,6 +510,15 @@ public class Dispatcher implements Callable {
         if(operation.getParams() != null) {
             query.put(PARAMETERS, new JSONObject(operation.getParams()));
         }
+        if(operation.getObjectParams() != null && !operation.getObjectParams().isEmpty()){
+            JSONObject jsonObject = (JSONObject) query.get(PARAMETERS);
+            if(jsonObject == null){
+                query.put(PARAMETERS, jsonObject);
+            }
+            for (Map.Entry<String, Object> objParameter : operation.getObjectParams().entrySet()) {
+                jsonObject.put(objParameter.getKey(), JsonConverter.toJSON(objParameter.getValue()));
+            }
+        }
         params.add(query);
         eventBean.setParameters(params);
         if (operation.isStoredProcedureCall()) {
