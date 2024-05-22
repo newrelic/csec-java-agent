@@ -311,6 +311,7 @@ public class Dispatcher implements Callable {
      */
     private void processReflectedXSSEvent(JavaAgentEventBean eventBean) {
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RXSS_ENABLED, true)) {
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementRxssDetectionDeactivated();
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());

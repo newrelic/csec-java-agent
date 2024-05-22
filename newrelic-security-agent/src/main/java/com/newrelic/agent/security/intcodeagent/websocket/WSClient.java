@@ -2,7 +2,6 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
@@ -179,6 +178,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
+        AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementConnectionReconnected();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
@@ -200,6 +200,7 @@ public class WSClient extends WebSocketClient {
     public void onMessage(String message) {
         // Receive communication from IC side.
         try {
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesSent();
             if (logger.isLogLevelEnabled(LogLevel.FINEST)) {
                 logger.log(LogLevel.FINEST, String.format(INCOMING_CONTROL_COMMAND_S, message),
                         this.getClass().getName());
@@ -226,6 +227,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
+        AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementConnectionFailure();
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
@@ -243,8 +245,10 @@ public class WSClient extends WebSocketClient {
         if (this.isOpen()) {
             logger.log(LogLevel.FINER, SENDING_EVENT + text, WSClient.class.getName());
             super.send(text);
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesSent();
         } else {
             logger.log(LogLevel.FINER, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementSendFailure();
         }
     }
 

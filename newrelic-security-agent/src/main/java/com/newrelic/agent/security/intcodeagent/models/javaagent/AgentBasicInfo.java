@@ -59,6 +59,8 @@ public class AgentBasicInfo {
 
     private Map<String, String> linkingMetadata;
 
+    private String accountId;
+
     @JsonInclude
     private static String policyVersion;
 
@@ -75,6 +77,7 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
+        setAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -223,6 +226,13 @@ public class AgentBasicInfo {
         isPolicyOverridden = policyOverridden;
     }
 
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
 
     public Map<String, String> getLinkingMetadata() {
         return linkingMetadata;
