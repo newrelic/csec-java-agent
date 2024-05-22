@@ -71,6 +71,7 @@ public abstract class DynamoDBUtil {
                 operation = checkAndGenerateOperation(request, requests, klassName);
 
                 if (operation!=null) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                     NewRelicSecurity.getAgent().registerOperation(operation);
                 }
             }

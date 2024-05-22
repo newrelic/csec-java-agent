@@ -9,12 +9,12 @@ import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
@@ -258,11 +258,15 @@ public class Agent implements SecurityAgent {
                     securityMetaData.getResponse().setResponseBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
-                // end
 
                 if (operation == null || operation.isEmpty()) {
                     return;
                 }
+                Boolean csecJavaHeadRequest = securityMetaData.getCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, Boolean.class);
+                if(csecJavaHeadRequest != null && csecJavaHeadRequest){
+                    return;
+                }
+
                 String executionId = ExecutionIDGenerator.getExecutionId();
                 operation.setExecutionId(executionId);
                 operation.setStartTime(Instant.now().toEpochMilli());
@@ -274,7 +278,7 @@ public class Agent implements SecurityAgent {
                     securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
                 } else {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                    operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
+                    operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
 
                 // added to fetch request/response in case of grpc requests
@@ -391,12 +395,23 @@ public class Agent implements SecurityAgent {
 
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+
+            // Section for user class identification using API handlers
+            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
+                //Found -> assign user class and return
+                userClassEntity.setUserClassElement(stackTraceElement);
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                userClassEntity.setCalledByUserCode(true);
+                return userClassEntity;
+            }
+
+            //Fallback to old mechanism
             if(userStackTraceElement != null){
                 if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
                         && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
                     userClassEntity.setUserClassElement(stackTraceElement);
                     userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                    return userClassEntity;
+                    userStackTraceElement = stackTraceElement;
                 }
             }
             // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
@@ -450,7 +465,8 @@ public class Agent implements SecurityAgent {
                     AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
                     if (stackTrace[i - 1].getLineNumber() > 0 &&
                             StringUtils.isNotBlank(stackTrace[i - 1].getFileName()) &&
-                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.", "com.nr.")
+                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.",
+                                    "com.newrelic.agent.deps.", "com.nr.instrumentation.")
                     ) {
                         metaData.setTriggerViaRCI(true);
                         metaData.getRciMethodsCalls()
@@ -592,16 +608,9 @@ public class Agent implements SecurityAgent {
 
     public void setApplicationConnectionConfig(int port, String scheme) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
-        appServerInfo.getConnectionConfiguration().put(port, scheme);
+        ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
+        appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
 //        verifyConnectionAndPut(port, scheme, appServerInfo);
-    }
-
-    private void verifyConnectionAndPut(int port, String scheme, AppServerInfo appServerInfo) {
-        if(isConnectionSuccessful(port, scheme)){
-            appServerInfo.getConnectionConfiguration().put(port, scheme);
-        } else if (isConnectionSuccessful(port,StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR)) {
-            appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
-        }
     }
 
     private boolean isConnectionSuccessful(int port, String scheme) {
@@ -626,13 +635,13 @@ public class Agent implements SecurityAgent {
         }
     }
 
-    public String getApplicationConnectionConfig(int port) {
+    public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         return appServerInfo.getConnectionConfiguration().get(port);
     }
 
     @Override
-    public Map<Integer, String> getApplicationConnectionConfig() {
+    public Map<Integer, ServerConnectionConfiguration> getApplicationConnectionConfig() {
         return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
     }
 
@@ -703,6 +712,23 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
+    public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception,
+                                      String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
+        if(WSUtils.isConnected()){
+            LogMessageException message = null; SecurityMetaData metaData = null;
+            if(exception != null) {
+                message = new LogMessageException(exception, 0, 1);
+            }
+            if(securityMetaData != null){
+                metaData = new SecurityMetaData(securityMetaData);
+            }
+            IASTReplayFailure replayFailure = new IASTReplayFailure(apiId, nrCsecFuzzRequestId, controlCommandId, failureMessage, message);
+            IASTScanFailure scanFailure = new IASTScanFailure(replayFailure, metaData);
+            EventSendPool.getInstance().sendEvent(scanFailure);
+        }
+    }
+
+    @Override
     public void retransformUninstrumentedClass(Class<?> classToRetransform) {
         if (!classToRetransform.isAnnotationPresent(InstrumentedClass.class)) {
             try {
@@ -725,4 +751,5 @@ public class Agent implements SecurityAgent {
             return null;
         }
     }
+
 }
