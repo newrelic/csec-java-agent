@@ -111,22 +111,28 @@ public class ServletHelper {
                         tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
                                 NewRelicSecurity.getAgent().getAgentTempDir());
                         k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
+                        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
                         try {
+                            if (lockAcquired) {
+                                File fileToCreate = new File(tmpFile);
+                                if (fileToCreate.getParentFile() != null) {
 
-                            File fileToCreate = new File(tmpFile);
-                            if (fileToCreate.getParentFile() != null) {
-
-                                File parentFile = fileToCreate;
-                                while(parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()){
-                                    parentFile = parentFile.getParentFile();
+                                    File parentFile = fileToCreate;
+                                    while (parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()) {
+                                        parentFile = parentFile.getParentFile();
+                                    }
+                                    filesToRemove.add(parentFile.getAbsolutePath());
+                                    fileToCreate.getParentFile().mkdirs();
                                 }
-                                filesToRemove.add(parentFile.getAbsolutePath());
-                                fileToCreate.getParentFile().mkdirs();
+                                if (!fileToCreate.exists()) {
+                                    Files.createFile(fileToCreate.toPath());
+                                }
                             }
-                            Files.createFile(fileToCreate.toPath());
                         } catch (Throwable e) {
                             String message = "Error while parsing fuzz request : %s";
                             NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
+                        } finally {
+                            ThreadLocalLockHelper.releaseLock();
                         }
                     }
                 }
@@ -163,7 +169,7 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName) || !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+            if (!securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
@@ -195,12 +201,20 @@ public class ServletHelper {
     }
 
     public static void tmpFileCleanUp(List<String> files){
-        for (String file : files) {
-            try {
-                Files.deleteIfExists(Paths.get(file));
-            } catch (IOException e) {
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                for (String file : files) {
+                    try {
+                        Files.deleteIfExists(Paths.get(file));
+                    } catch (IOException e) {
+                    }
+                }
             }
+        } finally {
+            ThreadLocalLockHelper.releaseLock();
         }
+
     }
 
     public static boolean isResponseContentTypeExcluded( String responseContentType) {

@@ -20,7 +20,7 @@ public class ApiEndpointTest {
 
     @Test
     public void testURLMappings() {
-        String handler = DefaultServlet.class.getName();
+        String handler = MyServlet.class.getName();
         String method = "*";
         Iterator<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings().iterator();
 

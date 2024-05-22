@@ -52,7 +52,6 @@ public class ServerTest {
     @BeforeClass
     public static void addMappings() {
         actualMappings.put("/servlet/*", MyServlet.class.getName());
-        actualMappings.put("/", ServletHandler.Default404Servlet.class.getName());
     }
     @After
     public void teardown() throws Exception {
@@ -201,7 +200,7 @@ public class ServerTest {
         start();
 
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
-        Assert.assertEquals(2, mappings.size());
+        Assert.assertEquals(1, mappings.size());
         for (ApplicationURLMapping mapping : mappings) {
             Assert.assertNotNull(mapping);
 

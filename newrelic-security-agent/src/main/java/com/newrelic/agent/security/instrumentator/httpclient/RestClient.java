@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
@@ -70,7 +71,7 @@ public class RestClient {
             try {
                 ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
                 builder = builder.connectionPool(connectionPool);
-                builder = builder.callTimeout(10, TimeUnit.SECONDS);
+                builder = builder.callTimeout(5, TimeUnit.SECONDS);
 
                 // Install the all-trusting trust manager
                 final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
@@ -130,6 +131,9 @@ public class RestClient {
                 try {
                     responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
                 } catch (SSLException e) {
+                    NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), fuzzRequestId,
+                            String.format(IAgentConstants.SSL_EXCEPTION_FAILURE_MESSAGE, request.url()));
                     logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request, e.getMessage()), e, RestClient.class.getName());
                     logger.postLogMessageIfNecessary(LogLevel.WARNING,
                             String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId, e.getMessage()),
@@ -159,6 +163,28 @@ public class RestClient {
 
     }
 
+    public boolean isListening(Request request) {
+        if(request == null){
+            return false;
+        }
+
+        OkHttpClient client = clientThreadLocal.get();
+        Call call = client.newCall(request);
+        try(Response response = call.execute()) {
+            if(response.isSuccessful()){
+                logger.log(LogLevel.FINER, String.format("Server is reachable url: %s", request.url()), RestClient.class.getName());
+                return true;
+            }
+            if (client.connectionPool() != null) {
+                client.connectionPool().evictAll();
+            }
+        } catch (IOException e) {
+            logger.log(LogLevel.FINER, String.format("Server is not reachable url: %s", request.url()), RestClient.class.getName());
+            return false;
+        }
+        return false;
+    }
+
     public int fireRequest(Request request, int repeatCount, String fuzzRequestId) throws SSLException {
         OkHttpClient client = clientThreadLocal.get();
 
@@ -167,13 +193,21 @@ public class RestClient {
         logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
-        try {
-            Response response = call.execute();
+        try (Response response = call.execute()){
             logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
-            if(response.code() >= 400 && response.code() < 500){
-                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+            if (response.code() >= 500) {
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
                         String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, response.body().string()), null,
+                        RestRequestProcessor.class.getName());
+            }
+            else if(response.code() >= 400){
+                String responseBody = response.body().string();
+                NewRelicSecurity.getAgent().reportIASTScanFailure(null, null, null,
+                        RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
+                        String.format(IAgentConstants.REQUEST_FAILURE_FOR_S_WITH_RESPONSE_CODE, request.url(), response, responseBody));
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+                logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                        String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, responseBody), null,
                         RestRequestProcessor.class.getName());
             } else if(response.isSuccessful()){
                 RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
@@ -193,6 +227,10 @@ public class RestClient {
                 return fireRequest(request, --repeatCount, fuzzRequestId);
             }
         } catch (IOException e) {
+            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                    e, RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
+                    IAgentConstants.REQUEST_FAILURE_DUE_TO_IOEXCEPTION);
+
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
                     String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), fuzzRequestId),
@@ -202,6 +240,8 @@ public class RestClient {
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
+        } catch (Exception e){
+            logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
         }
 
         return 999;

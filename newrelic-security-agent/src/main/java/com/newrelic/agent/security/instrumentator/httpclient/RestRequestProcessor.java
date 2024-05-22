@@ -6,7 +6,9 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -14,10 +16,8 @@ import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.ControlCommandDto;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.net.ssl.SSLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +65,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
             return false;
         }
 
-        FuzzRequestBean httpRequest;
+        FuzzRequestBean httpRequest = null;
         try {
             if (WSUtils.getInstance().isReconnecting()) {
                    synchronized (WSUtils.getInstance()) {
@@ -93,27 +93,35 @@ public class RestRequestProcessor implements Callable<Boolean> {
             if (httpRequest.getIsGrpc()){
                 List<String> payloadList = new ArrayList<>();
                 try{
-                    logger.log(LogLevel.FINER, String.format("Firing request : %s", objectMapper.writeValueAsString(httpRequest)), RestRequestProcessor.class.getName());
                     List<?> list = objectMapper.readValue(String.valueOf(httpRequest.getBody()), List.class);
                     for (Object o : list) {
                         payloadList.add(objectMapper.writeValueAsString(o));
                     }
                 } catch (Throwable e) {
+                    NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), controlCommand.getId(),
+                            String.format(IAgentConstants.FAILURE_WHILE_GRPC_REQUEST_BODY_CONVERSION, httpRequest.getBody()));
                     logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.getMessage()), RestRequestProcessor.class.getSimpleName());
                 }
                 MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
             } else {
                 boolean postSSL = false;
-                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
+                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig(), httpRequest);
+                logger.log(LogLevel.FINER, String.format("Endpoints to fire : %s", endpoints), RestRequestProcessor.class.getSimpleName());
                 if (endpoints.isEmpty()){
                     endpoints = prepareAllEndpoints(httpRequest);
+                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: %s", endpoints), RestRequestProcessor.class.getSimpleName());
                     postSSL = true;
                 }
                 RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
             }
             return true;
         } catch (JsonProcessingException e){
+            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                    e, null, controlCommand.getId(),
+                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)));
+
             logger.log(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
@@ -121,6 +129,10 @@ public class RestRequestProcessor implements Callable<Boolean> {
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
             RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                    e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), controlCommand.getId(),
+                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)));
+
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
@@ -140,13 +152,29 @@ public class RestRequestProcessor implements Callable<Boolean> {
         return endpoitns;
     }
 
-    private List<String> prepareAllEndpoints(Map<Integer, String> applicationConnectionConfig) {
-        List<String> endpoitns = new ArrayList<>();
-        for (Map.Entry<Integer, String> connectionConfig : applicationConnectionConfig.entrySet()) {
-            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, connectionConfig.getValue(), connectionConfig.getKey()));
-            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfig.getValue()), connectionConfig.getKey()));
+    private List<String> prepareAllEndpoints(Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig, FuzzRequestBean httpRequest) {
+        List<String> endpoints = new ArrayList<>();
+        for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
+            ServerConnectionConfiguration connectionConfiguration = connectionConfig.getValue();
+            if(!connectionConfig.getValue().isConfirmed()){
+                if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, connectionConfiguration.getProtocol(), connectionConfiguration.getPort()))) {
+                    updateServerConnectionConfiguration(connectionConfiguration, connectionConfiguration.getProtocol());
+                    endpoints.add(connectionConfiguration.getEndpoint());
+                } else if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfiguration.getProtocol()), connectionConfiguration.getPort()))) {
+                    updateServerConnectionConfiguration(connectionConfiguration, toggleProtocol(connectionConfiguration.getProtocol()));
+                    endpoints.add(connectionConfiguration.getEndpoint());
+                }
+            } else {
+                endpoints.add(connectionConfiguration.getEndpoint());
+            }
         }
-        return endpoitns;
+        return endpoints;
+    }
+
+    private void updateServerConnectionConfiguration(ServerConnectionConfiguration connectionConfiguration, String protocol) {
+        connectionConfiguration.setEndpoint(String.format(ENDPOINT_LOCALHOST_S, protocol, connectionConfiguration.getPort()));
+        connectionConfiguration.setProtocol(protocol);
+        connectionConfiguration.setConfirmed(true);
     }
 
     private String toggleProtocol(String value) {
