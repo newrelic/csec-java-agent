@@ -9,6 +9,7 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
@@ -54,15 +55,18 @@ public interface SecurityAgent {
 
     void setApplicationConnectionConfig(int port, String scheme);
 
-    String getApplicationConnectionConfig(int port);
+    ServerConnectionConfiguration getApplicationConnectionConfig(int port);
 
-    Map<Integer, String> getApplicationConnectionConfig();
+    Map<Integer, ServerConnectionConfiguration> getApplicationConnectionConfig();
 
     void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName);
 
     void log(LogLevel logLevel, String event, String logSourceClassName);
 
     void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller);
+
+    void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception,
+                               String nrCsecFuzzRequestId, String controlCommandId, String failureMessage);
 
     void retransformUninstrumentedClass(Class<?> classToRetransform);
 

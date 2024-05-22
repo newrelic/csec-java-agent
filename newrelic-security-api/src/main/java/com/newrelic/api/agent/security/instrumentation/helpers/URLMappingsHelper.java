@@ -15,15 +15,25 @@ public class URLMappingsHelper {
         add("org.apache.jasper.servlet.JspServlet");
         add("org.apache.catalina.servlets.DefaultServlet");
         add("org.eclipse.jetty.servlet.DefaultServlet");
+        add("grails.plugin.databasemigration.DbdocController");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
         return mappings;
     }
 
+    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+
+    public static Set<Integer> getHandlersHash() {
+        return handlers;
+    }
+
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
         if (mapping.getHandler() == null || (mapping.getHandler() != null && !defaultHandlers.contains(mapping.getHandler()))) {
             mappings.add(mapping);
+        }
+        if (mapping.getHandler() != null){
+            handlers.add(mapping.getHandler().hashCode());
         }
     }
 }

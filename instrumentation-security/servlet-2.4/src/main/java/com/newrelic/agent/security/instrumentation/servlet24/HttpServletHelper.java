@@ -51,6 +51,9 @@ public class HttpServletHelper {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
             String headerFullValue = EMPTY;
             Enumeration<String> headerElements = request.getHeaders(headerKey);
