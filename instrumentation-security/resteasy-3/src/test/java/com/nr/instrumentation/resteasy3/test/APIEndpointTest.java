@@ -67,7 +67,7 @@ public class APIEndpointTest {
 
     @Trace(dispatcher = true)
     private void service() throws IOException {
-        HttpURLConnection conn = (HttpURLConnection)TestApplication.getEndPoint("customers/getStuff/users").openConnection();
+        HttpURLConnection conn = (HttpURLConnection)TestApplication.getEndPoint("users/count/9").openConnection();
         conn.connect();
         conn.getResponseCode();
     }
