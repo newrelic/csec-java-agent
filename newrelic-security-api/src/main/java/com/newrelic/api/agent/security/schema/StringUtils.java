@@ -12,6 +12,7 @@ public class StringUtils {
     public static final String LF = "\n";
     public static final int INDEX_NOT_FOUND = -1;
     public static final String COMMA_DELIMETER = ",";
+    public static final String SEPARATOR = "/";
 
     /**
      * <p>Checks if a CharSequence is not empty (""), not null and not whitespace only.</p>
@@ -1220,4 +1221,99 @@ public class StringUtils {
 //            return cs.toString().indexOf(searchChar.toString(), start);
 //        }
     }
+    /**
+     * Prepends the prefix to the start of the string if the string does not
+     * already start with any of the prefixes.
+     *
+     * <pre>
+     * StringUtils.prependIfMissing(null, null) = null
+     * StringUtils.prependIfMissing("abc", null) = "abc"
+     * StringUtils.prependIfMissing("", "xyz") = "xyz"
+     * StringUtils.prependIfMissing("abc", "xyz") = "xyzabc"
+     * StringUtils.prependIfMissing("xyzabc", "xyz") = "xyzabc"
+     * StringUtils.prependIfMissing("XYZabc", "xyz") = "xyzXYZabc"
+     * </pre>
+     * <p>With additional prefixes,</p>
+     * <pre>
+     * StringUtils.prependIfMissing(null, null, null) = null
+     * StringUtils.prependIfMissing("abc", null, null) = "abc"
+     * StringUtils.prependIfMissing("", "xyz", null) = "xyz"
+     * StringUtils.prependIfMissing("abc", "xyz", new CharSequence[]{null}) = "xyzabc"
+     * StringUtils.prependIfMissing("abc", "xyz", "") = "abc"
+     * StringUtils.prependIfMissing("abc", "xyz", "mno") = "xyzabc"
+     * StringUtils.prependIfMissing("xyzabc", "xyz", "mno") = "xyzabc"
+     * StringUtils.prependIfMissing("mnoabc", "xyz", "mno") = "mnoabc"
+     * StringUtils.prependIfMissing("XYZabc", "xyz", "mno") = "xyzXYZabc"
+     * StringUtils.prependIfMissing("MNOabc", "xyz", "mno") = "xyzMNOabc"
+     * </pre>
+     *
+     * @param str The string.
+     * @param prefix The prefix to prepend to the start of the string.
+     * @param prefixes Additional prefixes that are valid.
+     *
+     * @return A new String if prefix was prepended, the same string otherwise.
+     *
+     * @since 3.2
+     */
+    public static String prependIfMissing(final String str, final CharSequence prefix, final CharSequence... prefixes) {
+        return prependIfMissing(str, prefix, false, prefixes);
+    }
+    /**
+     * Prepends the prefix to the start of the string if the string does not
+     * already start with any of the prefixes.
+     *
+     * @param str The string.
+     * @param prefix The prefix to prepend to the start of the string.
+     * @param ignoreCase Indicates whether the compare should ignore case.
+     * @param prefixes Additional prefixes that are valid (optional).
+     *
+     * @return A new String if prefix was prepended, the same string otherwise.
+     */
+    private static String prependIfMissing(final String str, final CharSequence prefix, final boolean ignoreCase, final CharSequence... prefixes) {
+        if (str == null || isEmpty(prefix) || startsWith(str, prefix, ignoreCase)) {
+            return str;
+        }
+        if (prefixes != null) {
+            for (final CharSequence p : prefixes) {
+                if (!isEmpty(p) && startsWith(str, p, ignoreCase)) {
+                    return str;
+                }
+            }
+        }
+        return prefix.toString() + str;
+    }
+    /**
+     * Removes a substring only if it is at the end of a source string,
+     * otherwise returns the source string.
+     *
+     * <p>A {@code null} source string will return {@code null}.
+     * An empty ("") source string will return the empty string.
+     * A {@code null} search string will return the source string.</p>
+     *
+     * <pre>
+     * StringUtils.removeEnd(null, *)      = null
+     * StringUtils.removeEnd("", *)        = ""
+     * StringUtils.removeEnd(*, null)      = *
+     * StringUtils.removeEnd("www.domain.com", ".com.")  = "www.domain.com"
+     * StringUtils.removeEnd("www.domain.com", ".com")   = "www.domain"
+     * StringUtils.removeEnd("www.domain.com", "domain") = "www.domain.com"
+     * StringUtils.removeEnd("abc", "")    = "abc"
+     * </pre>
+     *
+     * @param str  the source String to search, may be null
+     * @param remove  the String to search for and remove, may be null
+     * @return the substring with the string removed if found,
+     *  {@code null} if null String input
+     * @since 2.1
+     */
+    public static String removeEnd(final String str, final String remove) {
+        if (isEmpty(str) || isEmpty(remove)) {
+            return str;
+        }
+        if (str.endsWith(remove)) {
+            return str.substring(0, str.length() - remove.length());
+        }
+        return str;
+    }
+
 }

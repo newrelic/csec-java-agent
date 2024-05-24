@@ -729,6 +729,7 @@ public class Dispatcher implements Callable {
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
             eventBean.setIsIASTEnable(true);
         }
+        eventBean.setRoute(securityMetaData.getMetaData().getEndpointRoute());
         return eventBean;
     }
 }
