@@ -41,6 +41,7 @@ public class CXFHelper {
             }
 
         }
+        // TODO need to update sub-resources case
         // for sub-resources
         for (ClassResourceInfo classResource: classResourceInfo.getSubResources()){
             String segment1 = classResource.getURITemplate().getValue();
