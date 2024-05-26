@@ -16,7 +16,7 @@ public abstract class PathParamSegment_Instrumentation {
         try {
             if (NewRelicSecurity.isHookProcessingActive()) {
                 String route = StringUtils.substring(path, 0, matcher.start()) + getPathExpression();
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setEndpointRoute(route);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(route);
             }
         } catch (Exception e) {
         }

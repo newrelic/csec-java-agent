@@ -36,7 +36,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private boolean isIASTRequest = false;
     private String apiId;
     private DeployedApplication webappIdentifier;
-    private String route;
 
     public JavaAgentEventBean() {
         super();
@@ -313,13 +312,5 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
     public void setHttpResponse(HttpResponse httpResponse) {
         this.httpResponse = httpResponse;
-    }
-
-    public String getRoute() {
-        return route;
-    }
-
-    public void setRoute(String route) {
-        this.route = route;
     }
 }

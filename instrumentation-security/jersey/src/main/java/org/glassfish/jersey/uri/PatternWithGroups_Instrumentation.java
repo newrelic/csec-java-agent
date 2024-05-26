@@ -14,7 +14,7 @@ public class PatternWithGroups_Instrumentation {
         try {
             if (NewRelicSecurity.isHookProcessingActive() && result != null && this instanceof PathPattern_Instrumentation && ((PathPattern_Instrumentation) this).getTemplate() != null){
                 String segment = ((PathPattern_Instrumentation) this).getTemplate().getTemplate();
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setEndpointRoute(segment);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(segment);
             }
         } catch (Exception e) {
         }

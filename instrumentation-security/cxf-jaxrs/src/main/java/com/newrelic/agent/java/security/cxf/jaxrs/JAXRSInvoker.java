@@ -24,7 +24,7 @@ public class JAXRSInvoker {
                     // in case of subresource cri.getURITemplate() will be null
                     route += ori.getURITemplate().getValue();
                 }
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setEndpointRoute(route);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(route);
                 // TODO need to consider the case of sub-resource
             }
         } catch (Exception e) {

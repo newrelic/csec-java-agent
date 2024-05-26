@@ -39,8 +39,6 @@ public class AgentMetaData {
 
     private boolean foundAnnotedUserLevelServiceMethod = false;
 
-    private String endpointRoute;
-
     @JsonIgnore
     private Set<String> ips;
 
@@ -52,7 +50,6 @@ public class AgentMetaData {
         this.userDataTranslationMap = new HashMap<>();
         this.reflectedMetaData = new HashMap<>();
         this.appServerInfo = new AppServerInfo();
-        this.endpointRoute = StringUtils.EMPTY;
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -73,7 +70,6 @@ public class AgentMetaData {
         this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
         this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
         this.fromJumpRequiredInStackTrace = agentMetaData.getFromJumpRequiredInStackTrace();
-        this.endpointRoute = agentMetaData.endpointRoute;
     }
 
     public boolean isTriggerViaRCI() {
@@ -201,16 +197,5 @@ public class AgentMetaData {
 
     public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
         this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
-    }
-    public String getEndpointRoute() {
-        return endpointRoute;
-    }
-
-    public void setEndpointRoute(String segment) {
-        // remove * (Wildcard) entries from the endpointRoute to cover servlet cases
-        String formatedSegment = StringUtils.removeEnd(StringUtils.prependIfMissing(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
-        if(!StringUtils.isEmpty(formatedSegment)) {
-            this.endpointRoute += formatedSegment;
-        }
     }
 }

@@ -12,9 +12,9 @@ public class ResourceMethod_Instrumentation {
     protected ServerResponse invokeOnTarget(HttpRequest request, HttpResponse response, Object target){
         try {
             if (NewRelicSecurity.isHookProcessingActive()) {
-                String route = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getEndpointRoute();
+                String route = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getRoute();
                 if (StringUtils.isEmpty(route)) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setEndpointRoute(request.getUri().getPath());
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(request.getUri().getPath());
                 }
             }
         } catch (Exception e) {

@@ -32,6 +32,7 @@ public class HttpRequest {
 
     private boolean isRequestParsed;
     private boolean isGrpc;
+    private String route;
 
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
@@ -47,6 +48,7 @@ public class HttpRequest {
         this.parameterMap = new HashMap<>();
         this.isRequestParsed = false;
         this.isGrpc = false;
+        this.route = StringUtils.EMPTY;
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -63,6 +65,7 @@ public class HttpRequest {
         this.clientPort = new String(servletInfo.clientPort);
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
+        this.route = servletInfo.route;
     }
 
     public String getMethod() {
@@ -206,6 +209,17 @@ public class HttpRequest {
 
     public void setIsGrpc(boolean grpc) {
         isGrpc = grpc;
+    }
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String segment) {
+        // remove * (Wildcard) entries from the endpointRoute to cover servlet cases
+        String formatedSegment = StringUtils.removeEnd(StringUtils.prependIfMissing(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        if(!StringUtils.isEmpty(formatedSegment)) {
+            this.route += formatedSegment;
+        }
     }
 }
 

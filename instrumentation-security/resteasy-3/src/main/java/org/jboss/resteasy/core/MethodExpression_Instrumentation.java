@@ -14,7 +14,7 @@ public abstract class MethodExpression_Instrumentation {
         Weaver.callOriginal();
         try {
             if (NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setEndpointRoute(getPathExpression());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(getPathExpression());
             }
         } catch (Exception e) {
         }
