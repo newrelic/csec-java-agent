@@ -1,7 +1,9 @@
 package com.newrelic.agent.security.instrumentation.jersey;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -14,6 +16,7 @@ public class JerseyHelper {
     private static final String EMPTY = "";
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
+    public static final String JERSEY = "JERSEY";
     public static final String ORG_GLASSFISH_JERSEY_SERVER_WADL = "org.glassfish.jersey.server.wadl";
 
     public static void gatherUrlMappings(ResourceModel resourceModel) {
@@ -23,6 +26,7 @@ public class JerseyHelper {
                 extractMappingsFromResources(resources, EMPTY);
             }
         } catch (Exception ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, JERSEY, ignored.getMessage()), ignored, JerseyHelper.class.getName());
         }
     }
 
