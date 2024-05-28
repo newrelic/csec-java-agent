@@ -35,9 +35,14 @@ public class AgentMetaData {
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 
+    @JsonIgnore
     private int fromJumpRequiredInStackTrace = 2;
 
+    @JsonIgnore
     private boolean foundAnnotedUserLevelServiceMethod = false;
+
+    @JsonIgnore
+    private String framework;
 
     @JsonIgnore
     private Set<String> ips;
@@ -50,6 +55,7 @@ public class AgentMetaData {
         this.userDataTranslationMap = new HashMap<>();
         this.reflectedMetaData = new HashMap<>();
         this.appServerInfo = new AppServerInfo();
+        this.framework = StringUtils.EMPTY;
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -70,6 +76,7 @@ public class AgentMetaData {
         this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
         this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
         this.fromJumpRequiredInStackTrace = agentMetaData.getFromJumpRequiredInStackTrace();
+        this.framework = agentMetaData.framework;
     }
 
     public boolean isTriggerViaRCI() {
@@ -197,5 +204,15 @@ public class AgentMetaData {
 
     public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
         this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
+    }
+
+    public String getFramework() {
+        return framework;
+    }
+
+    public void setFramework(Framework framework) {
+        if (StringUtils.isEmpty(this.framework) || StringUtils.equals(this.framework, Framework.SERVLET.name())) {
+            this.framework = framework.name();
+        }
     }
 }

@@ -214,8 +214,11 @@ public class HttpRequest {
         return route;
     }
 
-    public void setRoute(String segment) {
-        // remove * (Wildcard) entries from the endpointRoute to cover servlet cases
+    public void setRoute(String segment, boolean isAlreadyServlet) {
+        // remove servlet detected route if another framework detected;
+        if (isAlreadyServlet){
+            this.route = StringUtils.EMPTY;
+        }
         String formatedSegment = StringUtils.removeEnd(StringUtils.prependIfMissing(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
         if(!StringUtils.isEmpty(formatedSegment)) {
             this.route += formatedSegment;
