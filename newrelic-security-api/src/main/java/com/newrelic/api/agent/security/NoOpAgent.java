@@ -132,5 +132,10 @@ class NoOpAgent implements SecurityAgent {
         return null;
     }
 
+    @Override
+    public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
+
+    }
+
 
 }

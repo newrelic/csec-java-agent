@@ -201,4 +201,9 @@ public class Agent implements SecurityAgent {
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
         return null;
     }
+
+    @Override
+    public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
+
+    }
 }
