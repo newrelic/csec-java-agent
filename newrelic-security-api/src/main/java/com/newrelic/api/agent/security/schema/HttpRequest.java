@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -221,7 +222,7 @@ public class HttpRequest {
         }
         String formatedSegment = StringUtils.removeEnd(StringUtils.prependIfMissing(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
         if(!StringUtils.isEmpty(formatedSegment)) {
-            this.route += formatedSegment;
+            this.route = Paths.get(this.route, formatedSegment).normalize().toString();
         }
     }
 }
