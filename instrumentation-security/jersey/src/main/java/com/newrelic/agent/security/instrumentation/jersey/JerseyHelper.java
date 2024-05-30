@@ -18,6 +18,7 @@ public class JerseyHelper {
     private static final String SEPARATOR = "/";
     public static final String JERSEY = "JERSEY";
     public static final String ORG_GLASSFISH_JERSEY_SERVER_WADL = "org.glassfish.jersey.server.wadl";
+    public static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
 
     public static void gatherUrlMappings(ResourceModel resourceModel) {
         try {
