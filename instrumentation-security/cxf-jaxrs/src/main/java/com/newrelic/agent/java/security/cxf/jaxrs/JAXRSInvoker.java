@@ -2,6 +2,7 @@ package com.newrelic.agent.java.security.cxf.jaxrs;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
@@ -29,7 +30,9 @@ public class JAXRSInvoker {
                     // in case of subresource cri.getURITemplate() will be null
                     route += ori.getURITemplate().getValue();
                 }
-                // TODO need to consider the case of sub-resource
+                if (ori.isSubResourceLocator()){
+                    route += URLMappingsHelper.subResourceSegment;
+                }
                 metaData.getRequest().setRoute(route, metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
                 metaData.getMetaData().setFramework(Framework.CXF_JAXRS);
             }

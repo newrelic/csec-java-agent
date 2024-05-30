@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class URLMappingsHelper {
+    public static final String subResourceSegment = "/*";
     private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");

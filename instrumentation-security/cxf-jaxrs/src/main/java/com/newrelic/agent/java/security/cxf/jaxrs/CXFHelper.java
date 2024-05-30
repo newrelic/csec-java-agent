@@ -50,13 +50,6 @@ public class CXFHelper {
                 }
 
             }
-            // TODO need to update sub-resources case
-            // for sub-resources
-            for (ClassResourceInfo classResource : classResourceInfo.getSubResources()) {
-                String segment1 = classResource.getURITemplate().getValue();
-                String path = segment + ((segment.endsWith(SEPARATOR) || segment1.startsWith(SEPARATOR)) ? EMPTY : SEPARATOR) + segment1;
-                resources(path, classResource);
-            }
         } catch (Exception e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, CXF_JAX_RS, e.getMessage()), e, CXFHelper.class.getName());
         }
