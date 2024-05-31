@@ -9,7 +9,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.glassfish-3' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.glassfish' }
 }
 
 verifyInstrumentation {

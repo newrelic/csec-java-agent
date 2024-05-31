@@ -12,7 +12,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
-@Weave(type = MatchType.Interface, originalName = "org.apache.catalina.connector.Connector")
+@Weave(type = MatchType.ExactClass, originalName = "org.apache.catalina.connector.Connector")
 public abstract class Connector_Instrumentation {
 
     public void start() {
