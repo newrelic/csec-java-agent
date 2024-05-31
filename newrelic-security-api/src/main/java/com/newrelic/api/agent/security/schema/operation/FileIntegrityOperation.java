@@ -144,25 +144,18 @@ public class FileIntegrityOperation extends AbstractOperation {
     }
 
     public boolean isIntegrityBreached(File file){
-        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
         try {
-            if(lockAcquired) {
-                Boolean exists = file.exists();
-                long lastModified = exists ? file.lastModified() : -1;
-                String permissions = StringUtils.EMPTY;
-                long length = file.length();
-                if (exists) {
-                    PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
-                    Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
-                    permissions = permissionSet.toString();
-                }
-                return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
+            Boolean exists = file.exists();
+            long lastModified = exists ? file.lastModified() : -1;
+            String permissions = StringUtils.EMPTY;
+            long length = file.length();
+            if (exists) {
+                PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                permissions = permissionSet.toString();
             }
+            return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
         } catch (IOException e) {
-        } finally {
-            if(lockAcquired) {
-                ThreadLocalLockHelper.releaseLock();
-            }
         }
         return false;
     }

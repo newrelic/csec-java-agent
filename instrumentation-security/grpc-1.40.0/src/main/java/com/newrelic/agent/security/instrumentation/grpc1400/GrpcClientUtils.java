@@ -39,6 +39,7 @@ public class GrpcClientUtils {
 
             SSRFOperation operation = new SSRFOperation(uri, klass, METHOD_NAME_START);
 
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {

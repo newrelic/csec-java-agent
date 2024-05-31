@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentation.mule36;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -57,6 +58,9 @@ public class MuleHelper {
                     .getAgent()
                     .getSecurityMetaData()
                     .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, httpRequest.getHeaderValue(headerKey));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
             String headerFullValue = EMPTY;
             for (String headerValue : httpRequest.getHeaderValues(headerKey)) {

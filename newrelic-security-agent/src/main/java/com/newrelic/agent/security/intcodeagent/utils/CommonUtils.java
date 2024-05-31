@@ -24,7 +24,7 @@ public class CommonUtils {
 
     public static SecureRandom secureRandom = new SecureRandom();
 
-    public static Boolean forceMkdirs(Path directory, String permissions) {
+    public static Boolean forceMkdirs(Path directory, String permissions) throws IOException {
         File existingDirectory = directory.toFile();
         Stack<String> pathStack = new Stack<>();
         while (!existingDirectory.isDirectory()) {
@@ -36,11 +36,7 @@ public class CommonUtils {
             existingDirectory = next;
         }
 
-        try {
-            FileUtils.forceMkdir(directory.toFile());
-        } catch (IOException e) {
-            return false;
-        }
+        FileUtils.forceMkdir(directory.toFile());
 
         while (!pathStack.isEmpty()) {
             try {

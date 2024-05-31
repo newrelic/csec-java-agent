@@ -35,6 +35,8 @@ public class AgentMetaData {
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 
+    private int fromJumpRequiredInStackTrace = 2;
+
     private boolean foundAnnotedUserLevelServiceMethod = false;
 
     @JsonIgnore
@@ -52,6 +54,7 @@ public class AgentMetaData {
 
     public AgentMetaData(AgentMetaData agentMetaData) {
         this.rciMethodsCalls = new HashSet<>();
+        agentMetaData.rciMethodsCalls.remove(null);
         this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
         this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
         this.triggerViaRCI = agentMetaData.triggerViaRCI;
@@ -180,6 +183,13 @@ public class AgentMetaData {
         this.appServerInfo = appServerInfo;
     }
 
+    public int getFromJumpRequiredInStackTrace() {
+        return fromJumpRequiredInStackTrace;
+    }
+
+    public void setFromJumpRequiredInStackTrace(int fromJumpRequiredInStackTrace) {
+        this.fromJumpRequiredInStackTrace = fromJumpRequiredInStackTrace;
+    }
     public boolean isFoundAnnotedUserLevelServiceMethod() {
         return foundAnnotedUserLevelServiceMethod;
     }
