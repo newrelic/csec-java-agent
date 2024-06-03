@@ -1316,4 +1316,66 @@ public class StringUtils {
         return str;
     }
 
+    /**
+     * Check if a CharSequence ends with a specified suffix.
+     *
+     * <p>{@code null}s are handled without exceptions. Two {@code null}
+     * references are considered to be equal. The comparison is case-sensitive.</p>
+     *
+     * <pre>
+     * StringUtils.endsWith(null, null)      = true
+     * StringUtils.endsWith(null, "def")     = false
+     * StringUtils.endsWith("abcdef", null)  = false
+     * StringUtils.endsWith("abcdef", "def") = true
+     * StringUtils.endsWith("ABCDEF", "def") = false
+     * StringUtils.endsWith("ABCDEF", "cde") = false
+     * StringUtils.endsWith("ABCDEF", "")    = true
+     * </pre>
+     *
+     * @see String#endsWith(String)
+     * @param str  the CharSequence to check, may be null
+     * @param suffix the suffix to find, may be null
+     * @return {@code true} if the CharSequence ends with the suffix, case-sensitive, or
+     *  both {@code null}
+     * @since 2.4
+     * @since 3.0 Changed signature from endsWith(String, String) to endsWith(CharSequence, CharSequence)
+     */
+    public static boolean endsWith(final CharSequence str, final CharSequence suffix) {
+        return endsWith(str, suffix, false);
+    }
+
+    /**
+     * Check if a CharSequence ends with any of the provided case-sensitive suffixes.
+     *
+     * <pre>
+     * StringUtils.endsWithAny(null, null)      = false
+     * StringUtils.endsWithAny(null, new String[] {"abc"})  = false
+     * StringUtils.endsWithAny("abcxyz", null)     = false
+     * StringUtils.endsWithAny("abcxyz", new String[] {""}) = true
+     * StringUtils.endsWithAny("abcxyz", new String[] {"xyz"}) = true
+     * StringUtils.endsWithAny("abcxyz", new String[] {null, "xyz", "abc"}) = true
+     * StringUtils.endsWithAny("abcXYZ", "def", "XYZ") = true
+     * StringUtils.endsWithAny("abcXYZ", "def", "xyz") = false
+     * </pre>
+     *
+     * @param sequence  the CharSequence to check, may be null
+     * @param searchStrings the case-sensitive CharSequences to find, may be empty or contain {@code null}
+     * @see StringUtils#endsWith(CharSequence, CharSequence)
+     * @return {@code true} if the input {@code sequence} is {@code null} AND no {@code searchStrings} are provided, or
+     *   the input {@code sequence} ends in any of the provided case-sensitive {@code searchStrings}.
+     * @since 3.0
+     */
+    public static boolean endsWithAny(final CharSequence sequence, final CharSequence... searchStrings) {
+        if (isEmpty(sequence) || searchStrings == null || searchStrings.length == 0) {
+            return false;
+        }
+        for (final CharSequence searchString : searchStrings) {
+            if (endsWith(sequence, searchString)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
