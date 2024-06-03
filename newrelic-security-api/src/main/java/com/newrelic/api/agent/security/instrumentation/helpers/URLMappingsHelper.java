@@ -1,9 +1,17 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.RouteSegment;
+import com.newrelic.api.agent.security.schema.RouteSegments;
+import com.newrelic.api.agent.security.schema.StringUtils;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class URLMappingsHelper {
@@ -23,17 +31,62 @@ public class URLMappingsHelper {
     }
 
     private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
-
+    private static Set<RouteSegments> routeSegments = new TreeSet<RouteSegments>(new RouteComparator());
     public static Set<Integer> getHandlersHash() {
         return handlers;
+    }
+
+    public static Set<RouteSegments> getRouteSegments() {
+        return routeSegments;
     }
 
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
         if (mapping.getHandler() == null || (mapping.getHandler() != null && !defaultHandlers.contains(mapping.getHandler()))) {
             mappings.add(mapping);
+            generateRouteSegments(mapping.getPath());
         }
         if (mapping.getHandler() != null){
             handlers.add(mapping.getHandler().hashCode());
         }
+    }
+
+    private synchronized static void generateRouteSegments(String endpoint) {
+        try {
+            List<RouteSegment> segments = new ArrayList<>();
+            Path uri = Paths.get(endpoint).normalize();
+            while (uri.getParent() != null){
+                String path = uri.getFileName().toString();
+                uri = uri.getParent();
+                if (StringUtils.equals(path, StringUtils.SEPARATOR)){
+                    continue;
+                }
+                RouteSegment routeSegment = new RouteSegment(path, isPathParam(path), false);
+                segments.add(routeSegment);
+            }
+            routeSegments.add(new RouteSegments(endpoint, segments));
+        } catch (Exception e) {
+        }
+    }
+
+    private static boolean isPathParam(String path) {
+        return StringUtils.startsWithAny(path, ":", "$") ||
+                StringUtils.equals(path,"*") ||
+                (StringUtils.startsWith(path, "{") && StringUtils.endsWith(path, "}"));
+    }
+    private static boolean allowMultiSegments(String path) {
+        return StringUtils.equals(path, "*");
+    }
+
+    public static List<String> getSegments(String endpoint) {
+        List<String> segments = new ArrayList<>();
+        Path uri = Paths.get(endpoint).normalize();
+        while (uri.getParent() != null) {
+            String path = uri.getFileName().toString();
+            uri = uri.getParent();
+            if (StringUtils.isNotBlank(path) && !StringUtils.equals(path, StringUtils.SEPARATOR)) {
+                segments.add(path);
+            }
+        }
+        return segments;
     }
 }

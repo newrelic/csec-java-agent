@@ -310,6 +310,11 @@ public class Agent implements SecurityAgent {
                 processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
+                HttpRequest request = securityMetaData.getRequest();
+//                if (StringUtils.isEmpty(request.getRoute())){
+                System.out.println("detected Route : " + request.getRoute());
+                System.out.println("Calculated route : "  + getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), Framework.valueOf(securityMetaData.getMetaData().getFramework())));
+//                }
                 if (needToGenerateEvent(operation.getApiID())) {
                     DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
                     if (!firstEventProcessed.get()) {
@@ -325,6 +330,56 @@ public class Agent implements SecurityAgent {
                 ThreadLocalLockHelper.releaseLock();
             }
         }
+    }
+    private String getEndpointRoute(String uri, Framework framework){
+        switch (framework){
+            default: return getEndpointRoute(uri);
+        }
+    }
+
+    private String getEndpointRoute(String uri) {
+        List<String> uriSegments = URLMappingsHelper.getSegments(uri);
+        if (uriSegments.isEmpty()){
+            return StringUtils.EMPTY;
+        }
+        for (RouteSegments routeSegments : URLMappingsHelper.getRouteSegments()) {
+            int uriSegIdx = 0;
+            if (StringUtils.equals(routeSegments.getRoute(), uri)){
+                return routeSegments.getRoute();
+            }
+            for (int routeSegIdx = 0; routeSegIdx < routeSegments.getSegments().size(); routeSegIdx++) {
+                RouteSegment routeSegment = routeSegments.getSegments().get(routeSegIdx);
+                if (uriSegIdx >= uriSegments.size()){
+                    break;
+                }
+                if (routeSegment.isPathParam() || StringUtils.equals(routeSegment.getSegment(), uriSegments.get(uriSegIdx))){
+                    ++uriSegIdx;
+                } else if (routeSegment.isAllowMultipleSegments()) {
+                    // TODO handle * case
+                    // uriSegIdx = jumpRoute(routeSegments.getSegments(), routeSegIdx, uriSegments, uriSegIdx);
+                } else {
+                    break;
+                }
+
+                if (routeSegIdx == routeSegments.getSegments().size()-1){
+                    return routeSegments.getRoute();
+                }
+            }
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private int jumpRoute(List<RouteSegment> value, int i1, List<String> uriSegments, int i) {
+        if (i1 <= value.size()-1 || value.get(i1 + 1).isPathParam()){
+            return ++i;
+        }
+        RouteSegment routeSegment = value.get(i1 + 1);
+        for (; i < uriSegments.size(); i++) {
+            if (uriSegments.get(i).equals(routeSegment.getSegment())){
+                return i;
+            }
+        }
+        return i;
     }
 
     private boolean checkIfCSECGeneratedEvent(AbstractOperation operation) {
