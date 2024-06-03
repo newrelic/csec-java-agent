@@ -34,6 +34,6 @@ public class RouteSegments {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(route);
+        return Objects.hash(route);
     }
 }

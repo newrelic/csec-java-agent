@@ -31,7 +31,7 @@ public class URLMappingsHelper {
     }
 
     private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
-    private static Set<RouteSegments> routeSegments = new TreeSet<RouteSegments>(new RouteComparator());
+    private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
     public static Set<Integer> getHandlersHash() {
         return handlers;
     }
