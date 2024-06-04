@@ -191,6 +191,7 @@ public class NettyUtils {
             if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse)) {
                 return;
             }
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

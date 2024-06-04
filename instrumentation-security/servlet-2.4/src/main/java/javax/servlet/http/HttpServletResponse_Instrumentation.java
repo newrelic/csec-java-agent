@@ -9,11 +9,14 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
-import com.newrelic.api.agent.security.schema.operation.SecureCookieOperation;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.http.HttpServletResponse")
 public class HttpServletResponse_Instrumentation {
@@ -33,9 +36,6 @@ public class HttpServletResponse_Instrumentation {
                 releaseLock(cookie.hashCode());
             }
         }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
-        }
     }
 
     private AbstractOperation preprocessSecurityHook(Cookie cookie, String className, String methodName) {
@@ -54,11 +54,17 @@ public class HttpServletResponse_Instrumentation {
             } else if(StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite")) {
                 sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
             }
-            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
-            operation.setLowSeverityHook(true);
-            NewRelicSecurity.getAgent().registerOperation(operation);
 
-            return operation;
+            SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
+            if(operations == null){
+                operations = new SecureCookieOperationSet(className, methodName);;
+                operations.setLowSeverityHook(true);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", operations);
+            }
+            operations.addOperation(cookie.getName(), cookie.getValue(), isSecure, isHttpOnly, sameSiteStrict);
+//            NewRelicSecurity.getAgent().registerOperation(operation);
+
+            return operations;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, HttpServletResponse_Instrumentation.class.getName());

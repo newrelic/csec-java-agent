@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.schema.APIRecordStatus;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.io.File;
@@ -226,5 +227,22 @@ public class ServletHelper {
             return true;
         }
         return unsupportedContentType.contains(responseContentType);
+    }
+
+    public static void executeBeforeExitingTransaction() {
+        if(!NewRelicSecurity.isHookProcessingActive()){
+            return;
+        }
+
+//        int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
+//        if(responseCode >= 500){
+//            //TODO report 5XX Error
+//        }
+
+        SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
+        if(operations != null) {
+            NewRelicSecurity.getAgent().registerOperation(operations);
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", null);
+        }
     }
 }
