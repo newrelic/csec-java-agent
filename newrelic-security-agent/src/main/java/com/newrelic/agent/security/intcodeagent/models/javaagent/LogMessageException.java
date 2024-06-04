@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
+import java.util.Objects;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LogMessageException {
 
@@ -46,5 +48,10 @@ public class LogMessageException {
 
     public String toString() {
         return JsonConverter.toJSON(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, stackTrace[0]);
     }
 }

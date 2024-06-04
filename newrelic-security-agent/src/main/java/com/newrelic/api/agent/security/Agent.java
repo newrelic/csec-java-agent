@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
+import com.newrelic.agent.security.intcodeagent.utils.RuntimeErrorReporter;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
@@ -88,7 +89,7 @@ public class Agent implements SecurityAgent {
 
     private void initialise() {
         // TODO: All the bring up tasks are to be performed here.
-        /**
+        /* *
          * 1. populate policy
          * 2. create application info
          * 3. initialise health check
@@ -174,6 +175,8 @@ public class Agent implements SecurityAgent {
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
+        SchedulerHelper.getInstance().scheduleApplicationRuntimeErrorPosting(RuntimeErrorReporter.getInstance()::reportApplicationRuntimeError,
+                30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         logger.logInit(
                 LogLevel.INFO,
@@ -750,6 +753,13 @@ public class Agent implements SecurityAgent {
             NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
             return null;
         }
+    }
+
+    @Override
+    public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
+        LogMessageException messageException = new LogMessageException(exception, 0, 1);
+        ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException);
+        RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
     }
 
 }
