@@ -56,16 +56,16 @@ public class SpringHelper {
         try {
             if (NewRelicSecurity.isHookProcessingActive() && mapping != null && mapping instanceof RequestMappingInfo){
                 SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                if (((RequestMappingInfo) mapping).getPatternsCondition() != null && !metaData.getMetaData().getFramework().equals(Framework.SPRING_WEB_MVC.name())) {
+                if (((RequestMappingInfo) mapping).getPatternsCondition() != null) {
                     Iterator<String> patterns = ((RequestMappingInfo) mapping).getPatternsCondition().getPatterns().iterator();
                     if (patterns.hasNext()) {
-                        metaData.getRequest().setRoute(patterns.next(), metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
+                        metaData.getRequest().setRoute(patterns.next());
                     }
                 }
-                else if (((RequestMappingInfo) mapping).getPathPatternsCondition() != null && !metaData.getMetaData().getFramework().equals(Framework.SPRING_WEB_MVC.name())){
+                else if (((RequestMappingInfo) mapping).getPathPatternsCondition() != null){
                     Iterator<PathPattern> patterns = ((RequestMappingInfo) mapping).getPathPatternsCondition().getPatterns().iterator();
                     if (patterns.hasNext()) {
-                        metaData.getRequest().setRoute(patterns.next().getPatternString(), metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
+                        metaData.getRequest().setRoute(patterns.next().getPatternString());
                     }
                 }
                 metaData.getMetaData().setFramework(Framework.SPRING_WEB_MVC);

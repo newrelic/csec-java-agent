@@ -41,8 +41,8 @@ public class SpringHelper {
             if (NewRelicSecurity.isHookProcessingActive() && mapping != null && mapping instanceof RequestMappingInfo && ((RequestMappingInfo) mapping).getPatternsCondition() != null){
                 Iterator<String> patterns = ((RequestMappingInfo) mapping).getPatternsCondition().getPatterns().iterator();
                 SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                if (patterns.hasNext() && !metaData.getMetaData().getFramework().equals(Framework.SPRING_WEB_MVC.name())) {
-                    metaData.getRequest().setRoute(patterns.next(), metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
+                if (patterns.hasNext()) {
+                    metaData.getRequest().setRoute(patterns.next());
                     metaData.getMetaData().setFramework(Framework.SPRING_WEB_MVC);
                 }
             }
