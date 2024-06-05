@@ -1,6 +1,5 @@
 package com.newrelic.api.agent.security.schema;
 
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class ApplicationURLMapping {
@@ -14,7 +13,7 @@ public class ApplicationURLMapping {
 
     public ApplicationURLMapping(String method, String url, String handler) {
         this.method = method;
-        this.path = Paths.get(url).normalize().toString();
+        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(url, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
         this.handler = handler;
     }
 
@@ -39,7 +38,7 @@ public class ApplicationURLMapping {
     }
 
     public void setPath(String path) {
-        this.path = Paths.get(path).normalize().toString();
+        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR);;
     }
 
     @Override
