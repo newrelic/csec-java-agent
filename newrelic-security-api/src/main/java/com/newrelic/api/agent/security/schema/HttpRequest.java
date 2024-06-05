@@ -215,10 +215,7 @@ public class HttpRequest {
     }
 
     public void setRoute(String route){
-        String formatedRoute = StringUtils.removeEnd(StringUtils.prependIfMissing(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
-        if(!StringUtils.isEmpty(formatedRoute)) {
-            this.route = formatedRoute;
-        }
+        this.route = StringUtils.removeEnd(StringUtils.prependIfMissing(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
     }
 
     public void setRoute(String segment, boolean isAlreadyServlet) {
