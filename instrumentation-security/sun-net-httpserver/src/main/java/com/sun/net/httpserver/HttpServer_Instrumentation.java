@@ -6,7 +6,6 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
-import static com.sun.net.httpserver.HttpServerHelper.HTTP_METHOD;
 
 @Weave(originalName = "com.sun.net.httpserver.HttpServer", type = MatchType.BaseClass)
 public class HttpServer_Instrumentation {
@@ -15,7 +14,7 @@ public class HttpServer_Instrumentation {
         try {
             context = Weaver.callOriginal();
         } finally {
-            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(HTTP_METHOD, path, handler.getClass().getName()));
+            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(HttpServerHelper.HTTP_METHOD, path, handler.getClass().getName()));
         }
         return context;
     }

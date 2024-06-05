@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.jboss.resteasy.core.ResourceInvoker;
 import org.jboss.resteasy.core.ResourceLocator;
@@ -11,15 +12,10 @@ import org.jboss.resteasy.core.ResourceMethod;
 
 public class RestEasyHelper {
     private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
     public static final String RESTEASY_22 = "RESTEASY-2.2";
 
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
-            if(!path.startsWith(SEPARATOR)) {
-                path = SEPARATOR + path;
-            }
-
             if(invoker instanceof ResourceMethod) {
                 ResourceMethod methodInvoker = (ResourceMethod) invoker;
                 String handler = methodInvoker.getResourceClass().getName();
@@ -32,7 +28,7 @@ public class RestEasyHelper {
             else if(invoker instanceof ResourceLocator) {
                 ResourceLocator locatorInvoker = (ResourceLocator) invoker;
                 String handler = locatorInvoker.getMethod().getDeclaringClass().getName();
-                String finalPath = path + (path.endsWith(SEPARATOR) ? WILDCARD : SEPARATOR + WILDCARD);
+                String finalPath = StringUtils.appendIfMissing(path, StringUtils.SEPARATOR) + WILDCARD;
 
                 URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, finalPath, handler));
             }
