@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.cxf.jaxrs.model.ClassResourceInfo;
 import org.apache.cxf.jaxrs.model.MethodDispatcher;
@@ -32,13 +33,13 @@ public class CXFHelper {
             MethodDispatcher methodDispatcher = classResourceInfo.getMethodDispatcher();
             for (OperationResourceInfo method : methodDispatcher.getOperationResourceInfos()) {
                 String segment1 = method.getURITemplate().getValue();
-                String path = segment + ((segment.endsWith(SEPARATOR) || segment1.startsWith(SEPARATOR)) ? EMPTY : SEPARATOR) + segment1;
+                String path = StringUtils.removeEnd(segment, StringUtils.SEPARATOR) + StringUtils.prependIfMissing(segment1, StringUtils.SEPARATOR);
 
                 // http-method is null, then it can be a sub-resource
                 if (method.getHttpMethod() == null) {
                     URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(
                             WILDCARD,
-                            path + (path.endsWith(SEPARATOR) ? EMPTY : SEPARATOR) + WILDCARD,
+                            StringUtils.appendIfMissing(path, StringUtils.SEPARATOR) + WILDCARD,
                             classResourceInfo.getResourceClass().getName()
                     ));
                 } else {

@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.jboss.resteasy.core.ResourceLocatorInvoker;
 import org.jboss.resteasy.core.ResourceMethodInvoker;
@@ -18,11 +19,9 @@ public class RestEasyHelper {
     private static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
-            if(!path.startsWith(SEPARATOR)) path = SEPARATOR + path;
-            String handler;
             if(invoker instanceof ResourceMethodInvoker) {
                 ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) invoker;
-                handler = methodInvoker.getResourceClass().getName();
+                String handler = methodInvoker.getResourceClass().getName();
 
                 for (String httpMethod: methodInvoker.getHttpMethods()){
                     URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, path, handler));
@@ -30,8 +29,8 @@ public class RestEasyHelper {
             }
             // case of SubResource
             else if(invoker instanceof ResourceLocatorInvoker) {
-                handler = invoker.getMethod().getDeclaringClass().getName();
-                String finalPath = path + (path.endsWith(SEPARATOR) ? WILDCARD : SEPARATOR + WILDCARD);
+                String handler = invoker.getMethod().getDeclaringClass().getName();
+                String finalPath = StringUtils.appendIfMissing(path, StringUtils.SEPARATOR) + WILDCARD;
                 URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, finalPath, handler));
             }
         } catch (Exception ignored){
