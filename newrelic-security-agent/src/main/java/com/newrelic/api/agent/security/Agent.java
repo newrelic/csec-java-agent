@@ -312,13 +312,13 @@ public class Agent implements SecurityAgent {
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
                 HttpRequest request = securityMetaData.getRequest();
 //                if (StringUtils.isEmpty(request.getRoute())){
-                System.out.println("detected Route : " + request.getRoute());
                 Framework frameWork = Framework.UNKNOWN;
-                if(StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
+                if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
                     frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
                 }
-
-                System.out.println("Calculated route : "  + getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork));
+                if (StringUtils.isEmpty(request.getRoute())){
+                    request.setRoute(getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork), true);
+                }
 //                }
                 if (needToGenerateEvent(operation.getApiID())) {
                     DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
