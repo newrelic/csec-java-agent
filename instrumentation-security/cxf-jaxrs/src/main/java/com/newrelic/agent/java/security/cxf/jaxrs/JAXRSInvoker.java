@@ -21,19 +21,7 @@ public class JAXRSInvoker {
             OperationResourceInfo ori = exchange.get(OperationResourceInfo.class);
             if(NewRelicSecurity.isHookProcessingActive() && ori != null) {
                 SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                ClassResourceInfo cri = ori.getClassResourceInfo();
-                String route = StringUtils.EMPTY;
-                if(cri.getURITemplate() != null){
-                    route = cri.getURITemplate().getValue();
-                }
-                if (ori.getURITemplate() != null) {
-                    // in case of subresource cri.getURITemplate() will be null
-                    route += ori.getURITemplate().getValue();
-                }
-                if (ori.isSubResourceLocator()){
-                    route += URLMappingsHelper.subResourceSegment;
-                }
-                metaData.getRequest().setRoute(route, metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
+                metaData.getRequest().setRoute(CXFHelper.getRequestRoute(ori));
                 metaData.getMetaData().setFramework(Framework.CXF_JAXRS);
             }
         } catch (Exception e) {

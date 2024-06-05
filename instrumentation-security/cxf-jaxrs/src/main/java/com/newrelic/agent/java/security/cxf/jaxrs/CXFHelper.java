@@ -54,4 +54,20 @@ public class CXFHelper {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, CXF_JAX_RS, e.getMessage()), e, CXFHelper.class.getName());
         }
     }
+
+    public static String getRequestRoute(OperationResourceInfo ori) {
+        ClassResourceInfo cri = ori.getClassResourceInfo();
+        String route = StringUtils.EMPTY;
+        if(cri != null && cri.getURITemplate() != null){
+            route = cri.getURITemplate().getValue();
+        }
+        if (ori.getURITemplate() != null) {
+            // in case of subresource cri.getURITemplate() will be null
+            route += ori.getURITemplate().getValue();
+        }
+        if (ori.isSubResourceLocator()){
+            route += URLMappingsHelper.subResourceSegment;
+        }
+        return route;
+    }
 }
