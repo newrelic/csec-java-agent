@@ -13,8 +13,7 @@ import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 import java.util.List;
 
 public class CXFHelper {
-    private static final String EMPTY = "";
-    private static final String SEPARATOR = "/";
+
     private static final String WILDCARD = "*";
     public static final String CXF_JAX_RS = "CXF-JAX-RS";
 
