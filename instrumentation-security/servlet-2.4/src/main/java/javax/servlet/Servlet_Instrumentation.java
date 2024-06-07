@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -70,6 +71,9 @@ public abstract class Servlet_Instrumentation {
                 securityAgentMetaData.getIps().add(securityRequest.getClientIP());
                 securityRequest.setClientPort(String.valueOf(httpServletRequest.getRemotePort()));
             }
+            // route detection
+            securityAgentMetaData.setFramework(Framework.SERVLET);
+            securityRequest.setRoute(httpServletRequest.getServletPath());
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
 
