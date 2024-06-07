@@ -11,6 +11,8 @@ public class HttpResponse {
 
     private String contentType;
 
+    private int responseCode;
+
     public HttpResponse() {
         this.headers = new ConcurrentHashMap<>();
         this.responseBody = new StringBuilder();
@@ -41,6 +43,14 @@ public class HttpResponse {
 
     public String getResponseContentType() {
         return contentType;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
     }
 
     public void setResponseContentType(String responseContentType) {

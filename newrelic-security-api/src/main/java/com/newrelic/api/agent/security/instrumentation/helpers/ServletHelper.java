@@ -234,10 +234,11 @@ public class ServletHelper {
             return;
         }
 
-//        int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
-//        if(responseCode >= 500){
-//            //TODO report 5XX Error
-//        }
+        int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
+        if(responseCode >= 500){
+            Exception exception = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("ENDMOST_EXCEPTION", Exception.class);
+            NewRelicSecurity.getAgent().recordExceptions(NewRelicSecurity.getAgent().getSecurityMetaData(), exception);
+        }
 
         SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
         if(operations != null) {

@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
+import com.newrelic.agent.security.intcodeagent.constants.HttpStatusCodes;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
@@ -758,8 +759,25 @@ public class Agent implements SecurityAgent {
     @Override
     public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
         LogMessageException messageException = new LogMessageException(exception, 0, 1);
-        ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException);
+        ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, exception.getClass().getSimpleName());
         RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+    }
+
+    @Override
+    public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
+        int responseCode = securityMetaData.getResponse().getResponseCode();
+        String route = securityMetaData.getRequest().getUrl();
+        //TODO turn on after api endpoint route detection is merged.
+//        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
+//            route = securityMetaData.getRequest().getRoute();
+//        }
+        LogMessageException messageException = null;
+        if (exception != null) {
+            messageException = new LogMessageException(exception, 0, 1);
+        }
+
+        ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, responseCode, route, HttpStatusCodes.getStatusCode(responseCode));
+        return RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
     }
 
 }
