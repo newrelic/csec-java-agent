@@ -53,6 +53,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong Response Content-type detected", "multipart/form-data", targetOperation.getResponse().getResponseContentType());
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -75,6 +76,7 @@ public class ServletOutputStreamTest {
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -98,6 +100,7 @@ public class ServletOutputStreamTest {
 
         boolean resBody = Boolean.parseBoolean(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -122,6 +125,7 @@ public class ServletOutputStreamTest {
         char resBody = String.valueOf(targetOperation.getResponse().getResponseBody()).charAt(0);
         Assert.assertEquals("Wrong response detected", expected, resBody);
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -145,6 +149,7 @@ public class ServletOutputStreamTest {
 
         int resBody = Integer.parseInt(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -168,6 +173,7 @@ public class ServletOutputStreamTest {
 
         long resBody = Long.parseLong(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -191,6 +197,7 @@ public class ServletOutputStreamTest {
 
         float resBody = Float.parseFloat(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected",expected, resBody, 0.0f);
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -214,6 +221,7 @@ public class ServletOutputStreamTest {
 
         double resBody = Double.parseDouble(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody, 0.0d);
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -236,6 +244,7 @@ public class ServletOutputStreamTest {
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -258,6 +267,7 @@ public class ServletOutputStreamTest {
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -280,6 +290,7 @@ public class ServletOutputStreamTest {
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -302,6 +313,7 @@ public class ServletOutputStreamTest {
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -324,6 +336,7 @@ public class ServletOutputStreamTest {
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -345,6 +358,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -366,6 +380,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -387,6 +402,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
     @Trace(dispatcher = true)
     private String write() throws URISyntaxException, IOException {

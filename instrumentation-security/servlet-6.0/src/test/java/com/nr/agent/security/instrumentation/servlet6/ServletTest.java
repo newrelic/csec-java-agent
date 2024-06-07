@@ -48,6 +48,7 @@ public class ServletTest {
         Assert.assertEquals("Wrong port detected", server.getEndPoint("").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
+        Assert.assertEquals("Incorrect route detected", "/test", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Trace(dispatcher = true)
