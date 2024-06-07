@@ -3,7 +3,6 @@ package com.nr.agent.security.instrumentation.servlet30;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -19,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -90,6 +91,10 @@ public class HttpServletServer extends ExternalResource {
                 e.printStackTrace();
             }
         }
+    }
+
+    public URI getEndPoint() throws URISyntaxException {
+        return new URI("http://localhost:" + port + "/test");
     }
 }
 class MyServlet extends HttpServlet {
