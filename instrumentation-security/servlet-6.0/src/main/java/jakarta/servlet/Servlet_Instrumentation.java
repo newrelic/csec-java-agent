@@ -72,8 +72,7 @@ public abstract class Servlet_Instrumentation {
                 securityRequest.setClientPort(String.valueOf(httpServletRequest.getRemotePort()));
             }
             // route detection
-            securityAgentMetaData.setFramework(Framework.SERVLET);
-            securityRequest.setRoute(httpServletRequest.getServletPath());
+            HttpServletHelper.setRoute(httpServletRequest, securityRequest, securityAgentMetaData);
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
 

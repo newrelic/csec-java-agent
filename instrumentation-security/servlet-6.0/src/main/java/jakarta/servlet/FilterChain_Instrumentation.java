@@ -66,8 +66,7 @@ public abstract class FilterChain_Instrumentation {
                 securityRequest.setClientPort(String.valueOf(httpServletRequest.getRemotePort()));
             }
             // route detection
-            securityAgentMetaData.setFramework(Framework.SERVLET);
-            securityRequest.setRoute(httpServletRequest.getServletPath());
+            HttpServletHelper.setRoute(httpServletRequest, securityRequest, securityAgentMetaData);
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
 
