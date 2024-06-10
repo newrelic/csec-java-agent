@@ -46,6 +46,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
         if(isLockAcquired) {
             String uri = getAbsoluteUri(ssl, hostHeader(), uri());
             operation = preprocessSecurityHook(uri, this.getClass().getName(), VertxClientHelper.METHOD_END);
+            addSecurityHeaders(headers(), operation);
         }
         try {
             Weaver.callOriginal();

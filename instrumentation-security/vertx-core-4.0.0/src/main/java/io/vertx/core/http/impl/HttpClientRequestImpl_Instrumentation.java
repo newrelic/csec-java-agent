@@ -94,6 +94,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
             }
             SSRFOperation operation = new SSRFOperation(url, className, methodName);
             NewRelicSecurity.getAgent().registerOperation(operation);
+            addSecurityHeaders(headers(), operation);
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

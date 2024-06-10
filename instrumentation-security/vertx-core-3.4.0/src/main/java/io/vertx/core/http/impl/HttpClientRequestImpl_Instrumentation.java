@@ -48,6 +48,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(absoluteURI(), this.getClass().getName(), VertxClientHelper.METHOD_END);
+            addSecurityHeaders(headers(), operation);
         }
         try {
             Weaver.callOriginal();
