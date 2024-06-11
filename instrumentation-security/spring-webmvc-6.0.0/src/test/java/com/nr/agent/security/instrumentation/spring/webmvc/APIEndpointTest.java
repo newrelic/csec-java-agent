@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -17,10 +17,11 @@ import java.util.Set;
 @InstrumentationTestConfig(includePrefixes = {"org.springframework.web.servlet"})
 public class APIEndpointTest {
 
-    TestHandlerMethodMapping handlerMapping = new TestHandlerMethodMapping();
+    TestHandlerMethodMapping methodMapping = new TestHandlerMethodMapping();
     private final String handler = TestMappings.class.getName();
 
     private final static HashMap<String, String> map = new HashMap<>();
+
 
     @BeforeClass
     public static void addMappings() {
@@ -34,7 +35,7 @@ public class APIEndpointTest {
 
     @Test
     public void testAPIEndpointDetection() {
-        handlerMapping.addMapping(new TestMappings());
+        methodMapping.addMapping(new TestMappings());
 
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
         Assert.assertEquals(6, mappings.size());
@@ -55,6 +56,7 @@ public class APIEndpointTest {
 }
 
 class TestHandlerMethodMapping extends RequestMappingHandlerMapping {
+
     public void addMapping(Object handler) {
         super.detectHandlerMethods(handler);
     }

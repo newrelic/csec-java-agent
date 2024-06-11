@@ -1,10 +1,9 @@
-package org.springframework.web.servlet.handler310;
+package org.springframework.web.servlet.handler6;
 
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 
 @Weave(type = MatchType.BaseClass, originalName = "org.springframework.web.servlet.handler.AbstractHandlerMethodMapping")
@@ -17,7 +16,6 @@ public abstract class AbstractHandlerMethodMapping_Instrumentation<T> {
             SpringHelper.gatherURLMappings(mapping, method);
         }
     }
-
     protected void handleMatch(T mapping, String lookupPath, HttpServletRequest request) {
         Weaver.callOriginal();
         SpringHelper.setRequestRoute(mapping);

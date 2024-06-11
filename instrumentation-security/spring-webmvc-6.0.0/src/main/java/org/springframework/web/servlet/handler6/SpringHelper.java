@@ -1,4 +1,4 @@
-package org.springframework.web.servlet.handler530;
+package org.springframework.web.servlet.handler6;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class SpringHelper {
     private static final String WILDCARD = "*";
-    public static final String SPRING_WEBMVC_530 = "SPRING-WEBMVC-5.3.0";
+    public static final String SPRING_WEBMVC_600 = "SPRING-WEBMVC-6.0.0";
     public static <T> void gatherURLMappings(T mapping, Method method){
         try {
             RequestMappingInfo mappingInfo = (RequestMappingInfo) mapping;
@@ -48,7 +48,7 @@ public class SpringHelper {
                 }
             }
         } catch (Throwable ignored){
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SPRING_WEBMVC_530, ignored.getMessage()), ignored, SpringHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SPRING_WEBMVC_600, ignored.getMessage()), ignored, SpringHelper.class.getName());
         }
     }
 
@@ -71,7 +71,7 @@ public class SpringHelper {
                 metaData.getMetaData().setFramework(Framework.SPRING_WEB_MVC);
             }
         } catch (Exception e) {
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SPRING_WEBMVC_530, e.getMessage()), e, SpringHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SPRING_WEBMVC_600, e.getMessage()), e, SpringHelper.class.getName());
         }
     }
 }
