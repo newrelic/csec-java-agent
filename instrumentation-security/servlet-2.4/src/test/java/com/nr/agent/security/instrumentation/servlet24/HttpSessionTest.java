@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -29,9 +30,7 @@ public class HttpSessionTest {
 
     @Test
     public void testSessionSetAttribute() throws IOException, URISyntaxException {
-        String method = "GET";
-        String POST_PARAMS = "hook=readLine";
-        makeRequest(method, POST_PARAMS, "set");
+        makeRequest("set");
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -61,9 +60,7 @@ public class HttpSessionTest {
 
     @Test
     public void testSessionPutValue() throws IOException, URISyntaxException {
-        String method = "GET";
-        String POST_PARAMS = "hook=readLine";
-        makeRequest(method, POST_PARAMS, "put");
+        makeRequest("put");
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -84,49 +81,117 @@ public class HttpSessionTest {
 
     @Test
     public void testAddCookie() throws IOException, URISyntaxException {
-        String method = "GET";
-        String POST_PARAMS = "hook=readLine";
-        makeRequest(method, POST_PARAMS, "cookie");
+        makeRequest("securecookie");
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
         SecureCookieOperationSet targetOperation = null;
-        for (AbstractOperation operation : operations) {
-            if (operation instanceof SecureCookieOperationSet)
-                targetOperation = (SecureCookieOperationSet) operation;
-        };
-        Assert.assertNotNull("No target operation detected", targetOperation);
-        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
-        Assert.assertEquals("Wrong key detected", "false", targetOperation.getValue());
+        targetOperation = verifySecureCookieOp(operations);
+
+        Assert.assertEquals(1, targetOperation.getOperations().size());
+        Iterator<SecureCookieOperationSet.SecureCookieOperation> secureCookieOps = targetOperation.getOperations().iterator();
+        Assert.assertTrue(secureCookieOps.hasNext());
+
+        SecureCookieOperationSet.SecureCookieOperation secureCookieOp = secureCookieOps.next();
+        verifySecureCookie(secureCookieOp, "key", false, true);
     }
 
     @Test
     public void testAddCookie1() throws IOException, URISyntaxException {
-        String method = "GET";
-        String POST_PARAMS = "hook=readLine";
-        makeRequest(method, POST_PARAMS, "securecookie");
+        makeRequest("cookie");
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-        Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
-        SecureCookieOperationSet targetOperation = null;
-        for (AbstractOperation operation : operations) {
-            if (operation instanceof SecureCookieOperationSet)
-                targetOperation = (SecureCookieOperationSet) operation;
-        };
-        Assert.assertNotNull("No target operation detected", targetOperation);
-        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
-        Assert.assertEquals("Wrong key detected", "true", targetOperation.getValue());
+
+        SecureCookieOperationSet targetOperation = verifySecureCookieOp(operations);
+        Assert.assertEquals(1, targetOperation.getOperations().size());
+
+        Iterator<SecureCookieOperationSet.SecureCookieOperation> secureCookieOps = targetOperation.getOperations().iterator();
+        Assert.assertTrue(secureCookieOps.hasNext());
+
+        SecureCookieOperationSet.SecureCookieOperation secureCookieOp = secureCookieOps.next();
+        verifySecureCookie(secureCookieOp, "key", false, false);
     }
 
-    private void makeRequest( String Method, final String POST_PARAMS, String path) throws URISyntaxException, IOException{
+    @Test
+    public void testAddSecureCookies() throws IOException, URISyntaxException {
+        makeRequest("secure_cookies");
 
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+
+        SecureCookieOperationSet targetOperation = verifySecureCookieOp(operations);
+        Assert.assertEquals(2, targetOperation.getOperations().size());
+
+        for (SecureCookieOperationSet.SecureCookieOperation secureCookieOp : targetOperation.getOperations()) {
+            if (secureCookieOp.getName().equals("secure-cookie-1")) {
+                verifySecureCookie(secureCookieOp, "secure-cookie-1", false, true);
+            } else {
+                verifySecureCookie(secureCookieOp, "secure-cookie-2", true, true);
+            }
+        }
+    }
+
+    @Test
+    public void testAddInSecureCookies() throws IOException, URISyntaxException {
+        makeRequest("insecure_cookies");
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+
+        SecureCookieOperationSet targetOperation = verifySecureCookieOp(operations);
+        Assert.assertEquals(2, targetOperation.getOperations().size());
+
+        for (SecureCookieOperationSet.SecureCookieOperation secureCookieOp : targetOperation.getOperations()) {
+            if (secureCookieOp.getName().equals("insecure-cookie-1")) {
+                verifySecureCookie(secureCookieOp, "insecure-cookie-1", false, false);
+            } else {
+                verifySecureCookie(secureCookieOp, "insecure-cookie-2", false, false);
+            }
+        }
+    }
+
+    @Test
+    public void testAddMultiSecureCookies() throws IOException, URISyntaxException {
+        makeRequest("cookies");
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+
+        SecureCookieOperationSet targetOperation = verifySecureCookieOp(operations);
+        Assert.assertEquals(2, targetOperation.getOperations().size());
+
+        for (SecureCookieOperationSet.SecureCookieOperation secureCookieOp : targetOperation.getOperations()) {
+            if (secureCookieOp.getName().equals("insecure-cookie")) {
+                verifySecureCookie(secureCookieOp, "insecure-cookie", false, false);
+            } else {
+                verifySecureCookie(secureCookieOp, "secure-cookie", false, true);
+            }
+        }
+    }
+
+    @Test
+    public void testSingleCookie() throws IOException, URISyntaxException {
+        makeRequest("single-cookie");
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+
+        SecureCookieOperationSet targetOperation = verifySecureCookieOp(operations);
+        Assert.assertEquals(1, targetOperation.getOperations().size());
+
+        Iterator<SecureCookieOperationSet.SecureCookieOperation> secureCookieOps = targetOperation.getOperations().iterator();
+
+        Assert.assertTrue(secureCookieOps.hasNext());
+        SecureCookieOperationSet.SecureCookieOperation secureCookieOp = secureCookieOps.next();
+        verifySecureCookie(secureCookieOp, "cookie", true, true);
+    }
+
+    private void makeRequest(String path) throws URISyntaxException, IOException{
         URL u = server.getEndPoint("session/"+path).toURL();
         HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-        conn.setRequestMethod(Method);
         conn.setDoOutput(true);
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Cache-Control", "no-cache");
@@ -134,6 +199,28 @@ public class HttpSessionTest {
 
         conn.connect();
         conn.getResponseCode();
+    }
 
+    private SecureCookieOperationSet verifySecureCookieOp(List<AbstractOperation> operations) {
+        SecureCookieOperationSet targetOperation = null;
+        for (AbstractOperation operation : operations) {
+            if (operation instanceof SecureCookieOperationSet) {
+                targetOperation = (SecureCookieOperationSet) operation;
+            }
+        }
+
+        Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong method detected", "addCookie", targetOperation.getMethodName());
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
+        Assert.assertTrue("isLowSeverityHook should be true", targetOperation.isLowSeverityHook());
+        return targetOperation;
+    }
+
+    private void verifySecureCookie(SecureCookieOperationSet.SecureCookieOperation secureCookieOp, String key, boolean isHttpOnly, boolean isSecure) {
+        Assert.assertEquals("Wrong cookie key detected", key, secureCookieOp.getName());
+        Assert.assertEquals("Wrong cookie value detected", "value", secureCookieOp.getValue());
+        Assert.assertEquals(String.format("isHttpOnly should be %s", isHttpOnly), isHttpOnly, secureCookieOp.isHttpOnly());
+        Assert.assertEquals(String.format("isSecure should be %s", isSecure), isSecure, secureCookieOp.isSecure());
+        Assert.assertTrue(String.format("isSameSiteStrict should be %s", true), secureCookieOp.isSameSiteStrict());
     }
 }
