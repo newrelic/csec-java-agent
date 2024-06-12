@@ -252,6 +252,8 @@ public class Agent implements SecurityAgent {
         try {
             if(lockAcquired) {
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+                isRequestBodyDataExccedsAllowedLimit(securityMetaData);
+
                 if (securityMetaData != null && securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
@@ -325,6 +327,29 @@ public class Agent implements SecurityAgent {
                 ThreadLocalLockHelper.releaseLock();
             }
         }
+    }
+
+    private static boolean isRequestBodyDataExccedsAllowedLimit(SecurityMetaData securityMetaData) {
+        if(securityMetaData != null && StringUtils.length(securityMetaData.getRequest().getBody()) > HttpRequest.MAX_ALLOWED_REQUEST_BODY_LENGTH) {
+            securityMetaData.getRequest().setDataTruncated(true);
+            securityMetaData.getRequest().setBody(new StringBuilder());
+            return true;
+            //TODO send IASTScanFailure for body truncation and drop event.
+        }
+        if(!securityMetaData.getRequest().getParameterMap().isEmpty()) {
+            boolean parameterTruncated = false;
+            for (String[] requestParam : securityMetaData.getRequest().getParameterMap().values()) {
+                if(requestParam.length > HttpRequest.MAX_ALLOWED_REQUEST_BODY_LENGTH) {
+                    securityMetaData.getRequest().setDataTruncated(true);
+                    parameterTruncated = true;
+                }
+            }
+            if(parameterTruncated) {
+                securityMetaData.getRequest().getParameterMap().clear();
+            }
+            return true;
+        }
+        return false;
     }
 
     private boolean checkIfCSECGeneratedEvent(AbstractOperation operation) {
