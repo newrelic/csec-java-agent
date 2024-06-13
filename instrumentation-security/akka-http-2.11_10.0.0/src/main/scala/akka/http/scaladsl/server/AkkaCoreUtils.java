@@ -9,6 +9,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.RequestCategory;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -17,7 +18,6 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class AkkaCoreUtils {
@@ -115,7 +115,9 @@ public class AkkaCoreUtils {
 
             processHttpRequestHeader(httpRequest, securityRequest);
 
-            securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(), securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)), RequestCategory.HTTP);
 
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
 
@@ -144,17 +146,6 @@ public class AkkaCoreUtils {
                 releaseServletLock();
             }
         }
-    }
-
-    public static String getTraceHeader(Map<String, String> headers) {
-        String data = EMPTY;
-        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
-            if (data == null || data.trim().isEmpty()) {
-                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
-            }
-        }
-        return data;
     }
 
     public static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){

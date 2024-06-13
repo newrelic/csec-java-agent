@@ -7,9 +7,8 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.InterruptedIOException;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,17 +30,40 @@ public class RestRequestThreadPool {
 
     private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
-    private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
-
-    private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
-
     private final Set<String> rejectedIds = ConcurrentHashMap.newKeySet();
 
+    private Set<String> completedReplay = ConcurrentHashMap.newKeySet();
+
+    private Set<String> errorInReplay = ConcurrentHashMap.newKeySet();
+
+    private Set<String> clearFromPending = ConcurrentHashMap.newKeySet();
+
+    /**
+     * "generatedEvents":
+     *     {
+     *         "ORIGIN_APPUUID_1" : {"FUZZ_ID_1":["EVENT_ID_1"], "FUZZ_ID_2":["EVENT_ID_2"]},
+     *     }
+     * */
+    private final Map<String, Map<String, Set<String>>> generatedEvent = new ConcurrentHashMap();
+
+
     public void resetIASTProcessing() {
-        rejectedIds.addAll(processedIds.keySet());
-        processedIds.clear();
-        pendingIds.clear();
+        getAllControlCommandID(generatedEvent);
+        generatedEvent.clear();
+        completedReplay.clear();
+        clearFromPending.clear();
+        errorInReplay.clear();
         executor.getQueue().clear();
+    }
+
+    private void getAllControlCommandID(Map<String, Map<String, Set<String>>> generatedEvents) {
+        if(generatedEvents == null || generatedEvents.isEmpty()) {
+            return;
+        }
+
+        for (Map<String, Set<String>> applicationMap : generatedEvents.values()) {
+            rejectedIds.addAll(applicationMap.keySet());
+        }
     }
 
     private RestRequestThreadPool() {
@@ -56,21 +78,24 @@ public class RestRequestThreadPool {
                     super.afterExecute(r, t);
                     String controlCommandId = null;
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
-                        Boolean result = (Boolean) ((CustomFutureTask<?>) r).get();
                         RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getControlCommand().getId();
-                        if(t != null || !result) {
-                            if (StringUtils.isNotBlank(controlCommandId)) {
-                                rejectedIds.add(controlCommandId);
-                            }
+                        if(task.isSuccessful() && 500 < task.getResponseCode() && task.getResponseCode() >= 400){
+                            errorInReplay.add(controlCommandId);
+                        } else if (task.isSuccessful()) {
+                            completedReplay.add(controlCommandId);
+                        } else if (task.isExceptionRaised() && task.getError() instanceof InterruptedIOException) {
+                            clearFromPending.add(controlCommandId);
+                        } else if(task.isExceptionRaised()) {
+                            errorInReplay.add(controlCommandId);
                         } else {
-                            processedIds.putIfAbsent(controlCommandId, new HashSet<>());
+                            clearFromPending.add(controlCommandId);
+                        }
+                        if (StringUtils.isBlank(controlCommandId)) {
+                            rejectedIds.add(controlCommandId);
                         }
                     }
-                    if(StringUtils.isNotBlank(controlCommandId)){
-                        pendingIds.remove(controlCommandId);
-                    }
-                } catch (ExecutionException | InterruptedException ignored) {
+                } catch (Exception ignored) {
                 }
             }
 
@@ -136,32 +161,36 @@ public class RestRequestThreadPool {
         return executor;
     }
 
-    public Map<String, Set<String>> getProcessedIds() {
-        return processedIds;
-    }
-
     public Set<String> getRejectedIds() {
         return rejectedIds;
     }
 
-    public Set<String> getPendingIds() {
-        return pendingIds;
+    public Set<String> getCompletedReplay() {
+        return completedReplay;
     }
 
-    public void registerEventForProcessedCC(String controlCommandId, String eventId) {
+    public Set<String> getErrorInReplay() {
+        return errorInReplay;
+    }
+
+    public Set<String> getClearFromPending() {
+        return clearFromPending;
+    }
+
+    public void registerEventForProcessedCC(String controlCommandId, String eventId, String originAppUuid) {
         if(StringUtils.isAnyBlank(controlCommandId, eventId)){
             return;
         }
-        Set<String> registeredEvents = processedIds.get(controlCommandId);
-        if(registeredEvents != null) {
-            registeredEvents.add(eventId);
+        if(!generatedEvent.containsKey(originAppUuid)){
+            logger.log(LogLevel.FINE, String.format("Entry from map of generatedEvents for %s is missing. generatedEvents are : %s", originAppUuid, generatedEvent), RestRequestThreadPool.class.getName());
+        }
+
+        if(generatedEvent.get(originAppUuid).containsKey(controlCommandId)) {
+            generatedEvent.get(originAppUuid).get(controlCommandId).add(eventId);
         }
     }
 
-    public void removeFromProcessedCC(String controlCommandId) {
-        if(StringUtils.isNotBlank(controlCommandId)){
-            processedIds.remove(controlCommandId);
-        }
+    public Map<String, Map<String, Set<String>>> getGeneratedEvent() {
+        return generatedEvent;
     }
-
 }

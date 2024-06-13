@@ -80,17 +80,6 @@ public class HttpServletHelper {
 
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
-        String data = EMPTY;
-        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
-            if (data == null || data.trim().isEmpty()) {
-                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
-            }
-        }
-        return data;
-    }
-
     public static boolean isServletLockAcquired() {
         try {
             return NewRelicSecurity.isHookProcessingActive() &&

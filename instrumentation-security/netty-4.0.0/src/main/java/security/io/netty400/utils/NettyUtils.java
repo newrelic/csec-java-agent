@@ -56,7 +56,7 @@ public class NettyUtils {
                 setClientAddressDetails(securityMetaData, ctx.channel().remoteAddress().toString());
                 setServerPortDetails(securityRequest, ctx.channel().localAddress().toString());
                 processHttpRequestHeader((HttpRequest)msg, securityRequest);
-                securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
+                securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
 
                 securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName().toLowerCase());
                 securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
@@ -159,18 +159,6 @@ public class NettyUtils {
         }
 
     }
-
-    public static String getTraceHeader(Map<String, String> headers) {
-        String data = EMPTY;
-        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
-            if (data == null || data.trim().isEmpty()) {
-                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
-            }
-        }
-        return data;
-    }
-
     public static void processSecurityResponse(ChannelHandlerContext ctx, Object msg) {
         try {
             if (NewRelicSecurity.isHookProcessingActive() && msg instanceof FullHttpResponse) {

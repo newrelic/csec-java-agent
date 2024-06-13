@@ -7,8 +7,9 @@
 
 package com.newrelic.api.agent.security;
 
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.FuzzRequestEmptyEntry;
+import com.newrelic.api.agent.security.schema.RequestCategory;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -18,6 +19,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides NoOps for API objects to avoid returning <code>null</code>. Do not call these objects directly.
@@ -130,6 +132,11 @@ class NoOpAgent implements SecurityAgent {
     @Override
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
         return null;
+    }
+
+    @Override
+    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry, RequestCategory category) {
+
     }
 
 
