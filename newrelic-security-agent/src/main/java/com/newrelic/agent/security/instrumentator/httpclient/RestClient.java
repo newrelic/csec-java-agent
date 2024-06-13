@@ -132,7 +132,7 @@ public class RestClient {
                     responseCode = RestClient.getInstance().fireRequest(request, restRequestProcessor, repeatCount + endpoints.size() -1);
                 } catch (SSLException e) {
                     NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), fuzzRequestId,
+                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), restRequestProcessor.getControlCommand().getId(),
                             String.format(IAgentConstants.SSL_EXCEPTION_FAILURE_MESSAGE, request.url()));
                     logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request, e.getMessage()), e, RestClient.class.getName());
                     logger.postLogMessageIfNecessary(LogLevel.WARNING,
@@ -202,15 +202,12 @@ public class RestClient {
             else if(response.code() >= 400){
                 String responseBody = response.body().string();
                 NewRelicSecurity.getAgent().reportIASTScanFailure(null, null, null,
-                        RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
+                        RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), restRequestProcessor.getControlCommand().getId(),
                         String.format(IAgentConstants.REQUEST_FAILURE_FOR_S_WITH_RESPONSE_CODE, request.url(), response, responseBody));
-                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
-                        String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, responseBody), null,
+                        String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, restRequestProcessor.getControlCommand().getId(),  response, responseBody), null,
                         RestRequestProcessor.class.getName());
-            } else if(response.isSuccessful()){
-                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
-            }else {
+            } else {
                 logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             }
             restRequestProcessor.setSuccessful(true);
@@ -233,7 +230,7 @@ public class RestClient {
             }
         } catch (IOException e) {
             NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                    e, RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
+                    e, RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), restRequestProcessor.getControlCommand().getId(),
                     IAgentConstants.REQUEST_FAILURE_DUE_TO_IOEXCEPTION);
 
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
@@ -241,7 +238,7 @@ public class RestClient {
             restRequestProcessor.setError(e);
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
-                    String.format(CALL_FAILED_REQUEST_S_REASON, restRequestProcessor.getControlCommand().getId(), e.getMessage(),),
+                    String.format(CALL_FAILED_REQUEST_S_REASON, restRequestProcessor.getControlCommand().getId(), e.getMessage()),
                     e, RestRequestProcessor.class.getName());
             // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());

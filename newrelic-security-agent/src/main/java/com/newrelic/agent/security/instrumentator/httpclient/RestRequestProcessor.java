@@ -144,7 +144,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
             } else {
                 boolean postSSL = false;
-                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
+                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig(), httpRequest);
                 logger.log(LogLevel.FINER, String.format("Endpoints to fire : %s", endpoints), RestRequestProcessor.class.getSimpleName());
                 if (endpoints.isEmpty()){
                     endpoints = prepareAllEndpoints(httpRequest);
