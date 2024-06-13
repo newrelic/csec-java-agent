@@ -78,6 +78,7 @@ public class RestRequestThreadPool {
                     super.afterExecute(r, t);
                     String controlCommandId = null;
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
+                        AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestExecuted();
                         RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getControlCommand().getId();
                         if(task.isSuccessful() && 500 < task.getResponseCode() && task.getResponseCode() >= 400){
@@ -93,6 +94,12 @@ public class RestRequestThreadPool {
                         }
                         if (StringUtils.isBlank(controlCommandId)) {
                             rejectedIds.add(controlCommandId);
+                        }
+
+                        if(task.isSuccessful() && 200 <= task.getResponseCode() && task.getResponseCode() < 300){
+                            AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestSucceeded();
+                        } else {
+                            AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestFailed();
                         }
                     }
                 } catch (Exception ignored) {

@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
@@ -85,6 +86,7 @@ public class RequestUtils {
             requestBuilder = requestBuilder.headers(Headers.of((Map<String, String>) httpRequest.getHeaders()));
             requestBuilder.header(GenericHelper.CSEC_PARENT_ID, controlCommandId);
 
+            AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestGenerated();
             return requestBuilder.build();
         } catch (Exception e){
             logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.toString()), RequestUtils.class.getSimpleName());

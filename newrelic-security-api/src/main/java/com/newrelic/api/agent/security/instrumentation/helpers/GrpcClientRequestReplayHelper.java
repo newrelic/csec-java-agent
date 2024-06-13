@@ -13,6 +13,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcClientRequestReplayHelper {
     private BlockingQueue<ControlCommandDto> requestQueue = new LinkedBlockingQueue<>(1000);
@@ -27,6 +28,53 @@ public class GrpcClientRequestReplayHelper {
     private Set<String> errorInReplay = ConcurrentHashMap.newKeySet();
 
     private Set<String> clearFromPending = ConcurrentHashMap.newKeySet();
+
+    private AtomicInteger replayRequestGenerated = new AtomicInteger();
+
+    private AtomicInteger replayRequestExecuted = new AtomicInteger();
+
+    private AtomicInteger replayRequestSucceeded = new AtomicInteger();
+
+    private AtomicInteger replayRequestFailed = new AtomicInteger();
+
+    public int incrementReplayRequestGenerated() {
+        return replayRequestGenerated.incrementAndGet();
+    }
+
+    public int incrementReplayRequestExecuted() {
+        return replayRequestExecuted.incrementAndGet();
+    }
+
+    public int incrementReplayRequestSucceeded() {
+        return replayRequestSucceeded.incrementAndGet();
+    }
+
+    public int incrementReplayRequestFailed() {
+        return replayRequestFailed.incrementAndGet();
+    }
+
+    public int getReplayRequestGenerated() {
+        return replayRequestGenerated.get();
+    }
+
+    public int getReplayRequestExecuted() {
+        return replayRequestExecuted.get();
+    }
+
+    public int getReplayRequestSucceeded() {
+        return replayRequestSucceeded.get();
+    }
+
+    public int getReplayRequestFailed() {
+        return replayRequestFailed.get();
+    }
+
+    public void resetReplayRequestMetric() {
+        replayRequestGenerated.set(0);
+        replayRequestExecuted.set(0);
+        replayRequestSucceeded.set(0);
+        replayRequestFailed.set(0);
+    }
 
     /**
      * "generatedEvents":

@@ -12,10 +12,10 @@ public class EventAbortPolicy implements RejectedExecutionHandler {
 
 
     public EventAbortPolicy() {
-        AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestRejected();
     }
 
     public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+        AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestRejected();
         logger.log(LogLevel.WARNING, "Fuzz request " + r.toString() + " rejected from  " + e.toString(), EventAbortPolicy.class.getName());
     }
 }

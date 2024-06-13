@@ -46,9 +46,11 @@ public class GrpcRequestThreadPool {
                     GrpcClientRequestReplayHelper.getInstance().setInProcessRequestQueue(getQueue());
                     String controlCommandId = null;
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof GrpcRequestProcessor) {
+                        GrpcClientRequestReplayHelper.getInstance().incrementReplayRequestExecuted();
                         GrpcRequestProcessor task = (GrpcRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getPartialControlCommand().getId();
                         if (task.isSuccessful()) {
+                            GrpcClientRequestReplayHelper.getInstance().incrementReplayRequestSucceeded();
                             GrpcClientRequestReplayHelper.getInstance().getCompletedReplay().add(controlCommandId);
                         } else if (task.isExceptionRaised() && task.getError() instanceof InterruptedIOException) {
                             GrpcClientRequestReplayHelper.getInstance().getClearFromPending().add(controlCommandId);
@@ -59,6 +61,9 @@ public class GrpcRequestThreadPool {
                         }
                         if (StringUtils.isBlank(controlCommandId)) {
                             GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(controlCommandId);
+                        }
+                        if (!task.isSuccessful()){
+                            GrpcClientRequestReplayHelper.getInstance().incrementReplayRequestFailed();
                         }
                     }
                 } catch (Exception e) {

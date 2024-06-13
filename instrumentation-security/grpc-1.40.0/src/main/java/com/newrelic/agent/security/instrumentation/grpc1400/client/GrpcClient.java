@@ -57,7 +57,7 @@ public class GrpcClient {
         }
     };
 
-    public Object fireRequest(GrpcRequestProcessor grpcRequestProcessor) {
+    public void fireRequest(GrpcRequestProcessor grpcRequestProcessor) {
         FuzzRequestBean requestBean = null;
         ControlCommandDto controlCommandDto = grpcRequestProcessor.getControlCommandDto();
         int repeatCount = grpcRequestProcessor.getRepeatCount();
@@ -72,37 +72,31 @@ public class GrpcClient {
             NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(FIRING_REQUEST_URL_S, requestBean.getUrl()), GrpcClient.class.getName());
             NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(FIRING_REQUEST_HEADERS_S, requestBean.getHeaders()), GrpcClient.class.getName());
 
-            Object isSuccess = false;
             switch (requestBean.getReflectedMetaData().get(GrpcHelper.REQUEST_TYPE)) {
                 case unary:
-                    isSuccess = customUnaryCall(channel, requestBean, payloads);
+                    customUnaryCall(channel, requestBean, payloads);
                     break;
                 case client_streaming:
-                    isSuccess = customClientStream(channel, requestBean, payloads);
+                    customClientStream(channel, requestBean, payloads);
                     break;
                 case server_streaming:
-                    isSuccess = customServerStream(channel, requestBean, payloads);
+                    customServerStream(channel, requestBean, payloads);
                     break;
                 case bidi_streaming:
-                    isSuccess = customBiDiStream(channel, requestBean, payloads);
+                    customBiDiStream(channel, requestBean, payloads);
                     break;
             }
             grpcRequestProcessor.setSuccessful(true);
-
-            return isSuccess;
         } catch (InterruptedException e) {
             grpcRequestProcessor.setExceptionRaised(true);
             grpcRequestProcessor.setError(e);
 
             if (repeatCount >= 0) {
-                return fireRequest(grpcRequestProcessor);
+                fireRequest(grpcRequestProcessor);
             }
-            return false;
         } catch (Throwable e) {
             grpcRequestProcessor.setExceptionRaised(true);
             grpcRequestProcessor.setError(e);
-
-            return e;
         }
     }
 
@@ -116,7 +110,7 @@ public class GrpcClient {
         }
     }
 
-    private Object customUnaryCall(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
+    private void customUnaryCall(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
         GrpcStubs.CustomStub stub = GrpcStubs.newStub(channel);
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
@@ -129,20 +123,14 @@ public class GrpcClient {
         }
 
         for (String requestData : payloads) {
-            try {
-                Any pack = getMessageOfTypeAny(requestData, requestClass);
-                Any response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                        .unaryCall(pack, serviceName, methodName);
-                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
-            } catch (Throwable e) {
-                return e;
-//                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
-            }
+            Any pack = getMessageOfTypeAny(requestData, requestClass);
+            Any response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                    .unaryCall(pack, serviceName, methodName);
+            NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
         }
-        return null;
     }
 
-    private static Object customClientStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) throws InterruptedException {
+    private static void customClientStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) throws InterruptedException {
         StreamObserver<Any> responseObserver = new StreamObserver<Any>() {
 
             @Override
@@ -174,19 +162,13 @@ public class GrpcClient {
         StreamObserver<Any> requestObserver = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers)).clientStream(responseObserver, serviceName, methodName);
 
         for (String requestData : payloads) {
-            try {
-                Any pack = getMessageOfTypeAny(requestData, requestClass);
-                requestObserver.onNext(pack);
-            } catch (Throwable e) {
-                return e;
-//                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
-            }
+            Any pack = getMessageOfTypeAny(requestData, requestClass);
+            requestObserver.onNext(pack);
         }
         requestObserver.onCompleted();
-        return null;
     }
 
-    private static Object customServerStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
+    private static void customServerStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
         GrpcStubs.CustomStub stub = GrpcStubs.newBlockingStub(channel);
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
@@ -199,23 +181,17 @@ public class GrpcClient {
         }
 
         for (String requestData : payloads) {
-            try {
-                Any pack = getMessageOfTypeAny(requestData, requestClass);
-                Iterator<Any> responses = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                        .serverStream(pack, serviceName, methodName);
-                while (responses.hasNext()) {
-                    Any response = responses.next();
-                    NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
-                }
-            } catch (Throwable e) {
-                return e;
-//                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
+            Any pack = getMessageOfTypeAny(requestData, requestClass);
+            Iterator<Any> responses = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                    .serverStream(pack, serviceName, methodName);
+            while (responses.hasNext()) {
+                Any response = responses.next();
+                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
             }
         }
-        return null;
     }
 
-    public static Object customBiDiStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) throws InterruptedException {
+    public static void customBiDiStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
         GrpcStubs.CustomStub stub = GrpcStubs.newStub(channel);
         StringBuilder body = requestBean.getBody();
         String[] methodSplitData = requestBean.getMethod().split("/");
@@ -248,16 +224,10 @@ public class GrpcClient {
                 .biDiStream(responseObserver, serviceName, methodName);
 
         for (String requestData : payloads) {
-            try{
-                Any pack = getMessageOfTypeAny(requestData, requestClass);
-                requestObserver.onNext(pack);
-            } catch (Throwable e) {
-                return e;
-//                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
-            }
+            Any pack = getMessageOfTypeAny(requestData, requestClass);
+            requestObserver.onNext(pack);
         }
         requestObserver.onCompleted();
-        return null;
     }
 
 

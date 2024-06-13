@@ -26,7 +26,8 @@ public class GrpcRequestProcessor implements Callable<Object> {
 
     @Override
     public Object call() throws Exception {
-        return GrpcClient.getInstance().fireRequest(this);
+        GrpcClient.getInstance().fireRequest(this);
+        return this;
     }
 
     public static void executeGrpcRequest(ControlCommandDto controlCommandDto) {
