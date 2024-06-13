@@ -22,18 +22,21 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
 
     private String category;
 
+    private String applicationUUID;
+
     @JsonIgnore
     private String route;
 
-    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, String category) {
+    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, String category, String applicationUUID) {
         super();
         this.timestamp = Instant.now().toEpochMilli();
         this.httpRequest = httpRequest;
         this.exception = exception;
         this.category = category;
+        this.applicationUUID = applicationUUID;
     }
 
-    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, int responseCode, String route, String category) {
+    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, int responseCode, String route, String category, String applicationUUID) {
         super();
         this.timestamp = Instant.now().toEpochMilli();
         this.httpRequest = httpRequest;
@@ -41,6 +44,7 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
         this.responseCode = responseCode;
         this.route = route;
         this.category = category;
+        this.applicationUUID = applicationUUID;
     }
 
     public Long getTimestamp() {
@@ -97,6 +101,14 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
 
     public void setRoute(String route) {
         this.route = route;
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 
     @Override
