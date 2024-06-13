@@ -69,6 +69,7 @@ public abstract class Filter_Instrumentation {
             }
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
+            HttpServletHelper.setRoute(httpServletRequest, securityRequest, securityAgentMetaData);
 
             securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
 
