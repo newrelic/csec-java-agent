@@ -759,10 +759,19 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
-        LogMessageException messageException = new LogMessageException(exception, 0, 1, 20);
-        String traceId = generateTraceIdForRuntimeError(securityMetaData, exception.getClass().getSimpleName(), messageException);
-        ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, exception.getClass().getSimpleName(), AgentInfo.getInstance().getApplicationUUID(), traceId);
-        RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                LogMessageException messageException = new LogMessageException(exception, 0, 1, 20);
+                String traceId = generateTraceIdForRuntimeError(securityMetaData, exception.getClass().getSimpleName(), messageException);
+                ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, exception.getClass().getSimpleName(), AgentInfo.getInstance().getApplicationUUID(), traceId);
+                RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+            }
+        } finally {
+            if(lockAcquired) {
+                ThreadLocalLockHelper.releaseLock();
+            }
+        }
     }
 
     private String generateTraceIdForRuntimeError(SecurityMetaData securityMetaData, String category, LogMessageException messageException) {

@@ -231,7 +231,7 @@ public class ServletHelper {
 
     public static void executeBeforeExitingTransaction() {
         Boolean exitLogicPerformed = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("EXIT_RECORDED", Boolean.class);
-        if(Boolean.TRUE.equals(exitLogicPerformed) && !NewRelicSecurity.isHookProcessingActive()){
+        if(Boolean.TRUE.equals(exitLogicPerformed) || !NewRelicSecurity.isHookProcessingActive()){
             return;
         }
 
