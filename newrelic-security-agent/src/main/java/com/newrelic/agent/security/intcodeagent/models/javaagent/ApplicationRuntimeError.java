@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ApplicationRuntimeError extends AgentBasicInfo{
 
+    private String traceId;
+
     private Long timestamp;
 
     private HttpRequest httpRequest;
@@ -27,16 +29,17 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
     @JsonIgnore
     private String route;
 
-    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, String category, String applicationUUID) {
+    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, String category, String applicationUUID, String traceId) {
         super();
         this.timestamp = Instant.now().toEpochMilli();
         this.httpRequest = httpRequest;
         this.exception = exception;
         this.category = category;
         this.applicationUUID = applicationUUID;
+        this.traceId = traceId;
     }
 
-    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, int responseCode, String route, String category, String applicationUUID) {
+    public ApplicationRuntimeError(HttpRequest httpRequest, LogMessageException exception, int responseCode, String route, String category, String applicationUUID, String traceId) {
         super();
         this.timestamp = Instant.now().toEpochMilli();
         this.httpRequest = httpRequest;
@@ -45,6 +48,7 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
         this.route = route;
         this.category = category;
         this.applicationUUID = applicationUUID;
+        this.traceId = traceId;
     }
 
     public Long getTimestamp() {
@@ -111,9 +115,17 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
         this.applicationUUID = applicationUUID;
     }
 
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
     @Override
     public int hashCode() {
-        return (responseCode == 0) ? exception.hashCode(): Objects.hash(route, responseCode);
+        return Objects.hash(traceId);
     }
 
     public String toString() {
