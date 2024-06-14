@@ -1,7 +1,5 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
-import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
@@ -23,7 +21,7 @@ public class MonitorGrpcFuzzFailRequestQueueThread {
                 // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
                 Map<FuzzRequestBean, Throwable> fuzzFailMap = GrpcClientRequestReplayHelper.getInstance().getSingleRequestFromFuzzFailRequestQueue();
                 FuzzRequestBean request = (FuzzRequestBean) fuzzFailMap.keySet().toArray()[0];
-                FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+                FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
                 fuzzFailEvent.setFuzzHeader(request.getHeaders().get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
                 EventSendPool.getInstance().sendEvent(fuzzFailEvent);
             } catch (InterruptedException e) {

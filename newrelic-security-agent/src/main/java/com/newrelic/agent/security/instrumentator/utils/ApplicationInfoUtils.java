@@ -210,7 +210,7 @@ public class ApplicationInfoUtils {
         AgentUtils.getInstance().getStatusLogValues().put(PROCESS_BINARY, NOT_AVAILABLE);
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-            ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(vmpid, applicationUUID, STATIC);
+            ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(vmpid, STATIC);
             applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
             identifier.setCollectorIp(getIpAddress());
             // TODO: Need to write platform agnostic alternative for this.

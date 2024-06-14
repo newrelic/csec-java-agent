@@ -8,13 +8,10 @@ public class HttpConnectionStat extends AgentBasicInfo {
 
     private Collection<OutBoundHttp> httpConnections;
 
-    private String applicationUUID;
-
     private Boolean isCached;
 
-    public HttpConnectionStat(Collection<OutBoundHttp> httpConnections, String applicationUUID, Boolean isCached) {
+    public HttpConnectionStat(Collection<OutBoundHttp> httpConnections, Boolean isCached) {
         this.httpConnections = httpConnections;
-        this.applicationUUID = applicationUUID;
         this.isCached = isCached;
     }
 
@@ -32,14 +29,6 @@ public class HttpConnectionStat extends AgentBasicInfo {
 
     public void setIsCached(Boolean isCached) {
         this.isCached = isCached;
-    }
-
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     public String toString() {

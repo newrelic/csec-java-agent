@@ -5,7 +5,6 @@ import org.json.simple.JSONArray;
 
 public class JavaAgentDynamicPathBean extends AgentBasicInfo {
 
-    private String applicationUUID;
 
     private String workingDirectory;
 
@@ -13,20 +12,11 @@ public class JavaAgentDynamicPathBean extends AgentBasicInfo {
 
     private JSONArray dynamicPaths;
 
-    public JavaAgentDynamicPathBean(String applicationUUID, String workingDirectory, JSONArray jarPaths, JSONArray dynamicPaths) {
+    public JavaAgentDynamicPathBean(String workingDirectory, JSONArray jarPaths, JSONArray dynamicPaths) {
         super();
-        this.applicationUUID = applicationUUID;
         this.workingDirectory = workingDirectory;
         this.jarPaths = jarPaths;
         this.dynamicPaths = dynamicPaths;
-    }
-
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     public String getWorkingDirectory() {

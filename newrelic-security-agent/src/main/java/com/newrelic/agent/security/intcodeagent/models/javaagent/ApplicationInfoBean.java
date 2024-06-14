@@ -23,11 +23,6 @@ public class ApplicationInfoBean extends AgentBasicInfo {
     private Integer pid;
 
     /**
-     * UUID per running application.
-     */
-    private String applicationUUID;
-
-    /**
      * name of running application.
      */
     private String applicationName;
@@ -79,10 +74,9 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 
     private Identifier identifier;
 
-    public ApplicationInfoBean(Integer pid, String applicationUUID, String agentAttachmentType) {
+    public ApplicationInfoBean(Integer pid, String agentAttachmentType) {
         super();
         this.pid = pid;
-        this.applicationUUID = applicationUUID;
         this.runCommand = System.getProperty("sun.java.command");
         this.userDir = System.getProperty("user.dir");
         this.libraryPath = new ArrayList<String>();
@@ -119,14 +113,6 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 
     public void setPid(Integer pid) {
         this.pid = pid;
-    }
-
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     public String getApplicationName() {
