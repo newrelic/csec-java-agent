@@ -8,13 +8,12 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
-import javax.servlet.http.HttpServletMapping;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.MappingMatch;
 import java.util.Collection;
 import java.util.Map;
 
@@ -54,13 +53,12 @@ public class HttpServletHelper {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_3_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
-    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData){
-        HttpServletMapping mapping = request.getHttpServletMapping();
-        if (!mapping.getMappingMatch().equals(MappingMatch.EXTENSION)){
-            securityRequest.setRoute(mapping.getPattern());
-        } else {
-            securityRequest.setRoute(request.getServletPath());
+    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData) {
+        if (StringUtils.isNotBlank(securityRequest.getRoute())){
+            return;
         }
+        // TODO verify if request.getServletPath() present in detected API Endpoints then simply set Route else add /* to ServletPath
+        securityRequest.setRoute(request.getServletPath());
         metaData.setFramework(Framework.SERVLET);
     }
 }
