@@ -101,6 +101,7 @@ public abstract class Servlet_Instrumentation {
             ) {
                 return;
             }
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

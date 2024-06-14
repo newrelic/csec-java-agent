@@ -94,6 +94,7 @@ public class HttpRequestHelper {
             ) {
                 return;
             }
+            ServletHelper.executeBeforeExitingTransaction();
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(getHeaders(wrappedMessageContext));
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
