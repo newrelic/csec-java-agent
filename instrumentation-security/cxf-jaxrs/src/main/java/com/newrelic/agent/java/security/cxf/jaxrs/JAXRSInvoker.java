@@ -2,6 +2,7 @@ package com.newrelic.agent.java.security.cxf.jaxrs;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
@@ -20,17 +21,7 @@ public class JAXRSInvoker {
             OperationResourceInfo ori = exchange.get(OperationResourceInfo.class);
             if(NewRelicSecurity.isHookProcessingActive() && ori != null) {
                 SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                ClassResourceInfo cri = ori.getClassResourceInfo();
-                String route = StringUtils.EMPTY;
-                if(cri.getURITemplate() != null){
-                    route = cri.getURITemplate().getValue();
-                }
-                if (ori.getURITemplate() != null) {
-                    // in case of subresource cri.getURITemplate() will be null
-                    route += ori.getURITemplate().getValue();
-                }
-                // TODO need to consider the case of sub-resource
-                metaData.getRequest().setRoute(route, metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
+                metaData.getRequest().setRoute(CXFHelper.getRequestRoute(ori));
                 metaData.getMetaData().setFramework(Framework.CXF_JAXRS);
             }
         } catch (Exception e) {

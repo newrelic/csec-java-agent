@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -220,12 +221,12 @@ public class HttpRequest {
 
     public void setRoute(String segment, boolean isAlreadyServlet) {
         // remove servlet detected route if another framework detected;
-        if (isAlreadyServlet){
+        if (isAlreadyServlet) {
             this.route = StringUtils.EMPTY;
         }
-        String formatedSegment = StringUtils.removeEnd(StringUtils.prependIfMissing(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
-        if(!StringUtils.isEmpty(formatedSegment)) {
-            this.route += formatedSegment;
+        String formatedSegment = StringUtils.prependIfMissing(StringUtils.removeEnd(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        if (!StringUtils.isEmpty(formatedSegment)) {
+            this.route = Paths.get(this.route, formatedSegment).normalize().toString();
         }
     }
 }

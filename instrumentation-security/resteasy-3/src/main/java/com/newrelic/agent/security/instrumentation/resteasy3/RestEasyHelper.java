@@ -16,6 +16,7 @@ public class RestEasyHelper {
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
     private static final String RESTEASY_3 = "RESTEASY-3";
+    private static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
             if(invoker instanceof ResourceMethodInvoker) {
@@ -39,12 +40,19 @@ public class RestEasyHelper {
         }
     }
 
-    public static void getRequestRoute(String pathExpression) {
+    public static void getRequestRoute(String pathExpression, String path) {
         try {
-            if (NewRelicSecurity.isHookProcessingActive()) {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RestEasyHelper.ROUTE_DETECTION_COMPLETED, Boolean.class))){
                 SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                metaData.getRequest().setRoute(pathExpression, metaData.getMetaData().getFramework().equals(Framework.SERVLET.name()));
+                boolean isServletFramework = metaData.getMetaData().getFramework().equals(Framework.SERVLET.name());
+
+                metaData.getRequest().setRoute(pathExpression, isServletFramework);
                 metaData.getMetaData().setFramework(Framework.REST_EASY);
+                metaData.addCustomAttribute(ROUTE_DETECTION_COMPLETED, true);
+                if (URLMappingsHelper.getSegmentCount(pathExpression) != URLMappingsHelper.getSegmentCount(path)){
+                    metaData.getRequest().setRoute(URLMappingsHelper.subResourceSegment, isServletFramework);
+                }
             }
         } catch (Exception e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, RESTEASY_3, e.getMessage()), e, RestEasyHelper.class.getName());
