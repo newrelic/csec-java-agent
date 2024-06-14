@@ -316,7 +316,7 @@ public class Agent implements SecurityAgent {
                 if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
                     frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
                 }
-                if (StringUtils.isEmpty(request.getRoute())){
+                if (!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isEmpty(request.getRoute())){
                     request.setRoute(getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork), true);
                 }
 //                }
