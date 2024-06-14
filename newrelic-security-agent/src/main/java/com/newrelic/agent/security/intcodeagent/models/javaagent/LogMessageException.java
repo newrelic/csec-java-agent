@@ -39,7 +39,7 @@ public class LogMessageException {
             this.stackTrace[index] = AgentUtils.stackTraceElementToString(trace[index]);
         }
         if (exception.getCause() != null && nestingLevel < maxNestingLevel) {
-            this.cause = new LogMessageException(exception.getCause(), nestingLevel++, maxNestingLevel);
+            this.cause = new LogMessageException(exception.getCause(), nestingLevel++, maxNestingLevel, max);
         }
     }
 

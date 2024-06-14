@@ -759,7 +759,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
-        LogMessageException messageException = new LogMessageException(exception, 0, 1, 10);
+        LogMessageException messageException = new LogMessageException(exception, 0, 1, 20);
         String traceId = generateTraceIdForRuntimeError(securityMetaData, exception.getClass().getSimpleName(), messageException);
         ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, exception.getClass().getSimpleName(), AgentInfo.getInstance().getApplicationUUID(), traceId);
         RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
@@ -797,7 +797,7 @@ public class Agent implements SecurityAgent {
 //        }
         LogMessageException messageException = null;
         if (exception != null) {
-            messageException = new LogMessageException(exception, 0, 1, 10);
+            messageException = new LogMessageException(exception, 0, 1, 20);
         }
         String traceId = generateTraceIdForRuntimeError(securityMetaData, HttpStatusCodes.getStatusCode(responseCode), messageException);
         ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, responseCode, route, HttpStatusCodes.getStatusCode(responseCode), AgentInfo.getInstance().getApplicationUUID(), traceId);

@@ -230,7 +230,8 @@ public class ServletHelper {
     }
 
     public static void executeBeforeExitingTransaction() {
-        if(!NewRelicSecurity.isHookProcessingActive()){
+        Boolean exitLogicPerformed = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("EXIT_RECORDED", Boolean.class);
+        if(Boolean.TRUE.equals(exitLogicPerformed) && !NewRelicSecurity.isHookProcessingActive()){
             return;
         }
 
@@ -245,5 +246,6 @@ public class ServletHelper {
             NewRelicSecurity.getAgent().registerOperation(operations);
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", null);
         }
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("EXIT_RECORDED", true);
     }
 }
