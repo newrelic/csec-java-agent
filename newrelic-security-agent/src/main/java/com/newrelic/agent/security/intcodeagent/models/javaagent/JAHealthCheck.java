@@ -14,8 +14,6 @@ public class JAHealthCheck extends AgentBasicInfo {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private static final String HC_CREATED = "Created Health Check: %s";
 
-    private String applicationUUID;
-
 //    private String protectedServer;
 
 //    private Set protectedDB;
@@ -60,7 +58,6 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public JAHealthCheck(String applicationUUID) {
         super();
-        this.applicationUUID = applicationUUID;
         this.invokedHookCount = new AtomicInteger(0);
         this.eventDropCount = new AtomicInteger(0);
         this.eventProcessed = new AtomicInteger(0);
@@ -83,7 +80,6 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
         super();
-        this.applicationUUID = jaHealthCheck.applicationUUID;
         this.invokedHookCount =  new AtomicInteger(jaHealthCheck.invokedHookCount.intValue());
         this.eventDropCount =  new AtomicInteger(jaHealthCheck.eventDropCount.intValue());
         this.eventProcessed =  new AtomicInteger(jaHealthCheck.eventProcessed.intValue());
@@ -111,20 +107,6 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void setKind(IdentifierEnvs kind) {
         this.kind = kind;
-    }
-
-    /**
-     * @return the applicationUUID
-     */
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    /**
-     * @param applicationUUID the applicationUUID to set
-     */
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     /**

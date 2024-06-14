@@ -11,8 +11,6 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorIncident extends AgentBasicInfo {
 
-    private String applicationUUID = AgentInfo.getInstance().getApplicationUUID();
-
     private LogMessageException exception;
 
     private Map<String, String> linkingMetadata;
@@ -22,14 +20,6 @@ public class ErrorIncident extends AgentBasicInfo {
     private String parentId;
 
     private HttpRequest httpRequest;
-
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
-    }
 
     public LogMessageException getException() {
         return exception;
