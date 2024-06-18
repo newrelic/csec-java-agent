@@ -355,7 +355,11 @@ public class Agent implements SecurityAgent {
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
         boolean isNettyReactor = false, isNRGeneratedEvent = false;
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
-            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")){
+            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
+                    "com.nr.instrumentation.TokenLinkingSubscriber",
+                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
+                    "com.nr.vertx.instrumentation.VertxUtil$1",
+                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
                 isNettyReactor = true;
                 continue;
             }
