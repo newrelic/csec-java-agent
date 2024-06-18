@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import java.util.regex.Pattern;
 
 public class GenericHelper {
+    public static final String USER_CLASS_ENTITY = "USER-CLASS-ENTITY";
     public static Pattern QUOTED_STRING_PATTERN = Pattern.compile("((\\\\)*?('|\\\"))(([\\s\\S]*?)(?:(?=(\\\\?))\\6.)*?)\\1",
             Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     public static Pattern STORED_PROCEDURE_PATTERN = Pattern.compile("(call\\s+[a-zA-Z0-9_\\$]+\\(.*?\\))",
@@ -20,6 +21,7 @@ public class GenericHelper {
     public static final String ERROR_PARSING_HTTP_REQUEST_DATA = "Instrumentation library: %s , error while parsing HTTP request data : %s";
     public static final String ERROR_WHILE_GETTING_APP_ENDPOINTS = "Instrumentation library: %s , error while getting application API endpoints : %s";
     public static final String ERROR_PARSING_HTTP_RESPONSE = "Instrumentation library: %s , error while parsing HTTP Response data : %s";
+    public static final String ERROR_WHILE_DETECTING_USER_CLASS = "Instrumentation library: %s error while detecting user class";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
