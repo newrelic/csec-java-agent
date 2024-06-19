@@ -7,6 +7,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import com.newrelic.agent.security.instrumentation.grpc140.GrpcServerUtils;
+import com.newrelic.agent.security.instrumentation.grpc140.processor.GrpcRequestProcessor;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.schema.ControlCommandDto;
@@ -55,7 +56,9 @@ public class GrpcClient {
         }
     };
 
-    public Object fireRequest(ControlCommandDto controlCommandDto, int repeatCount) {
+    public Object fireRequest(GrpcRequestProcessor  grpcRequestProcessor) {
+        ControlCommandDto controlCommandDto = grpcRequestProcessor.getControlCommandDto();
+        int repeatCount = grpcRequestProcessor.getRepeatCount();
         try {
             FuzzRequestBean requestBean = controlCommandDto.getRequestBean();
             List<String> payloads = controlCommandDto.getRequestPayloads();
@@ -82,13 +85,20 @@ public class GrpcClient {
                     isSuccess = customBiDiStream(channel, requestBean, payloads);
                     break;
             }
+            grpcRequestProcessor.setSuccessful(true);
+
             return isSuccess;
         } catch (InterruptedException e) {
+            grpcRequestProcessor.setExceptionRaised(true);
+            grpcRequestProcessor.setError(e);
+
             if (repeatCount >= 0) {
-                return fireRequest(controlCommandDto, --repeatCount);
+                return fireRequest(grpcRequestProcessor);
             }
             return false;
         } catch (Throwable e) {
+            grpcRequestProcessor.setExceptionRaised(true);
+            grpcRequestProcessor.setError(e);
             return e;
         }
     }

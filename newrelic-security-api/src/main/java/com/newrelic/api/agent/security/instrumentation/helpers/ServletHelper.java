@@ -1,10 +1,7 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.schema.APIRecordStatus;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.io.File;
@@ -13,10 +10,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServletHelper {
@@ -33,6 +27,7 @@ public class ServletHelper {
     public static final String SERVLET_GET_WRITER_OPERATION_LOCK = "SERVLET_GET_WRITER_OPERATION_LOCK-";
     public static final String NR_SEC_HTTP_SESSION_ATTRIB_NAME = "NR-CSEC-HTTP-SESSION-";
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
+    public static final String SEPARATOR_COLON = ":";
 
     private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
     private static final Set<String> unsupportedContentType = new HashSet<String>() {{
@@ -83,7 +78,8 @@ public class ServletHelper {
             String[] data = StringUtils.splitByWholeSeparatorWorker(requestHeaderVal, SEPARATOR_SEMICOLON, -1, false);
 
             if (data.length >= 5) {
-                k2RequestIdentifierInstance.setApiRecordId(data[0].trim());
+                k2RequestIdentifierInstance.setOriginEntityGuid(StringUtils.substringBefore(data[0].trim(), SEPARATOR_COLON));
+                k2RequestIdentifierInstance.setApiRecordId(StringUtils.substringAfterLast(data[0].trim(), SEPARATOR_COLON));
                 k2RequestIdentifierInstance.setRefId(data[1].trim());
                 k2RequestIdentifierInstance.setRefValue(data[2].trim());
                 k2RequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
@@ -226,5 +222,32 @@ public class ServletHelper {
             return true;
         }
         return unsupportedContentType.contains(responseContentType);
+    }
+
+    public static FuzzRequestEmptyEntry iastDataRequestAddEmptyEntry(K2RequestIdentifier requestIdentifier, String traceHeader, String csecParentId) {
+        String originAppUUID = getOriginAppUUID(traceHeader);
+        requestIdentifier.setOriginApplicationUUID(originAppUUID);
+        return new FuzzRequestEmptyEntry(originAppUUID, requestIdentifier.getOriginEntityGuid(), csecParentId);
+    }
+
+    private static String getOriginAppUUID(String traceHeader) {
+        if(StringUtils.isNotBlank(traceHeader)) {
+            return StringUtils.substringBefore(traceHeader, "/");
+        }
+        return StringUtils.EMPTY;
+    }
+
+    /**
+     * This method should be called only after parseFuzzRequestIdentifierHeader
+     * */
+    public static String getTraceHeader(Map<String, String> headers) {
+        String data = StringUtils.EMPTY;
+        if (headers.containsKey(CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
+            data = headers.get(CSEC_DISTRIBUTED_TRACING_HEADER);
+            if (data == null || data.trim().isEmpty()) {
+                data = headers.get(CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
+            }
+        }
+        return data;
     }
 }

@@ -8,8 +8,6 @@ public class IastReplayRequest {
 
     private AtomicInteger receivedControlCommands = new AtomicInteger();
 
-    private AtomicInteger processedControlCommands = new AtomicInteger();
-
     private AtomicInteger pendingControlCommands = new AtomicInteger();
 
     private AtomicInteger replayRequestGenerated = new AtomicInteger();
@@ -27,7 +25,6 @@ public class IastReplayRequest {
 
     public IastReplayRequest(IastReplayRequest iastReplayRequest) {
         this.receivedControlCommands.set(iastReplayRequest.getReceivedControlCommands().get());
-        this.processedControlCommands.set(iastReplayRequest.getProcessedControlCommands().get());
         this.pendingControlCommands.set(iastReplayRequest.getPendingControlCommands().get());
         this.replayRequestGenerated.set(iastReplayRequest.getReplayRequestGenerated().get());
         this.replayRequestExecuted.set(iastReplayRequest.getReplayRequestExecuted().get());
@@ -38,10 +35,6 @@ public class IastReplayRequest {
 
     public AtomicInteger getReceivedControlCommands() {
         return receivedControlCommands;
-    }
-
-    public AtomicInteger getProcessedControlCommands() {
-        return processedControlCommands;
     }
 
     public AtomicInteger getPendingControlCommands() {
@@ -72,14 +65,6 @@ public class IastReplayRequest {
         return receivedControlCommands.incrementAndGet();
     }
 
-    public int incrementProcessedControlCommands() {
-        return processedControlCommands.incrementAndGet();
-    }
-
-    public int incrementPendingControlCommands() {
-        return pendingControlCommands.incrementAndGet();
-    }
-
     public int incrementReplayRequestGenerated() {
         return replayRequestGenerated.incrementAndGet();
     }
@@ -104,9 +89,20 @@ public class IastReplayRequest {
         pendingControlCommands.addAndGet(count);
     }
 
+    public void incrementReplayRequestExecutedBy(int count) {
+        replayRequestExecuted.addAndGet(count);
+    }
+
+    public void incrementReplayRequestSucceededBy(int count) {
+        replayRequestSucceeded.addAndGet(count);
+    }
+
+    public void incrementReplayRequestFailedBy(int count) {
+        replayRequestFailed.addAndGet(count);
+    }
+
     public void reset() {
         receivedControlCommands.set(0);
-        processedControlCommands.set(0);
         pendingControlCommands.set(0);
         replayRequestGenerated.set(0);
         replayRequestExecuted.set(0);

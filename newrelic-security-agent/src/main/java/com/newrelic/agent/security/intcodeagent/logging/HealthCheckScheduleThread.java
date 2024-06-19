@@ -81,6 +81,10 @@ public class HealthCheckScheduleThread {
                 logger.log(LogLevel.INFO, String.format("Pending CCs to be processed : %s", RestRequestThreadPool.getInstance().getQueueSize()), this.getClass().getName());
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(RestRequestThreadPool.getInstance().getQueueSize());
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestExecutedBy(GrpcClientRequestReplayHelper.getInstance().getReplayRequestExecuted());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestFailedBy(GrpcClientRequestReplayHelper.getInstance().getReplayRequestFailed());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestSucceededBy(GrpcClientRequestReplayHelper.getInstance().getReplayRequestSucceeded());
+                GrpcClientRequestReplayHelper.getInstance().resetReplayRequestMetric();
                 AgentUtils.getInstance().addStatusLogMostRecentHCs(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                 if (WSClient.getInstance().isOpen()) {
@@ -122,7 +126,7 @@ public class HealthCheckScheduleThread {
     private HealthCheckScheduleThread() {}
 
     public void scheduleNewTask() {
-        future = SchedulerHelper.getInstance().scheduleHealthCheck(runnable, 30, 30, TimeUnit.SECONDS);
+        future = SchedulerHelper.getInstance().scheduleHealthCheck(runnable, 300, 300, TimeUnit.SECONDS);
     }
 
     public boolean cancelTask(boolean forceCancel) {
