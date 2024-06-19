@@ -126,7 +126,7 @@ public class HealthCheckScheduleThread {
     private HealthCheckScheduleThread() {}
 
     public void scheduleNewTask() {
-        future = SchedulerHelper.getInstance().scheduleHealthCheck(runnable, 30, 30, TimeUnit.SECONDS);
+        future = SchedulerHelper.getInstance().scheduleHealthCheck(runnable, 300, 300, TimeUnit.SECONDS);
     }
 
     public boolean cancelTask(boolean forceCancel) {
