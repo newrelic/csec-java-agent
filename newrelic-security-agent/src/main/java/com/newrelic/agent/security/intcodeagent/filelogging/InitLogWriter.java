@@ -178,7 +178,9 @@ public class InitLogWriter implements Runnable {
             FileLoggerThreadPool.getInstance().setInitLoggingActive(true);
 
 //			writer.newLine();
-            rollover(currentLogFileName);
+            if(maxFileSize > 0) {
+                rollover(currentLogFileName);
+            }
         } catch (IOException e) {
             //TODO report to cloud
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);

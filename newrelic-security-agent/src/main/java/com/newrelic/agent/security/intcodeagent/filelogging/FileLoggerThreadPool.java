@@ -20,7 +20,7 @@ public class FileLoggerThreadPool {
 
     private boolean isInitLoggingActive = true;
 
-    protected final int maxfilesize;
+    protected final long maxfilesize;
 
     protected final int maxfiles;
 
@@ -32,8 +32,8 @@ public class FileLoggerThreadPool {
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 600;
-        maxfiles = Math.max(K2JALogProperties.maxfiles, LogFileHelper.logFileCount());
-        maxfilesize = LogFileHelper.logFileLimit()*1024;
+        maxfiles = LogFileHelper.logFileCount();
+        maxfilesize = LogFileHelper.logFileLimit()* 1024L;
 
         TimeUnit timeUnit = TimeUnit.SECONDS;
 
