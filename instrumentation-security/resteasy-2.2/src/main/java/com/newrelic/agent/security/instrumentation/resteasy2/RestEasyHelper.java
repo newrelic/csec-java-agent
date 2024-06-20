@@ -13,6 +13,7 @@ import org.jboss.resteasy.core.ResourceMethod;
 public class RestEasyHelper {
     private static final String WILDCARD = "*";
     public static final String RESTEASY_22 = "RESTEASY-2.2";
+    public static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
 
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{

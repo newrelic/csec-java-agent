@@ -12,6 +12,6 @@ public abstract class MethodExpression_Instrumentation {
     public abstract String getPathExpression();
     public void populatePathParams(HttpRequest request, Matcher matcher, String path){
         Weaver.callOriginal();
-        RestEasyHelper.getRequestRoute(getPathExpression());
+        RestEasyHelper.getRequestRoute(getPathExpression(), path);
     }
 }

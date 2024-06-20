@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"org.springframework.web.reactive"})
+@InstrumentationTestConfig(includePrefixes = {"org.springframework.web.servlet"})
 public class APIEndpointTest {
 
     TestHandlerMethodMapping handlerMapping = new TestHandlerMethodMapping();

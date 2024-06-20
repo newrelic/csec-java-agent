@@ -12,11 +12,6 @@ public class TestMapping {
         return "Get it!";
     }
 
-    @PUT
-    public String putIt() {
-        return "Put it!";
-    }
-
     @Path("count")
     @GET
     @Consumes("application/json")

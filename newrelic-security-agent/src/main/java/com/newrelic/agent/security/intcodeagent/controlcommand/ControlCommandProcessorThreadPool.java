@@ -98,6 +98,10 @@ public class ControlCommandProcessorThreadPool {
         });
     }
 
+    public BlockingQueue<Runnable> getQueue() {
+        return executor.getQueue();
+    }
+
     public static ControlCommandProcessorThreadPool getInstance() {
 
         if (instance == null) {

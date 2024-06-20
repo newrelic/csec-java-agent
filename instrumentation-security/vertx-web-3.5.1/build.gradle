@@ -1,0 +1,20 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("io.vertx:vertx-web:3.5.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.vertx-web-3.5.1' }
+}
+
+verifyInstrumentation {
+    passesOnly 'io.vertx:vertx-web:[3.5.1,3.8.3)'
+    excludeRegex '.*milestone[0-9]*'
+}
+
+site {
+    title 'Vertx'
+    type 'Framework'
+}
