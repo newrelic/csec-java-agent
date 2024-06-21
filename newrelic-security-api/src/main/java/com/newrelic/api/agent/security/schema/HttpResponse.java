@@ -23,6 +23,7 @@ public class HttpResponse {
         this.headers = new ConcurrentHashMap<>(httpResponse.getHeaders());
         this.responseBody = new StringBuilder(httpResponse.responseBody);
         this.contentType = new String(httpResponse.contentType.trim());
+        this.responseCode = httpResponse.responseCode;
     }
 
     public Map<String, String> getHeaders() {
