@@ -9,6 +9,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperation;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -55,16 +56,12 @@ public class HttpServletResponse_Instrumentation {
                 sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
             }
 
-            SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
-            if(operations == null){
-                operations = new SecureCookieOperationSet(className, methodName);;
-                operations.setLowSeverityHook(true);
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", operations);
-            }
-            operations.addOperation(cookie.getName(), cookie.getValue(), isSecure, isHttpOnly, sameSiteStrict);
+            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure ), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
+            operation.setLowSeverityHook(true);
+            NewRelicSecurity.getAgent().registerOperation(operation);
 //            NewRelicSecurity.getAgent().registerOperation(operation);
 
-            return operations;
+            return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, HttpServletResponse_Instrumentation.class.getName());

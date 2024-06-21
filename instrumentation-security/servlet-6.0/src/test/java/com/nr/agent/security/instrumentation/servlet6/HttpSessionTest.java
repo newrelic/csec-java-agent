@@ -5,7 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
-import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperation;
 import com.newrelic.api.agent.security.schema.operation.TrustBoundaryOperation;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -69,10 +69,10 @@ public class HttpSessionTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
-        SecureCookieOperationSet targetOperation = null;
+        SecureCookieOperation targetOperation = null;
         for (AbstractOperation operation : operations) {
-            if (operation instanceof SecureCookieOperationSet)
-                targetOperation = (SecureCookieOperationSet) operation;
+            if (operation instanceof SecureCookieOperation)
+                targetOperation = (SecureCookieOperation) operation;
         };
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
@@ -89,10 +89,10 @@ public class HttpSessionTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
-        SecureCookieOperationSet targetOperation = null;
+        SecureCookieOperation targetOperation = null;
         for (AbstractOperation operation : operations) {
-            if (operation instanceof SecureCookieOperationSet)
-                targetOperation = (SecureCookieOperationSet) operation;
+            if (operation instanceof SecureCookieOperation)
+                targetOperation = (SecureCookieOperation) operation;
         };
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
