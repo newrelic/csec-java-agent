@@ -41,11 +41,11 @@ public class APIEndpointTest {
 
     @BeforeClass
     public static void setupMappings() {
-        expectedMappings.put("/hello", SimpleJavaController.class.getName() + ".hello");
-        expectedMappings.put("/scalaHello", SimpleScalaController.class.getName() + ".scalaHello");
-        expectedMappings.put("/post", SimpleJavaController.class.getName() + ".post(data:String)");
-        expectedMappings.put("/index", SimpleJavaController.class.getName() + ".index");
-        expectedMappings.put("/simple", SimpleJavaController.class.getName() + ".simple");
+        expectedMappings.put("/hello", SimpleJavaController.class.getName());
+        expectedMappings.put("/scalaHello", SimpleScalaController.class.getName());
+        expectedMappings.put("/post", SimpleJavaController.class.getName());
+        expectedMappings.put("/index", SimpleJavaController.class.getName());
+        expectedMappings.put("/simple", SimpleJavaController.class.getName());
     }
 
     @Test
