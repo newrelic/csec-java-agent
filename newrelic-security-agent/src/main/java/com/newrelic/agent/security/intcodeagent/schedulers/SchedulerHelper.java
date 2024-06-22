@@ -66,6 +66,15 @@ public class SchedulerHelper {
         return future;
     }
 
+    public ScheduledFuture<?> scheduleApplicationRuntimeErrorPosting(Runnable command,
+                                                               long initialDelay,
+                                                               long period,
+                                                               TimeUnit unit){
+        ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, initialDelay, period, unit);
+        scheduledFutureMap.put("application-runtime-error-posting", future);
+        return future;
+    }
+
     public ScheduledFuture<?> scheduleDailyLogRollover(Runnable command) {
 
         if(LogFileHelper.isDailyRollover()) {

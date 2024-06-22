@@ -10,10 +10,14 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperation;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.http.HttpServletResponse")
 public class HttpServletResponse_Instrumentation {
@@ -33,9 +37,6 @@ public class HttpServletResponse_Instrumentation {
                 releaseLock(cookie.hashCode());
             }
         }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
-        }
     }
 
     private AbstractOperation preprocessSecurityHook(Cookie cookie, String className, String methodName) {
@@ -54,9 +55,11 @@ public class HttpServletResponse_Instrumentation {
             } else if(StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite")) {
                 sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
             }
-            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
+
+            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure ), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
             operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
+//            NewRelicSecurity.getAgent().registerOperation(operation);
 
             return operation;
         } catch (Throwable e) {
