@@ -89,7 +89,7 @@ public class URLMappingsHelper {
             }
         }
         return segments;
-
+    }
     public static int getSegmentCount(String path){
         Path normalizedPath = Paths.get(StringUtils.prependIfMissing(StringUtils.removeEnd(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR)).normalize();
         int i = 0;
