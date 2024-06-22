@@ -184,13 +184,13 @@ public class WSClient extends WebSocketClient {
                 // This Sets the authenticator that will be used by
                 // the networking code when a proxy or an HTTP server asks for authentication.
                 // This can lead to potential leak of authentication info by the application itself.
-                Authenticator.setDefault(new Authenticator() {
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
-                    }
-                });
-                logger.log(LogLevel.FINER, "Authenticated proxy using username and password", WSClient.class.getName());
+//                Authenticator.setDefault(new Authenticator() {
+//                    @Override
+//                    protected PasswordAuthentication getPasswordAuthentication() {
+//                        return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
+//                    }
+//                });
+//                logger.log(LogLevel.FINER, "Authenticated proxy using username and password", WSClient.class.getName());
             }
             logger.log(LogLevel.FINER, String.format("Proxy being used to connect with WSS %s", proxy), WSClient.class.getName());
             return proxy;
