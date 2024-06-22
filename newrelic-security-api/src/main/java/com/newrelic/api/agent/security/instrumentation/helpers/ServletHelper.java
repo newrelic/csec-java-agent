@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -110,7 +111,6 @@ public class ServletHelper {
                         }
                         tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
                                 NewRelicSecurity.getAgent().getAgentTempDir());
-                        k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
                         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
                         try {
                             if (lockAcquired) {
@@ -126,9 +126,11 @@ public class ServletHelper {
                                 }
                                 if (!fileToCreate.exists()) {
                                     Files.createFile(fileToCreate.toPath());
+                                    k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (IOException | InvalidPathException ignored) {}
+                        catch (Throwable e) {
                             String message = "Error while parsing fuzz request : %s";
                             NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
                         } finally {
@@ -207,7 +209,7 @@ public class ServletHelper {
                 for (String file : files) {
                     try {
                         Files.deleteIfExists(Paths.get(file));
-                    } catch (IOException e) {
+                    } catch (IOException | InvalidPathException e) {
                     }
                 }
             }
