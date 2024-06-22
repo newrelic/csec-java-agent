@@ -12,7 +12,6 @@ public class NullPointerException_Instrumentation extends RuntimeException {
     public NullPointerException_Instrumentation() {
         if (NewRelicSecurity.isHookProcessingActive()) {
             NewRelicSecurity.getAgent().reportApplicationRuntimeError(NewRelicSecurity.getAgent().getSecurityMetaData(), this);
-            System.out.println("NullPointerException_Instrumentation : "+this.getMessage());
         }
     }
 }

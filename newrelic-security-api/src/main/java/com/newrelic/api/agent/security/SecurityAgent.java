@@ -73,4 +73,6 @@ public interface SecurityAgent {
     String decryptAndVerify(String encryptedData, String hashVerifier);
 
     void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception);
+
+    boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception);
 }

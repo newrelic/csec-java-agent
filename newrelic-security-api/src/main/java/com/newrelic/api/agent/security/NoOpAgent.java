@@ -137,5 +137,10 @@ class NoOpAgent implements SecurityAgent {
 
     }
 
+    @Override
+    public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
+        return false;
+    }
+
 
 }

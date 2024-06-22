@@ -30,6 +30,19 @@ public class LogMessageException {
         }
     }
 
+    public LogMessageException(Throwable exception, int nestingLevel, int maxNestingLevel, int max) {
+        this.type = exception.getClass().getName();
+        this.message = exception.getMessage();
+        StackTraceElement[] trace = exception.getStackTrace();
+        this.stackTrace = new String[Math.min(trace.length, max)];
+        for (int index = 0; index < trace.length && index < max; index++) {
+            this.stackTrace[index] = AgentUtils.stackTraceElementToString(trace[index]);
+        }
+        if (exception.getCause() != null && nestingLevel < maxNestingLevel) {
+            this.cause = new LogMessageException(exception.getCause(), nestingLevel++, maxNestingLevel, max);
+        }
+    }
+
     public String getMessage() {
         return message;
     }

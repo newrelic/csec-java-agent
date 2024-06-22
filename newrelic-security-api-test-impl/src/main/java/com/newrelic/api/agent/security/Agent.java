@@ -206,4 +206,9 @@ public class Agent implements SecurityAgent {
     public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
 
     }
+
+    @Override
+    public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
+        return false;
+    }
 }
