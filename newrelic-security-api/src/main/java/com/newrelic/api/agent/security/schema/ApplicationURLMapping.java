@@ -13,7 +13,7 @@ public class ApplicationURLMapping {
 
     public ApplicationURLMapping(String method, String url, String handler) {
         this.method = method;
-        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(url, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        this.path = StringUtils.prependIfMissing(StringUtils.removeEnd(url, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
         this.handler = handler;
     }
 
@@ -38,7 +38,7 @@ public class ApplicationURLMapping {
     }
 
     public void setPath(String path) {
-        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR);;
+        this.path = StringUtils.prependIfMissing(StringUtils.removeEnd(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR);;
     }
 
     @Override
