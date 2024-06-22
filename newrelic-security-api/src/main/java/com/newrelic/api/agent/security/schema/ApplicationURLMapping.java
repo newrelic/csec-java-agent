@@ -8,13 +8,12 @@ public class ApplicationURLMapping {
     private String handler;
 
     public ApplicationURLMapping(String method, String url) {
-        this.method = method;
-        this.path = url;
+        this(method, url, null);
     }
 
     public ApplicationURLMapping(String method, String url, String handler) {
         this.method = method;
-        this.path = url;
+        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(url, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
         this.handler = handler;
     }
 
@@ -39,7 +38,7 @@ public class ApplicationURLMapping {
     }
 
     public void setPath(String path) {
-        this.path = path;
+        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR);;
     }
 
     @Override
