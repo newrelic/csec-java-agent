@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-267](https://github.com/newrelic/csec-java-agent/pull/267) Implement Fallback mechanism for route detection of an incoming request [NR-273607](https://new-relic.atlassian.net/issues/NR-273607)
 - [PR-256](https://github.com/newrelic/csec-java-agent/pull/256), [PR-259](https://github.com/newrelic/csec-java-agent/pull/259), [PR-258](https://github.com/newrelic/csec-java-agent/pull/258) Feature to detect route of an incoming request for Jax-RS and Spring Framework. [NR-265913](https://new-relic.atlassian.net/browse/NR-265913), [NR-261653](https://new-relic.atlassian.net/browse/NR-261653), [NR-273605](https://new-relic.atlassian.net/browse/NR-273605)
 - [PR-126](https://github.com/newrelic/csec-java-agent/pull/126), [PR-127](https://github.com/newrelic/csec-java-agent/pull/127), [PR-128](https://github.com/newrelic/csec-java-agent/pull/128), [PR-129](https://github.com/newrelic/csec-java-agent/pull/129) Jedis Support : The security agent now also supports Jedis Version 1.4.0 and above. [NR-174176](https://new-relic.atlassian.net/browse/NR-174176)
-
+- [PR-287](https://github.com/newrelic/csec-java-agent/pull/287) Support for Proxy Settings for Connecting to the Security Engine, with known limitation of missing Authentication capabilities.
 ### Fixes
 - [PR-255](https://github.com/newrelic/csec-java-agent/pull/255) Handle InvalidPathException thrown by Paths.get method [NR-262452](https://new-relic.atlassian.net/browse/)
 - [PR-216](https://github.com/newrelic/csec-java-agent/pull/216) Extract Server Configuration to resolve IAST localhost connection with application for Glassfish Server. [NR-223808](https://new-relic.atlassian.net/browse/NR-223808)
