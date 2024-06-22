@@ -9,8 +9,11 @@ package com.nr.agent.security.instrumentation.play2_7;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
+import com.newrelic.agent.security.introspec.SecurityIntrospector;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -53,10 +56,21 @@ public class APIEndpointTest {
 
         Set<ApplicationURLMapping> actualMappings = URLMappingsHelper.getApplicationURLMappings();
         Assert.assertNotNull(actualMappings);
-        Assert.assertEquals(5, actualMappings.size());
+        Assert.assertEquals(expectedMappings.size(), actualMappings.size());
         for (ApplicationURLMapping actualMapping : actualMappings) {
             assertMappings(actualMapping);
         }
+
+        // verification of user-class entity
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        SecurityMetaData metaData = introspector.getSecurityMetaData();
+        Assert.assertNotNull(metaData.getMetaData());
+        Assert.assertTrue(metaData.getMetaData().isUserLevelServiceMethodEncountered());
+
+        StackTraceElement element = metaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class);
+        Assert.assertNotNull(element);
+        Assert.assertEquals(SimpleJavaController.class.getName(), element.getClassName());
+        Assert.assertEquals("hello", element.getMethodName());
     }
 
     private void assertMappings(ApplicationURLMapping actualMapping){
