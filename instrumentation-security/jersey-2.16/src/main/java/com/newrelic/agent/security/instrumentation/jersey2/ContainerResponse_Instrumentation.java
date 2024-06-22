@@ -28,6 +28,10 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.ServletHel
 public abstract class ContainerResponse_Instrumentation {
 
     ContainerResponse_Instrumentation(final ContainerRequest requestContext, final OutboundJaxrsResponse response) {
+        if(response != null) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
+        }
+
         if(response != null && response.getContext() != null && response.getContext().hasEntity()){
             Object responseObject = response.getContext().getEntity();
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(String.valueOf(responseObject)));

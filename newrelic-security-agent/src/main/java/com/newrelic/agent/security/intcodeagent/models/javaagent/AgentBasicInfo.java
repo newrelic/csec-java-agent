@@ -27,6 +27,8 @@ public class AgentBasicInfo {
 
     public static final String IAST_SCAN_FAILURE = "iast-scan-failure";
 
+    public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
+
     /**
      * Tool id for Language Agent.
      */
@@ -62,6 +64,8 @@ public class AgentBasicInfo {
     @JsonInclude
     private static String policyVersion;
 
+    private String accountId;
+
     private boolean isPolicyOverridden = AgentUtils.getInstance().isPolicyOverridden();
 
     /**
@@ -75,6 +79,7 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
+        setAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -104,6 +109,9 @@ public class AgentBasicInfo {
         } else if (this instanceof IASTScanFailure) {
             setJsonName(IAST_SCAN_FAILURE);
             setEventType(IAST_SCAN_FAILURE);
+        } else if (this instanceof ApplicationRuntimeError) {
+            setJsonName(APPLICATION_RUNTIME_ERROR);
+            setEventType(APPLICATION_RUNTIME_ERROR);
         }
     }
 
@@ -230,5 +238,13 @@ public class AgentBasicInfo {
 
     public void setLinkingMetadata(Map<String, String> linkingMetadata) {
         this.linkingMetadata = linkingMetadata;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 }
