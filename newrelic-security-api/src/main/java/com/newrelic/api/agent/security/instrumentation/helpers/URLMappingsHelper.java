@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class URLMappingsHelper {
+    public static final String subResourceSegment = "/*";
     private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
@@ -88,5 +89,14 @@ public class URLMappingsHelper {
             }
         }
         return segments;
+
+    public static int getSegmentCount(String path){
+        Path normalizedPath = Paths.get(StringUtils.prependIfMissing(StringUtils.removeEnd(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR)).normalize();
+        int i = 0;
+        while (normalizedPath.getParent() != null){
+            normalizedPath = normalizedPath.getParent();
+            i++;
+        }
+        return i;
     }
 }

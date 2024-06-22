@@ -7,7 +7,7 @@ public class CustomerLocatorResource {
     protected OrdersSubResource ordersSubResource = new OrdersSubResource();
 
     @Path("orders")
-    public Object getOrders() {
+    public OrdersSubResource getOrders() {
         return ordersSubResource;
     }
 }
@@ -15,7 +15,7 @@ class OrdersSubResource {
     protected TestMapping idType = new TestMapping();
 
     @Path("getStuff")
-    public Object getById() {
+    public TestMapping getById() {
         return idType;
     }
 
