@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -182,10 +183,7 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
-//        RestRequestThreadPool.getInstance().resetIASTProcessing();
-//        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
-//        DispatcherPool.getInstance().reset();
-//        EventSendPool.getInstance().reset();
+        cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
@@ -194,6 +192,15 @@ public class WSClient extends WebSocketClient {
         WSUtils.getInstance().setConnected(true);
         AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
+    }
+
+    private static void cleanIASTState() {
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
+        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        RestRequestThreadPool.getInstance().getRejectedIds().clear();
+        GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
+        DispatcherPool.getInstance().reset();
+        EventSendPool.getInstance().reset();
     }
 
     @Override
@@ -218,6 +225,8 @@ public class WSClient extends WebSocketClient {
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
+        ControlCommandProcessorThreadPool.getInstance().getQueue().clear();
+        cleanIASTState();
         WSUtils.getInstance().setConnected(false);
         if (code == CloseFrame.POLICY_VALIDATION) {
             WSReconnectionST.cancelTask(true);

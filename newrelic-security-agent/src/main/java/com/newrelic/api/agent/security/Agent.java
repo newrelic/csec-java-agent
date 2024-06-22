@@ -360,7 +360,11 @@ public class Agent implements SecurityAgent {
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
         boolean isNettyReactor = false, isNRGeneratedEvent = false;
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
-            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")){
+            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
+                    "com.nr.instrumentation.TokenLinkingSubscriber",
+                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
+                    "com.nr.vertx.instrumentation.VertxUtil$1",
+                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
                 isNettyReactor = true;
                 continue;
             }
@@ -393,12 +397,16 @@ public class Agent implements SecurityAgent {
 
     private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
         UserClassEntity userClassEntity = new UserClassEntity();
-        StackTraceElement userStackTraceElement = null;
-        if(securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
+        StackTraceElement userStackTraceElement = securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class);
+        if(userStackTraceElement == null && securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
             userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
         }
 
-        for (int i = 0; i < operation.getStackTrace().length; i++) {
+        String framework = securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework();
+        if (framework == null){
+            framework = StringUtils.EMPTY;
+        }
+        for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
 
             // Section for user class identification using API handlers
@@ -409,28 +417,50 @@ public class Agent implements SecurityAgent {
                 userClassEntity.setCalledByUserCode(true);
                 return userClassEntity;
             }
-
-            //Fallback to old mechanism
-            if(userStackTraceElement != null){
-                if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
-                        && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
-                    userClassEntity.setUserClassElement(stackTraceElement);
-                    userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                    userStackTraceElement = stackTraceElement;
-                }
-            }
-            // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
-            if( i+1 < operation.getStackTrace().length && StringUtils.equals(operation.getSourceMethod(), stackTraceElement.toString())){
-                userClassEntity.setUserClassElement(operation.getStackTrace()[i + 1]);
-                userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            switch (framework){
+                case "vertx-web":
+                    if(i-1 >= 0) {
+                        userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
+                        if(userClassEntity.getUserClassElement() != null){
+                            return userClassEntity;
+                        }
+                    }
+                    break;
+                default:
+                    if(userStackTraceElement != null){
+                        if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                                && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                            userClassEntity.setUserClassElement(stackTraceElement);
+                            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+                            return userClassEntity;
+                        }
+                    }
             }
         }
-
+        if (securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class) != null){
+            userClassEntity.setUserClassElement(userStackTraceElement);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            return userClassEntity;
+        }
         if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
             userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
         }
         return userClassEntity;
+    }
+
+    private UserClassEntity setUserClassEntityForVertx(AbstractOperation operation, StackTraceElement userStackTraceElement, UserClassEntity userClassEntity, boolean userLevelServiceMethodEncountered, int i) {
+        StackTraceElement serviceTraceElement = operation.getStackTrace()[i];
+        if(serviceTraceElement != null){
+            if(StringUtils.equals(serviceTraceElement.getClassName(), userStackTraceElement.getClassName())
+                    && StringUtils.equals(serviceTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                StackTraceElement stackTraceElement = operation.getStackTrace()[i-1];
+                userClassEntity.setUserClassElement(stackTraceElement);
+                userClassEntity.setCalledByUserCode(userLevelServiceMethodEncountered);
+                return userClassEntity;
+            }
+        }
+        return new UserClassEntity();
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
