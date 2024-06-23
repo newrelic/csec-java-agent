@@ -459,8 +459,8 @@ public class Dispatcher implements Callable {
         params.add(secureCookieOperationalBean.getValue());
         JSONObject cookie = new JSONObject();
         cookie.put(COOKIE_NAME, secureCookieOperationalBean.getCookie());
-        cookie.put(COOKIE_VALUE, secureCookieOperationalBean.isSecure());
-        cookie.put(COOKIE_IS_SECURE, secureCookieOperationalBean.isHttpOnly());
+        cookie.put(COOKIE_VALUE, secureCookieOperationalBean.getValue());
+        cookie.put(COOKIE_IS_SECURE, secureCookieOperationalBean.isSecure());
         cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperationalBean.isHttpOnly());
         cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperationalBean.isSameSiteStrict());
         params.add(cookie);
