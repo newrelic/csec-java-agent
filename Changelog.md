@@ -4,7 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - TBD
+## [1.4.0] - 2024-6-24
 ### Changes
 - Json Version bump to 1.2.3 due to [NR-254157](https://new-relic.atlassian.net/browse/NR-254157) implementation.
 - [PR-260](https://github.com/newrelic/csec-java-agent/pull/260) SpyMemcached Support : The security agent now also supports SpyMemcached Version 2.12.0 and above. [NR-171576](https://new-relic.atlassian.net/browse/NR-171576)
