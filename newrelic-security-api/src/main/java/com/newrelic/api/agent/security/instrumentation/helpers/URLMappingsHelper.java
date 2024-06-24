@@ -15,6 +15,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class URLMappingsHelper {
+    public static final String SEPARATOR = "/";
+    public static final String WILDCARD = "*";
     public static final String subResourceSegment = "/*";
     private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
     private static final Set<String> defaultHandlers = new HashSet<String>() {{

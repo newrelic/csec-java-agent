@@ -186,7 +186,7 @@ public class Dispatcher implements Callable {
                     eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
                     break;
                 case SECURE_COOKIE:
-                    SecureCookieOperationSet secureCookieOperationalBean = (SecureCookieOperationSet) operation;
+                    SecureCookieOperation secureCookieOperationalBean = (SecureCookieOperation) operation;
                     eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
                     break;
                 case TRUSTBOUNDARY:
@@ -454,17 +454,16 @@ public class Dispatcher implements Callable {
     }
 
     private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
-            SecureCookieOperationSet secureCookieOperationalBean) {
+            SecureCookieOperation secureCookieOperationalBean) {
         JSONArray params = new JSONArray();
-        for (SecureCookieOperationSet.SecureCookieOperation secureCookieOperation : secureCookieOperationalBean.getOperations()) {
-            JSONObject cookie = new JSONObject();
-            cookie.put(COOKIE_NAME, secureCookieOperation.getName());
-            cookie.put(COOKIE_VALUE, secureCookieOperation.getValue());
-            cookie.put(COOKIE_IS_SECURE, secureCookieOperation.isSecure());
-            cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperation.isHttpOnly());
-            cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperation.isSameSiteStrict());
-            params.add(cookie);
-        }
+        params.add(secureCookieOperationalBean.getValue());
+        JSONObject cookie = new JSONObject();
+        cookie.put(COOKIE_VALUE, secureCookieOperationalBean.getCookie());
+        cookie.put(COOKIE_IS_SECURE, secureCookieOperationalBean.isSecure());
+        cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperationalBean.isHttpOnly());
+        cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperationalBean.isSameSiteStrict());
+        params.add(cookie);
+
         eventBean.setParameters(params);
         return eventBean;
     }

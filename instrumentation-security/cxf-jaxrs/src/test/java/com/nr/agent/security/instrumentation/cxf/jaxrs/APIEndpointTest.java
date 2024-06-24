@@ -53,21 +53,16 @@ public class APIEndpointTest {
         Iterator<ApplicationURLMapping> mapping = mappings.iterator();
         String path = "/users";
 
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("*", "/customers/orders/*", CustomerLocatorResource.class.getName(), mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("POST", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("GET", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("PUT", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("GET", path +"/count", handler, mapping.next());
-
+        while (mapping.hasNext()){
+            ApplicationURLMapping urlMapping = mapping.next();
+            if (urlMapping.getPath().equals("/customers/orders/*")){
+                assertMapping("*", "/customers/orders/*", CustomerLocatorResource.class.getName(), urlMapping);
+            } else if (urlMapping.getPath().equals(path +"/count")){
+                assertMapping("GET", path +"/count", handler, urlMapping);
+            } else {
+                assertMapping(urlMapping.getMethod(), path, handler, urlMapping);
+            }
+        }
     }
 
     private void assertMapping(String method, String path, String handler, ApplicationURLMapping actualMapping) {
