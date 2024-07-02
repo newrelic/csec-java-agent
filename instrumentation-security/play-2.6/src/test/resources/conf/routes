@@ -2,4 +2,5 @@ GET     /hello          com.nr.agent.security.instrumentation.play26.SimpleJavaC
 GET     /index          com.nr.agent.security.instrumentation.play26.SimpleJavaController.index
 GET     /simple         com.nr.agent.security.instrumentation.play26.SimpleJavaController.simple
 GET     /scalaHello     com.nr.agent.security.instrumentation.play26.SimpleScalaController.scalaHello
-POST    /post           com.nr.agent.security.instrumentation.play26.SimpleJavaController.post(data: String)
+GET    /post/:data           com.nr.agent.security.instrumentation.play26.SimpleJavaController.post(data: String)
+GET    /post1/$data<[a-zA-Z]+>    com.nr.agent.security.instrumentation.play26.SimpleJavaController.post(data: String)

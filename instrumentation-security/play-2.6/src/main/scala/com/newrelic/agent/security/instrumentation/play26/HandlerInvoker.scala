@@ -9,6 +9,7 @@ package com.newrelic.agent.security.instrumentation.play26
 
 import com.newrelic.api.agent.security.NewRelicSecurity
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper
+import com.newrelic.api.agent.security.schema.Framework
 import com.newrelic.api.agent.security.utils.logging.LogLevel
 import com.newrelic.api.agent.weaver.{MatchType, Weave, Weaver}
 import play.api.mvc.Handler
@@ -34,6 +35,16 @@ class NewRelicWrapperInvoker[A](underlyingInvoker: HandlerInvoker[A], handlerDef
       }
     } catch {
       case t: Throwable => NewRelicSecurity.getAgent.log(LogLevel.FINEST, String.format(GenericHelper.ERROR_WHILE_DETECTING_USER_CLASS, "PLAY-2.6"), t, this.getClass.getName)
+    }
+
+    // route detection
+    try {
+      if (NewRelicSecurity.isHookProcessingActive) {
+        NewRelicSecurity.getAgent.getSecurityMetaData.getRequest.setRoute(handlerDef.path)
+        NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData.setFramework(Framework.PLAY)
+      }
+    } catch {
+      case t: Throwable => NewRelicSecurity.getAgent.log(LogLevel.FINEST, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, "PLAY-2.6"), t, this.getClass.getName)
     }
     underlyingInvoker.call(call)
   }
