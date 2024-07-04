@@ -41,6 +41,7 @@ The agent automatically instruments the following frameworks.
 - Spray HTTP 1.3.1 to latest (with scala 2.11 and above)
 - Netty Server 4.0.0.Final to latest
 - Netty Reactor Server 0.7.0.RELEASE to latest
+- Vertx web 3.2.0 to latest
 
 ** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
@@ -75,6 +76,7 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - Akka Client 10.0 to latest (with scala 2.11 and above)
 - Spray Can Client 1.3.1 to latest (with scala 2.11 and above)
 - Spring WebClient 5.0.0.RELEASE to latest
+- Vertx Core 3.3.0 to latest
 
 ### Datastores
 

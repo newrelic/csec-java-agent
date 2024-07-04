@@ -27,6 +27,8 @@ public class AgentBasicInfo {
 
     public static final String IAST_SCAN_FAILURE = "iast-scan-failure";
 
+    public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
+
     /**
      * Tool id for Language Agent.
      */
@@ -64,6 +66,8 @@ public class AgentBasicInfo {
 
     @JsonInclude
     private static String policyVersion;
+
+    private String accountId;
 
     private boolean isPolicyOverridden = AgentUtils.getInstance().isPolicyOverridden();
 
@@ -110,6 +114,9 @@ public class AgentBasicInfo {
         } else if (this instanceof IASTScanFailure) {
             setJsonName(IAST_SCAN_FAILURE);
             setEventType(IAST_SCAN_FAILURE);
+        } else if (this instanceof ApplicationRuntimeError) {
+            setJsonName(APPLICATION_RUNTIME_ERROR);
+            setEventType(APPLICATION_RUNTIME_ERROR);
         }
     }
 
