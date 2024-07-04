@@ -29,8 +29,8 @@ public class LogMessage {
     private Map<String, String> linkingMetadata;
 
     private String threadName;
-    private String accountId;
-    private String entityGuid;
+    private String appAccountId;
+    private String appEntityGuid;
 
     public LogMessage(String level, String message, String caller, Throwable exception, Map<String, String> linkingMetadata) {
         this.timestamp = Instant.now().toEpochMilli();
@@ -42,9 +42,9 @@ public class LogMessage {
             this.exception = new LogMessageException(exception, 0, 1);
         }
         this.threadName = Thread.currentThread().getName();
-        this.entityGuid = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
+        this.appEntityGuid = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
         if (AgentConfig.getInstance().getConfig().getCustomerInfo() != null) {
-            this.accountId = AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId();
+            this.appAccountId = AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId();
         }
     }
 
@@ -98,20 +98,20 @@ public class LogMessage {
         this.threadName = threadName;
     }
 
-    public String getAccountId() {
-        return accountId;
+    public String getAppAccountId() {
+        return appAccountId;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
+    public void setAppAccountId(String appAccountId) {
+        this.appAccountId = appAccountId;
     }
 
-    public String getEntityGuid() {
-        return entityGuid;
+    public String getAppEntityGuid() {
+        return appEntityGuid;
     }
 
-    public void setEntityGuid(String entityGuid) {
-        this.entityGuid = entityGuid;
+    public void setAppEntityGuid(String appEntityGuid) {
+        this.appEntityGuid = appEntityGuid;
     }
     @Override
     public String toString() {
