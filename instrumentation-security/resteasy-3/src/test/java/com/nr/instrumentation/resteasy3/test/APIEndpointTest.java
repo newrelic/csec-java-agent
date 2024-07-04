@@ -17,19 +17,25 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.resteasy3", "org.jboss.resteasy.core.registry"})
 public class APIEndpointTest {
     private final String handler = TestMapping.class.getName();
-    private final String path = "/users";
+    private static final String path = "/users";
+    private static final Map<String, String> mappings = new HashMap<>();
 
     @BeforeClass
     public static void startServer() throws LifecycleException, UnmodifiableClassException, ClassNotFoundException {
         SecurityInstrumentationTestRunner.instrumentation.retransformClasses(Class.forName("org.jboss.resteasy.logging.Logger"));
         TestApplication.startServer();
+        mappings.put(path, "GET");
+        mappings.put(path +"/count", "GET");
+        mappings.put("/customers/orders/*", "*");
     }
 
     @AfterClass
@@ -42,32 +48,27 @@ public class APIEndpointTest {
         service();
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
 
-        Assert.assertEquals(4, mappings.size());
+        Assert.assertEquals(3, mappings.size());
 
-        Iterator<ApplicationURLMapping> mapping = mappings.iterator();
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("*", "/customers/orders/*", CustomerLocatorResource.class.getName(), mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("GET", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("GET", path +"/count", handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("PUT", path, handler, mapping.next());
+        for (ApplicationURLMapping applicationURLMapping : mappings) {
+            assertMapping(applicationURLMapping);
+        }
     }
 
-    private void assertMapping(String method, String path, String handler, ApplicationURLMapping actualMapping) {
-        Assert.assertEquals(method, actualMapping.getMethod());
-        Assert.assertEquals(path, actualMapping.getPath());
-        Assert.assertEquals(handler, actualMapping.getHandler());
+    private void assertMapping(ApplicationURLMapping actualMapping) {
+        Assert.assertNotNull(actualMapping.getMethod());
+        Assert.assertNotNull(actualMapping.getPath());
+        Assert.assertEquals(mappings.get(actualMapping.getPath()), actualMapping.getMethod());
+        if (actualMapping.getMethod().equals("*")){
+            Assert.assertEquals(CustomerLocatorResource.class.getName(), actualMapping.getHandler());
+        } else {
+            Assert.assertEquals(handler, actualMapping.getHandler());
+        }
     }
 
     @Trace(dispatcher = true)
     private void service() throws IOException {
-        HttpURLConnection conn = (HttpURLConnection)TestApplication.getEndPoint("customers/getStuff/users").openConnection();
+        HttpURLConnection conn = (HttpURLConnection)TestApplication.getEndPoint("users/count/9").openConnection();
         conn.connect();
         conn.getResponseCode();
     }

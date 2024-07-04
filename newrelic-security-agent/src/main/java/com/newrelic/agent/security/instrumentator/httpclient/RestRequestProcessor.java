@@ -32,6 +32,8 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static final String NR_CSEC_VALIDATOR_HOME_TMP = "/{{NR_CSEC_VALIDATOR_HOME_TMP}}";
     public static final String NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED = "%2F%7B%7BNR_CSEC_VALIDATOR_HOME_TMP%7D%7D";
 
+    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : %s ";
+
     public static final String ERROR_IN_FUZZ_REQUEST_GENERATION = "Error in fuzz request generation %s";
 
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
@@ -98,9 +100,9 @@ public class RestRequestProcessor implements Callable<Boolean> {
                         payloadList.add(objectMapper.writeValueAsString(o));
                     }
                 } catch (Throwable e) {
-                    NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), controlCommand.getId(),
-                            String.format(IAgentConstants.FAILURE_WHILE_GRPC_REQUEST_BODY_CONVERSION, httpRequest.getBody()));
+                    logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                            String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), controlCommand.getId()),
+                            e, RestRequestProcessor.class.getName());
                     logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.getMessage()), RestRequestProcessor.class.getSimpleName());
                 }
                 MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
@@ -118,10 +120,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
             }
             return true;
         } catch (JsonProcessingException e){
-            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                    e, null, controlCommand.getId(),
-                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)));
-
             logger.log(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
@@ -129,10 +127,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
             RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                    e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), controlCommand.getId(),
-                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)));
-
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
