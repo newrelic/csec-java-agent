@@ -6,7 +6,6 @@
  */
 
 package org.apache.solr.client.solrj.impl;
-
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -16,40 +15,42 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import org.apache.http.client.HttpClient;
-import org.apache.solr.client.solrj.ResponseParser;
 import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.request.UpdateRequest;
+import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@Weave(type = MatchType.ExactClass, originalName = "org.apache.solr.client.solrj.impl.HttpSolrServer")
-public abstract class HttpSolrServer_Instrumentation {
+@Weave(type = MatchType.ExactClass, originalName = "org.apache.solr.client.solrj.impl.Http2SolrClient")
+public abstract class Http2SolrClient_Instrumentation {
+
 
     public abstract String getBaseURL();
 
-    public HttpSolrServer_Instrumentation(String baseURL, HttpClient client, ResponseParser parser) {
+    protected Http2SolrClient_Instrumentation(String serverBaseUrl, Http2SolrClient.Builder builder) {
         //TODO report external URL
     }
 
-    public NamedList<Object> request(final SolrRequest request, ResponseParser processor) {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP_SOLR_REQUEST-", request.hashCode());
+    public NamedList<Object> request(SolrRequest<?> solrRequest, String collection) throws SolrServerException, IOException {
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP_SOLR_REQUEST-", solrRequest.hashCode());
         AbstractOperation operation = null;
         if(isLockAcquired) {
-            operation = preprocessSolrRequest(request, "REQUEST");
+            operation = preprocessSolrRequest(solrRequest, "REQUEST");
         }
         NamedList<Object> result;
         try {
             result = Weaver.callOriginal();
         } finally {
             if(isLockAcquired) {
-                GenericHelper.releaseLock("HTTP_SOLR_REQUEST-", request.hashCode());
+                GenericHelper.releaseLock("HTTP_SOLR_REQUEST-", solrRequest.hashCode());
             }
         }
         registerExitOperation(isLockAcquired, operation);
@@ -69,7 +70,7 @@ public abstract class HttpSolrServer_Instrumentation {
         }
     }
 
-    private AbstractOperation preprocessSolrRequest(SolrRequest request, String methodName) {
+    private AbstractOperation preprocessSolrRequest(@SuppressWarnings({"rawtypes"})SolrRequest request, String methodName) {
         try {
             String collection = new URL(getBaseURL()).getPath();
             collection = collection.startsWith("/") ? collection.substring(1) : collection;
@@ -78,9 +79,9 @@ public abstract class HttpSolrServer_Instrumentation {
             SolrParams solrParams = request.getParams();
             Map<String, String> params = Collections.emptyMap();
             if(solrParams != null){
-                 params = SolrParams.toMap(solrParams.toNamedList());
+                params = SolrParams.toMap(solrParams.toNamedList());
             }
-            List<?> documents = Collections.emptyList();
+            List<SolrInputDocument> documents = Collections.emptyList();
             if(request instanceof UpdateRequest) {
                 documents = ((UpdateRequest) request).getDocuments();
             }
