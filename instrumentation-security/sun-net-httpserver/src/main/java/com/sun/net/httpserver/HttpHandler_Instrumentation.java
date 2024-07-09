@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
@@ -80,7 +81,11 @@ public class HttpHandler_Instrumentation {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(exchange.getResponseCode());
+            HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
+            securityResponse.setResponseCode(exchange.getResponseCode());
+            HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);
+            securityResponse.setResponseContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
+
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
