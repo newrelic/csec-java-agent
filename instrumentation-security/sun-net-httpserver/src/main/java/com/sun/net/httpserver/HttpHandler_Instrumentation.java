@@ -26,7 +26,7 @@ public class HttpHandler_Instrumentation {
             preprocessSecurityHook(exchange);
         }
         ServletHelper.registerUserLevelCode(HttpServerHelper.SUN_NET_HTTP_SERVER);
-        HttpServerHelper.detectRoute(this.getClass().getName());
+        HttpServerHelper.detectRoute(this.getClass().getName(), String.valueOf(exchange.getRequestURI()));
         try{
             Weaver.callOriginal();
         } finally {

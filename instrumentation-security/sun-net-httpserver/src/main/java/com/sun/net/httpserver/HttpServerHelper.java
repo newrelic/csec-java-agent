@@ -89,10 +89,10 @@ public class HttpServerHelper {
         return data;
     }
 
-    public static void detectRoute(String handler){
+    public static void detectRoute(String handler, String route){
         if (NewRelicSecurity.isHookProcessingActive()) {
             HttpRequest securityRequest = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
-            String route = StringUtils.substringBefore(securityRequest.getUrl(), HttpServerHelper.QUESTION_MARK);
+            route = StringUtils.substringBefore(route, HttpServerHelper.QUESTION_MARK);
             if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(HTTP_METHOD, route, handler))) {
                 securityRequest.setRoute(route);
                 NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SUN_NET_HTTPSERVER);
