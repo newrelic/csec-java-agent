@@ -29,6 +29,9 @@ public class HttpRequestToMuleEvent_Instrumentation {
         }
         try {
             event = Weaver.callOriginal();
+            if (NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(MuleHelper.MULE_ENCODING, event.getEncoding());
+            }
         } finally {
             if (isLockAcquired) {
                 releaseLock(requestContext.hashCode());
@@ -55,6 +58,9 @@ public class HttpRequestToMuleEvent_Instrumentation {
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
             HttpRequest httpRequest = requestContext.getRequest();
+            if (httpRequest.getEntity() != null) {
+                securityMetaData.addCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.REQUEST_ENTITY_STREAM), httpRequest.getEntity().hashCode());
+            }
             securityRequest.setMethod(httpRequest.getMethod());
             securityRequest.setClientIP(requestContext.getClientConnection().getRemoteHostAddress().toString());
 

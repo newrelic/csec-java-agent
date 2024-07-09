@@ -49,6 +49,10 @@ public class RequestHandler_Instrumentation {
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
             HttpRequest httpRequest = requestContext.getRequest();
+
+            if (httpRequest.getEntity() != null) {
+                securityMetaData.addCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.REQUEST_ENTITY_STREAM), httpRequest.getEntity().hashCode());
+            }
             securityRequest.setMethod(httpRequest.getMethod());
             securityRequest.setClientIP(requestContext.getRemoteHostAddress().toString());
             if (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class) != null) {
