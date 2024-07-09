@@ -4,7 +4,10 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.StringUtils;
@@ -85,6 +88,18 @@ public class HttpServerHelper {
         }
         return data;
     }
+
+    public static void detectRoute(String handler){
+        if (NewRelicSecurity.isHookProcessingActive()) {
+            HttpRequest securityRequest = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
+            String route = StringUtils.substringBefore(securityRequest.getUrl(), HttpServerHelper.QUESTION_MARK);
+            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(HTTP_METHOD, route, handler))) {
+                securityRequest.setRoute(route);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SUN_NET_HTTPSERVER);
+            }
+        }
+    }
+
     public static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {

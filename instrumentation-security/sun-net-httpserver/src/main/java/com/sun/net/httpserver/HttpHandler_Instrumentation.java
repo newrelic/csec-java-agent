@@ -26,6 +26,7 @@ public class HttpHandler_Instrumentation {
             preprocessSecurityHook(exchange);
         }
         ServletHelper.registerUserLevelCode(HttpServerHelper.SUN_NET_HTTP_SERVER);
+        HttpServerHelper.detectRoute(this.getClass().getName());
         try{
             Weaver.callOriginal();
         } finally {
@@ -65,12 +66,7 @@ public class HttpHandler_Instrumentation {
             securityRequest.setProtocol(HttpServerHelper.getProtocol(exchange));
             securityRequest.setUrl(String.valueOf(exchange.getRequestURI()));
 
-            String queryString = exchange.getRequestURI().getQuery();
-            if (queryString != null && !queryString.trim().isEmpty()) {
-                securityRequest.setUrl(securityRequest.getUrl() + HttpServerHelper.QUESTION_MARK + queryString);
-            }
-
-            securityRequest.setContentType(HttpServerHelper.getContentType(exchange.getRequestHeaders()));
+            securityRequest.setContentType(HttpServerHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
