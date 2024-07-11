@@ -27,6 +27,14 @@ public class URLMappingsHelper {
         add("org.apache.catalina.servlets.DefaultServlet");
         add("org.eclipse.jetty.servlet.DefaultServlet");
         add("grails.plugin.databasemigration.DbdocController");
+        add("org.apache.cxf.transport.servlet.CXFServlet");
+        add("javax.faces.webapp.FacesServlet");
+        add("jakarta.faces.webapp.FacesServlet");
+        add("weblogic.servlet.JSPServlet");
+        add("weblogic.servlet.FileServlet");
+        add("weblogic.management.rest.JerseyServlet");
+        add("com.caucho.jsp.XtpServlet");
+        add("com.caucho.jsp.JspServlet");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
