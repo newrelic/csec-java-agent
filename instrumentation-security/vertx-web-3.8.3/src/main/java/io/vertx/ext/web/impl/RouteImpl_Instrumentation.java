@@ -1,27 +1,21 @@
 package io.vertx.ext.web.impl;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.VertxApiEndpointUtils;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-import java.util.regex.Pattern;
-
-@Weave(originalName = "io.vertx.ext.web.impl.RouteImpl")
-public abstract class RouteImpl_Instrumentation {
+@Weave(originalName = "io.vertx.ext.web.impl.RouteImpl", type = MatchType.ExactClass)
+public class RouteImpl_Instrumentation {
 
     private final RouterImpl router = Weaver.callOriginal();
 
-    private String path = Weaver.callOriginal();
-
-    private Pattern pattern = Weaver.callOriginal();
+    private volatile RouteState state = Weaver.callOriginal();
 
     RouteImpl_Instrumentation(RouterImpl router, int order){
         VertxApiEndpointUtils.getInstance().addRouteImpl(router.hashCode(), this.hashCode(), null, null, null);
@@ -41,11 +35,6 @@ public abstract class RouteImpl_Instrumentation {
 
     RouteImpl_Instrumentation(RouterImpl router, int order, String regex, boolean bregex) {
         VertxApiEndpointUtils.getInstance().addRouteImpl(router.hashCode(), this.hashCode(), null, regex, null);
-    }
-
-    synchronized void handleContext(RoutingContext context) {
-        ServletHelper.registerUserLevelCode("vertx-web");
-        Weaver.callOriginal();
     }
 
     public synchronized Route method(HttpMethod method) {
@@ -69,6 +58,13 @@ public abstract class RouteImpl_Instrumentation {
     public synchronized Route handler(Handler<RoutingContext> contextHandler){
         Route route = Weaver.callOriginal();
         VertxApiEndpointUtils.getInstance().addHandlerClass(router.hashCode(), this.hashCode(), contextHandler.getClass().getName());
+        return route;
+    }
+
+    public synchronized Route subRouter(Router subRouter) {
+        Route route = Weaver.callOriginal();
+        VertxApiEndpointUtils.getInstance().removeRouteImpl(router.hashCode(), this.hashCode());
+        VertxApiEndpointUtils.getInstance().resolveSubRoutes(router.hashCode(), subRouter.hashCode(), VertxApiEndpointUtils.getInstance().getPath(state.getPath(), state.getPattern()));
         return route;
     }
 }
