@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
+import com.newrelic.agent.security.intcodeagent.utils.ExternalConnectionsReporter;
 import com.newrelic.agent.security.intcodeagent.utils.RuntimeErrorReporter;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -29,8 +30,6 @@ import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -180,6 +179,8 @@ public class Agent implements SecurityAgent {
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
         SchedulerHelper.getInstance().scheduleApplicationRuntimeErrorPosting(RuntimeErrorReporter.getInstance()::reportApplicationRuntimeError,
+                30 , 30, TimeUnit.SECONDS);
+        SchedulerHelper.getInstance().scheduleApplicationRuntimeErrorPosting(ExternalConnectionsReporter.getInstance()::reportExternalConnections,
                 30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         logger.logInit(
@@ -904,6 +905,11 @@ public class Agent implements SecurityAgent {
         String traceId = generateTraceIdForRuntimeError(securityMetaData, HttpStatusCodes.getStatusCode(responseCode), messageException);
         ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, responseCode, route, HttpStatusCodes.getStatusCode(responseCode), AgentInfo.getInstance().getApplicationUUID(), traceId);
         return RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+    }
+
+    @Override
+    public boolean recordExternalConnection(String host, int port, String connectionUrl, String ipAddress, String type, String module) {
+        return ExternalConnectionsReporter.getInstance().addExternalConnection(new ExternalConnection(host, port, connectionUrl, ipAddress, type, module));
     }
 
 }

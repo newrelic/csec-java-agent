@@ -29,6 +29,8 @@ public class AgentBasicInfo {
 
     public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
 
+    public static final String EXTERNAL_CONNECTIONS = "external-connections";
+
     /**
      * Tool id for Language Agent.
      */
@@ -112,6 +114,9 @@ public class AgentBasicInfo {
         } else if (this instanceof ApplicationRuntimeError) {
             setJsonName(APPLICATION_RUNTIME_ERROR);
             setEventType(APPLICATION_RUNTIME_ERROR);
+        } else if (this instanceof ExternalConnectionStats) {
+            setJsonName(EXTERNAL_CONNECTIONS);
+            setEventType(EXTERNAL_CONNECTIONS);
         }
     }
 

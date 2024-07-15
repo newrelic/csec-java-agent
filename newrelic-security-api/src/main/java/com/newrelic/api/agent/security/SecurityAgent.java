@@ -75,4 +75,6 @@ public interface SecurityAgent {
     void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception);
 
     boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception);
+
+    boolean recordExternalConnection(String host, int port, String connectionUrl, String ipAddress, String type, String module);
 }

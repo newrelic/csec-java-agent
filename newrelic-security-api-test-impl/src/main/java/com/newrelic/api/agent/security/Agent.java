@@ -2,7 +2,6 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
@@ -209,6 +208,11 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
+        return false;
+    }
+
+    @Override
+    public boolean recordExternalConnection(String host, int port, String connectionUrl, String ipAddress, String type, String module) {
         return false;
     }
 }
