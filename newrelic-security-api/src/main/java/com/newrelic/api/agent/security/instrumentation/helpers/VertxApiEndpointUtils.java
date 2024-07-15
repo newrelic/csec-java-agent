@@ -151,4 +151,15 @@ public class VertxApiEndpointUtils {
         }
         return URLMappingsHelper.subResourceSegment;
     }
+
+    public void routeDetection(String path, Pattern pattern) {
+        if (NewRelicSecurity.isHookProcessingActive()){
+            if (path != null){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(path);
+            } else if (pattern != null){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(pattern.pattern());
+            }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.VERTX);
+        }
+    }
 }

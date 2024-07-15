@@ -44,6 +44,11 @@ public abstract class RouteImpl_Instrumentation {
     }
 
     synchronized void handleContext(RoutingContext context) {
+        try {
+            VertxApiEndpointUtils.getInstance().routeDetection(path, pattern);
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, "VERTX-WEB-3.2.0", e.getMessage()), e, this.getClass().getName());
+        }
         ServletHelper.registerUserLevelCode("vertx-web");
         Weaver.callOriginal();
     }
