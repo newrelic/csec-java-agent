@@ -27,7 +27,7 @@ public class VertxApiEndpointUtils {
 
     private final Map<Integer, Map<Integer, VertxRoute>> routes = new ConcurrentHashMap<>();
 
-    public void clear(){
+    private void clear(){
         routes.clear();
     }
 
@@ -126,6 +126,7 @@ public class VertxApiEndpointUtils {
                 URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method, getPath(routeImpl.getPath(), routeImpl.getPattern()), handlerName));
             }
         }
+        clear();
     }
 
     public void removeRouteImpl(int routerHashCode, int routeHashCode){
