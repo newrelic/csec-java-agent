@@ -6,7 +6,6 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
@@ -15,7 +14,6 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {
@@ -156,12 +154,21 @@ public class HttpServletHelper {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
+
     public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData) {
-        if (StringUtils.isNotBlank(securityRequest.getRoute())){
-            return;
+        try {
+            if (URLMappingsHelper.getApplicationURLMappings().isEmpty()){
+                return;
+            }
+            String route = request.getServletPath();
+            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, route))) {
+                securityRequest.setRoute(route);
+            } else if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, route+URLMappingsHelper.subResourceSegment))) {
+                securityRequest.setRoute(route + URLMappingsHelper.subResourceSegment);
+            }
+            metaData.setFramework(Framework.SERVLET);
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
-        // TODO verify if request.getServletPath() present in detected API Endpoints then simply set Route else add /* to ServletPath
-        securityRequest.setRoute(request.getServletPath());
-        metaData.setFramework(Framework.SERVLET);
     }
 }
