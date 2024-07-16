@@ -13,7 +13,7 @@ public class ApplicationURLMapping {
 
     public ApplicationURLMapping(String method, String url, String handler) {
         this.method = method;
-        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(url, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        this.path = StringUtils.prependIfMissing(StringUtils.removeEnd(url, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
         this.handler = handler;
     }
 
@@ -38,7 +38,7 @@ public class ApplicationURLMapping {
     }
 
     public void setPath(String path) {
-        this.path = StringUtils.removeEnd(StringUtils.prependIfMissing(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR);;
+        this.path = StringUtils.prependIfMissing(StringUtils.removeEnd(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR);;
     }
 
     @Override
@@ -48,9 +48,7 @@ public class ApplicationURLMapping {
         }
         if (obj instanceof ApplicationURLMapping) {
             ApplicationURLMapping mapping = (ApplicationURLMapping) obj;
-            return Objects.equals(this.path, mapping.path) &&
-                    Objects.equals(this.method, mapping.method) &&
-                    Objects.equals(this.handler, mapping.handler);
+            return Objects.equals(this.path, mapping.path) && Objects.equals(this.method, mapping.method);
         }
         return false;
     }
@@ -62,6 +60,6 @@ public class ApplicationURLMapping {
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, path, handler);
+        return Objects.hash(this.method, this.path);
     }
 }

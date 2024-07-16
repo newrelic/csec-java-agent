@@ -62,6 +62,7 @@ public class AkkaCoreUtils {
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, String className, String methodName, Token token) {
         try {
             token.linkAndExpire();
+            ServletHelper.executeBeforeExitingTransaction();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))){
                 return;
             }

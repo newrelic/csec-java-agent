@@ -13,8 +13,7 @@ import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 import java.util.List;
 
 public class CXFHelper {
-    private static final String EMPTY = "";
-    private static final String SEPARATOR = "/";
+
     private static final String WILDCARD = "*";
     public static final String CXF_JAX_RS = "CXF-JAX-RS";
 
@@ -51,15 +50,24 @@ public class CXFHelper {
                 }
 
             }
-            // TODO need to update sub-resources case
-            // for sub-resources
-            for (ClassResourceInfo classResource : classResourceInfo.getSubResources()) {
-                String segment1 = classResource.getURITemplate().getValue();
-                String path = segment + ((segment.endsWith(SEPARATOR) || segment1.startsWith(SEPARATOR)) ? EMPTY : SEPARATOR) + segment1;
-                resources(path, classResource);
-            }
         } catch (Exception e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, CXF_JAX_RS, e.getMessage()), e, CXFHelper.class.getName());
         }
+    }
+
+    public static String getRequestRoute(OperationResourceInfo ori) {
+        ClassResourceInfo cri = ori.getClassResourceInfo();
+        String route = StringUtils.EMPTY;
+        if(cri != null && cri.getURITemplate() != null){
+            route = cri.getURITemplate().getValue();
+        }
+        if (ori.getURITemplate() != null) {
+            // in case of subresource cri.getURITemplate() will be null
+            route += ori.getURITemplate().getValue();
+        }
+        if (ori.isSubResourceLocator()){
+            route += URLMappingsHelper.subResourceSegment;
+        }
+        return route;
     }
 }
