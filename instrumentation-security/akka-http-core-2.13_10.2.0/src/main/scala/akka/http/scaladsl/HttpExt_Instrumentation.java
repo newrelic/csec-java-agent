@@ -20,6 +20,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -32,6 +33,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 import scala.Function1;
 import scala.concurrent.Future;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 
 @Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
@@ -154,6 +156,11 @@ public class HttpExt_Instrumentation {
             } catch (Exception ignored){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_2_13_10_2_0, ignored.getMessage()), ignored, this.getClass().getName());
                 return null;
+            }
+            try {
+                NewRelicSecurity.getAgent().recordExternalConnection(methodURI.getHost(), methodURI.getPort() == -1 ? methodURI.toURL().getDefaultPort() : methodURI.getPort(), uri, null, ExternalConnectionType.HTTP_CONNECTION.name(), AkkaCoreUtils.AKKA_HTTP_CORE_2_13_10_2_0);
+            } catch (MalformedURLException e){
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_2_13_10_2_0, e.getMessage()), e, this.getClass().getName());
             }
 
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
