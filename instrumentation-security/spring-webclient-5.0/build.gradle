@@ -3,7 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.springframework:spring-webflux:5.0.0.RELEASE")
-
+    testImplementation("io.projectreactor.ipc:reactor-netty:0.7.9.RELEASE")
 }
 
 
