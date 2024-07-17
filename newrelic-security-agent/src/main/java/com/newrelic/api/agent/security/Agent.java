@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -276,6 +277,8 @@ public class Agent implements SecurityAgent {
                 if (operation instanceof RXSSOperation) {
                     operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
                     securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
+                } else if (operation instanceof SecureCookieOperationSet) {
+                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
                 } else {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                     operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
