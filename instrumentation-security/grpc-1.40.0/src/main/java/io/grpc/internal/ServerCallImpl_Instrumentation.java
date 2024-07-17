@@ -68,7 +68,7 @@ final class ServerCallImpl_Instrumentation<ReqT, RespT> {
     public void close(Status status, Metadata trailers) {
         boolean isLockAcquired = GrpcUtils.acquireLockIfPossible(status.hashCode());
         if (isLockAcquired) {
-            GrpcServerUtils.postProcessSecurityHook(trailers, this.getClass().getName(), GrpcServerUtils.METHOD_NAME_START_CALL);
+            GrpcServerUtils.postProcessSecurityHook(trailers, status.getCode().value(), this.getClass().getName(), GrpcServerUtils.METHOD_NAME_START_CALL);
         }
         try {
             Weaver.callOriginal();

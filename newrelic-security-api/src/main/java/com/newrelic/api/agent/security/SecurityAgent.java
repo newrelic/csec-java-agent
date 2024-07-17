@@ -71,4 +71,8 @@ public interface SecurityAgent {
     void retransformUninstrumentedClass(Class<?> classToRetransform);
 
     String decryptAndVerify(String encryptedData, String hashVerifier);
+
+    void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception);
+
+    boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception);
 }
