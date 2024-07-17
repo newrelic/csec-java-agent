@@ -9,6 +9,7 @@ package org.asynchttpclient;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -18,6 +19,7 @@ import com.newrelic.agent.security.instrumentation.org.asynchttpclient.Asynchttp
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * Instrumentation for the provider interface.
@@ -36,8 +38,10 @@ public abstract class AsyncHttpClient_Instrumentation {
 
                 // only instrument HTTP or HTTPS calls
                 if (("http".equals(scheme) || "https".equals(scheme))) {
-                    operation = AsynchttpHelper.preprocessSecurityHook(uri.toURL().toString(), this.getClass().getName(),
+                    URL url = uri.toURL();
+                    operation = AsynchttpHelper.preprocessSecurityHook(url.toString(), this.getClass().getName(),
                             AsynchttpHelper.METHOD_EXECUTE);
+                    NewRelicSecurity.getAgent().recordExternalConnection(uri.getHost(), uri.getPort() == -1 ? uri.toURL().getDefaultPort() : uri.getPort(), url.toString(), null, ExternalConnectionType.HTTP_CONNECTION.name(), AsynchttpHelper.ASYNC_HTTP_CLIENT_2_0_0);
                     Request updatedRequest = AsynchttpHelper.addSecurityHeaders(request, operation);
                     if (updatedRequest != null) {
                         request = updatedRequest;
