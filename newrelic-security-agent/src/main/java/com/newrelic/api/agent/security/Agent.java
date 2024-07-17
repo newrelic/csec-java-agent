@@ -287,6 +287,9 @@ public class Agent implements SecurityAgent {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                     operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
+                if(securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()){
+                    operation.setUserClassEntity(setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace()));
+                }
 
                 // added to fetch request/response in case of grpc requests
                 if (securityMetaData.getRequest().getIsGrpc()) {
@@ -313,7 +316,9 @@ public class Agent implements SecurityAgent {
                 logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
                 setRequiredStackTrace(operation, securityMetaData);
-                operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
+                if(operation.getUserClassEntity() == null || !operation.getUserClassEntity().isCalledByUserCode()){
+                    operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
+                }
                 processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
@@ -456,6 +461,13 @@ public class Agent implements SecurityAgent {
                 && getInstance().getCurrentPolicy().getProtectionMode().getApiBlocking().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicyParameters().getAllowedApis().contains(apiID)
         );
+    }
+
+    private UserClassEntity setUserClassEntityByAnnotation(StackTraceElement[] serviceTrace) {
+        UserClassEntity userClassEntity = new UserClassEntity();
+        userClassEntity.setUserClassElement(serviceTrace[0]);
+        userClassEntity.setCalledByUserCode(true);
+        return userClassEntity;
     }
 
     private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
