@@ -88,9 +88,12 @@ public class AgentConfig {
     }
 
     private String applyRequiredLogLevel() {
-        String logLevel = IUtilConstants.INFO;
-        if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL))) {
-            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL);
+        String logLevel;
+        Object value = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL);
+        if(value instanceof Boolean) {
+            logLevel = IUtilConstants.OFF;
+        } else {
+            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL, IUtilConstants.INFO);
         }
 
         try {

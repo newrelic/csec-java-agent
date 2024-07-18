@@ -8,6 +8,7 @@ public interface IUtilConstants {
     String IAST = "IAST";
     String GROUP_NAME = "group-name";
     String INFO = "INFO";
+    String OFF = "OFF";
     String K_2_LOG_LEVEL = "K2_LOG_LEVEL";
     String NR_LOG_LEVEL = "log_level";
     String LOG_LEVEL = "log-level";
@@ -40,4 +41,5 @@ public interface IUtilConstants {
 
     String APPLICATION_TMP_DIRECTORY = "APPLICATION_TMP_DIRECTORY";
     String JAVA_IO_TMPDIR = "java.io.tmpdir";
+
 }
