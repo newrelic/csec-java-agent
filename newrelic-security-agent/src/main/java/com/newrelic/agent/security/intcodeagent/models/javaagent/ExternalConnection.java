@@ -89,6 +89,15 @@ public class ExternalConnection {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ExternalConnection) {
+            ExternalConnection connection = (ExternalConnection) obj;
+            return Objects.equals(host, connection.host) && Objects.equals(port, connection.port) && Objects.equals(connectionUrl, connection.connectionUrl) && Objects.equals(type, connection.type);
+        }
+        return false;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(host, port, connectionUrl, type);
     }
