@@ -9,6 +9,7 @@ package net.sourceforge.jtds.jdbc;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -25,6 +26,7 @@ public class Driver_Instrumentation {
     private void postHookProcessing(Connection connection) {
         try {
             String vendor;
+            NewRelicSecurity.getAgent().recordExternalConnection(null, -1, connection.getMetaData().getURL(), null, ExternalConnectionType.DATABASE_CONNECTION.name(), JdbcHelper.JDBC_JTDS_GENERIC);
             if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 vendor = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class);
                 if(vendor == null || vendor.trim().isEmpty()){
