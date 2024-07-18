@@ -18,6 +18,7 @@ import java.util.List;
 public class RestEasyHelper {
     public static final String RESTEASY_22 = "RESTEASY-2.2";
     public static final String RESTEASY_SUB_RESOURCE_LIST = "SUB_RESOURCE_LIST";
+    public static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
 
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
