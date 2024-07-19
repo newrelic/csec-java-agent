@@ -14,7 +14,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.http4s-ember-server-2.13_0.23', 'Priority': '10'
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.http4s-ember-server-2.13_0.23', 'Priority': '-1'
     }
 }
 
