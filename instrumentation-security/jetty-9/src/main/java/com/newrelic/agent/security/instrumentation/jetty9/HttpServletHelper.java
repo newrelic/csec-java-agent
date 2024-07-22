@@ -1,10 +1,7 @@
 package com.newrelic.agent.security.instrumentation.jetty9;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -58,6 +55,9 @@ public class HttpServletHelper {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
 
             String headerFullValue = EMPTY;
@@ -183,6 +183,8 @@ public class HttpServletHelper {
             ) {
                 return;
             }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

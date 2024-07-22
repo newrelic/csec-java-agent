@@ -50,6 +50,9 @@ public class HttpServletHelper {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
 
             String headerFullValue = EMPTY;
@@ -130,8 +133,7 @@ public class HttpServletHelper {
                 }
             }
         } catch (Exception e){
-            String message = "Instrumentation library: %s , error while generating application endpoint : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -149,8 +151,7 @@ public class HttpServletHelper {
                 }
             }
         } catch (Exception e){
-            String message = "Instrumentation library: %s , error while generating application endpoint : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

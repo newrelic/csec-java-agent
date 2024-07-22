@@ -88,6 +88,7 @@ public class MongoUtil {
                     }
                 }
                 operation = new NoSQLOperation(operations, typeOfOperation, klassName, methodName);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
@@ -149,6 +150,7 @@ public class MongoUtil {
                     }
                 }
                 operation = new NoSQLOperation(operations, OP_WRITE, klassName, methodName);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {

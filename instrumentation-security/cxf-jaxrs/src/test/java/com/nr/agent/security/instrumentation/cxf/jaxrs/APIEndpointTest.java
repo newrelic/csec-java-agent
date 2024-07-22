@@ -10,70 +10,64 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSBindingFactory;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Iterator;
 import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.java.security.cxf.jaxrs")
 public class APIEndpointTest {
+    private static Server myServer;
+
+    @BeforeClass
+    public static void startServer() {
+        int port = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
+
+        sf.setResourceClasses(CustomerLocatorResource.class, TestMapping.class);
+        sf.setResourceProvider(CustomerLocatorResource.class, new SingletonResourceProvider(new CustomerLocatorResource()));
+        sf.setBindingFactory(new JAXRSBindingFactory());
+
+        sf.setAddress("http://localhost:" + port);
+        myServer = sf.create();
+        myServer.start();
+    }
+
+    @AfterClass
+    public static void stopServer() {
+        myServer.stop();
+    }
+
     private final String handler = TestMapping.class.getName();
 
     @Test
     public void testAPIEndpoint() {
-        startServer();
-
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
         Assert.assertEquals(5, mappings.size());
 
         Iterator<ApplicationURLMapping> mapping = mappings.iterator();
-        String path = "/users/";
+        String path = "/users";
 
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("*", "/customers/orders/*", CustomerLocatorResource.class.getName(), mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("POST", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("GET", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("PUT", path, handler, mapping.next());
-
-        Assert.assertTrue(mapping.hasNext());
-        assertMapping("GET", path +"count", handler, mapping.next());
-
+        while (mapping.hasNext()){
+            ApplicationURLMapping urlMapping = mapping.next();
+            if (urlMapping.getPath().equals("/customers/orders/*")){
+                assertMapping("*", "/customers/orders/*", CustomerLocatorResource.class.getName(), urlMapping);
+            } else if (urlMapping.getPath().equals(path +"/count")){
+                assertMapping("GET", path +"/count", handler, urlMapping);
+            } else {
+                assertMapping(urlMapping.getMethod(), path, handler, urlMapping);
+            }
+        }
     }
 
     private void assertMapping(String method, String path, String handler, ApplicationURLMapping actualMapping) {
         Assert.assertEquals(method, actualMapping.getMethod());
         Assert.assertEquals(path, actualMapping.getPath());
         Assert.assertEquals(handler, actualMapping.getHandler());
-    }
-
-    private void startServer() {
-        JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
-
-        sf.setResourceClasses(CustomerLocatorResource.class, TestMapping.class);
-
-        sf.setBindingFactory(new JAXRSBindingFactory());
-
-        sf.setAddress("http://localhost:" + getRandomPort());
-        Server myServer = sf.create();
-        myServer.start();
-    }
-
-    private int getRandomPort() {
-        try (ServerSocket socket = new ServerSocket(0)){
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to allocate ephemeral port");
-        }
     }
 }

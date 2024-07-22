@@ -24,8 +24,7 @@ public class HttpServletHelper {
 
             for (ServletRegistration servletRegistration : servletRegistrations.values()) {
                 for (String mapping : servletRegistration.getMappings()) {
-                    String path = (mapping.startsWith(SEPARATOR) ? EMPTY : SEPARATOR) + mapping;
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path, servletRegistration.getClassName()));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, servletRegistration.getClassName()));
                 }
             }
         } catch (Exception e){
@@ -42,7 +41,7 @@ public class HttpServletHelper {
                         getJSPMappings(servletContext, path);
                     }
                     else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX")) {
-                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, (path.startsWith(SEPARATOR) ? EMPTY : SEPARATOR) + path));
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
                     }
                 }
             }

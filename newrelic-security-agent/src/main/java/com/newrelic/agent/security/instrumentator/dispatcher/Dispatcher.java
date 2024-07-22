@@ -60,6 +60,7 @@ public class Dispatcher implements Callable {
     public static final String SYSCOMMAND_ENVIRONMENT = "environment";
     public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
     public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
+    public static final String COOKIE_NAME = "name";
     public static final String COOKIE_VALUE = "value";
     public static final String COOKIE_IS_SECURE = "isSecure";
     public static final String COOKIE_IS_HTTP_ONLY = "isHttpOnly";
@@ -462,6 +463,7 @@ public class Dispatcher implements Callable {
         cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperationalBean.isHttpOnly());
         cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperationalBean.isSameSiteStrict());
         params.add(cookie);
+
         eventBean.setParameters(params);
         return eventBean;
     }
@@ -509,6 +511,15 @@ public class Dispatcher implements Callable {
         query.put(QUERY, operation.getQuery());
         if(operation.getParams() != null) {
             query.put(PARAMETERS, new JSONObject(operation.getParams()));
+        }
+        if(operation.getObjectParams() != null && !operation.getObjectParams().isEmpty()){
+            JSONObject jsonObject = (JSONObject) query.get(PARAMETERS);
+            if(jsonObject == null){
+                query.put(PARAMETERS, jsonObject);
+            }
+            for (Map.Entry<String, Object> objParameter : operation.getObjectParams().entrySet()) {
+                jsonObject.put(objParameter.getKey(), JsonConverter.toJSON(objParameter.getValue()));
+            }
         }
         params.add(query);
         eventBean.setParameters(params);

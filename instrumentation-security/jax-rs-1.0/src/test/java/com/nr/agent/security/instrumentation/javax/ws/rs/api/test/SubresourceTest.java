@@ -1,6 +1,5 @@
 package com.nr.agent.security.instrumentation.javax.ws.rs.api.test;
 
-import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.CustomerLocatorResource;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.IdSubResource;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
@@ -14,7 +13,6 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.Entity;
@@ -23,7 +21,6 @@ import javax.ws.rs.core.Response;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.javax.ws.rs.api")
-@Category({ Java17IncompatibleTest.class})
 public class SubresourceTest extends JerseyTest {
     @BeforeClass
     public static void bringUp() {
@@ -43,6 +40,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -58,6 +56,7 @@ public class SubresourceTest extends JerseyTest {
 
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -70,6 +69,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -85,6 +85,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -97,6 +98,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -109,6 +111,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -121,6 +124,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testPatch() {
@@ -134,6 +138,7 @@ public class SubresourceTest extends JerseyTest {
         
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
 

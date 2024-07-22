@@ -1,5 +1,6 @@
 package jakarta.servlet;
 
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -15,6 +16,7 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.servlet5.HttpServletHelper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -90,10 +92,15 @@ public abstract class FilterChain_Instrumentation {
 
     private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
+            if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
             }
+            if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
+                HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
+            }
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

@@ -6,7 +6,6 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
-import com.newrelic.agent.security.instrumentation.xpath.javax.XPATHUtils;
 import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -33,6 +32,8 @@ public class XPathTest {
     private final String XML_DOC = "src/test/resources/Customer.xml";
     private final String EXPRESSION = "/Customers/Customer";
 
+    public static final String METHOD_EVALUATE = "evaluate";
+
     @Test
     public void testEvaluate() throws Exception {
         InputSource source = new InputSource(XML_DOC);
@@ -46,7 +47,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 
@@ -63,7 +64,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 
@@ -80,7 +81,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 
@@ -97,7 +98,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
     @Test
@@ -114,7 +115,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 
@@ -132,7 +133,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 
@@ -150,7 +151,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 
@@ -168,7 +169,7 @@ public class XPathTest {
         XPathOperation operation = (XPathOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.XPATH, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", XPATHUtils.METHOD_EVALUATE, operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", METHOD_EVALUATE, operation.getMethodName());
         Assert.assertEquals("Invalid expression", EXPRESSION, operation.getExpression());
     }
 }

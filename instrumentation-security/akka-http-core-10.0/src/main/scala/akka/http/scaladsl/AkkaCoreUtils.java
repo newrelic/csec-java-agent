@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.HttpRequest;
 import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -60,14 +61,18 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder response, String contentType, String className, String methodName, Token token) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder response, String contentType, int responseCode, String className, String methodName, Token token) {
         try {
             token.linkAndExpire();
+
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(response);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
+            ServletHelper.executeBeforeExitingTransaction();
+
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
@@ -183,6 +188,9 @@ public class AkkaCoreUtils {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey).get().value());
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
             String headerFullValue = nextHeader.value();
             if (headerFullValue != null && !headerFullValue.trim().isEmpty()) {

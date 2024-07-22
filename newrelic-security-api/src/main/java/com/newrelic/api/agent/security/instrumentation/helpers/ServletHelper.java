@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.schema.APIRecordStatus;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -110,23 +112,30 @@ public class ServletHelper {
                         }
                         tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
                                 NewRelicSecurity.getAgent().getAgentTempDir());
-                        k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
+                        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
                         try {
+                            if (lockAcquired) {
+                                File fileToCreate = new File(tmpFile);
+                                if (fileToCreate.getParentFile() != null) {
 
-                            File fileToCreate = new File(tmpFile);
-                            if (fileToCreate.getParentFile() != null) {
-
-                                File parentFile = fileToCreate;
-                                while(parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()){
-                                    parentFile = parentFile.getParentFile();
+                                    File parentFile = fileToCreate;
+                                    while (parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()) {
+                                        parentFile = parentFile.getParentFile();
+                                    }
+                                    filesToRemove.add(parentFile.getAbsolutePath());
+                                    fileToCreate.getParentFile().mkdirs();
                                 }
-                                filesToRemove.add(parentFile.getAbsolutePath());
-                                fileToCreate.getParentFile().mkdirs();
+                                if (!fileToCreate.exists()) {
+                                    Files.createFile(fileToCreate.toPath());
+                                    k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
+                                }
                             }
-                            Files.createFile(fileToCreate.toPath());
-                        } catch (Throwable e) {
+                        } catch (IOException | InvalidPathException ignored) {}
+                        catch (Throwable e) {
                             String message = "Error while parsing fuzz request : %s";
                             NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
+                        } finally {
+                            ThreadLocalLockHelper.releaseLock();
                         }
                     }
                 }
@@ -163,7 +172,7 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
+            if (!securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
@@ -175,18 +184,40 @@ public class ServletHelper {
         return false;
     }
 
+    public static boolean setFoundAnnotedUserLevelServiceMethod() {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty())
+            ) {
+                return false;
+            }
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            securityMetaData.getMetaData().setFoundAnnotedUserLevelServiceMethod(true);
+            return true;
+        } catch (Throwable ignored){
+        }
+        return false;
+    }
+
 
     public static Set<String> getFilesToRemove() {
         return filesToRemove;
     }
 
     public static void tmpFileCleanUp(List<String> files){
-        for (String file : files) {
-            try {
-                Files.deleteIfExists(Paths.get(file));
-            } catch (IOException e) {
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                for (String file : files) {
+                    try {
+                        Files.deleteIfExists(Paths.get(file));
+                    } catch (IOException | InvalidPathException e) {
+                    }
+                }
             }
+        } finally {
+            ThreadLocalLockHelper.releaseLock();
         }
+
     }
 
     public static boolean isResponseContentTypeExcluded( String responseContentType) {
@@ -198,5 +229,25 @@ public class ServletHelper {
             return true;
         }
         return unsupportedContentType.contains(responseContentType);
+    }
+
+    public static void executeBeforeExitingTransaction() {
+        Boolean exitLogicPerformed = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("EXIT_RECORDED", Boolean.class);
+        if(Boolean.TRUE.equals(exitLogicPerformed) || !NewRelicSecurity.isHookProcessingActive()){
+            return;
+        }
+
+        int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
+        if(responseCode >= 500){
+            Exception exception = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("ENDMOST_EXCEPTION", Exception.class);
+            NewRelicSecurity.getAgent().recordExceptions(NewRelicSecurity.getAgent().getSecurityMetaData(), exception);
+        }
+
+        SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
+        if(operations != null) {
+            NewRelicSecurity.getAgent().registerOperation(operations);
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", null);
+        }
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("EXIT_RECORDED", true);
     }
 }

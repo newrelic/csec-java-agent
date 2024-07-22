@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,6 +33,7 @@ public class HttpRequest {
 
     private boolean isRequestParsed;
     private boolean isGrpc;
+    private String route;
 
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
@@ -47,6 +49,7 @@ public class HttpRequest {
         this.parameterMap = new HashMap<>();
         this.isRequestParsed = false;
         this.isGrpc = false;
+        this.route = StringUtils.EMPTY;
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -63,6 +66,7 @@ public class HttpRequest {
         this.clientPort = new String(servletInfo.clientPort);
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
+        this.route = servletInfo.route;
     }
 
     public String getMethod() {
@@ -206,6 +210,24 @@ public class HttpRequest {
 
     public void setIsGrpc(boolean grpc) {
         isGrpc = grpc;
+    }
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String route){
+        this.route = StringUtils.removeEnd(StringUtils.prependIfMissing(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+    }
+
+    public void setRoute(String segment, boolean isAlreadyServlet) {
+        // remove servlet detected route if another framework detected;
+        if (isAlreadyServlet) {
+            this.route = StringUtils.EMPTY;
+        }
+        String formatedSegment = StringUtils.prependIfMissing(StringUtils.removeEnd(segment, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        if (!StringUtils.isEmpty(formatedSegment)) {
+            this.route = Paths.get(this.route, formatedSegment).normalize().toString();
+        }
     }
 }
 
