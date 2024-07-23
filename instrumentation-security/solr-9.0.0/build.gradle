@@ -5,16 +5,22 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.apache.lucene:lucene-core:4.0.0")
 
-    implementation("org.apache.solr:solr-core:8.0.0") {
+    implementation("org.apache.solr:solr-core:9.0.0") {
         transitive = false
     }
-    implementation("org.apache.solr:solr-solrj:8.0.0") {
+    implementation("org.apache.solr:solr-solrj:9.0.0") {
         transitive = false
     }
 }
 
 jar {
     manifest { attributes 'Implementation-Title': 'com.newrelic.security.instrumentation.solr-9.0.0' }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
 verifyInstrumentation {
