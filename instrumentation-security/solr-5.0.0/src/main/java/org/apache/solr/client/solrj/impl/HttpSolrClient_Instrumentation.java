@@ -40,7 +40,7 @@ public abstract class HttpSolrClient_Instrumentation {
         //TODO report external URL
     }
 
-    public NamedList<Object> request(final SolrRequest request, final ResponseParser processor) {
+    public NamedList<Object> request(final SolrRequest request, final ResponseParser processor, String collection) {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP_SOLR_REQUEST-", request.hashCode());
         AbstractOperation operation = null;
         if(isLockAcquired) {
