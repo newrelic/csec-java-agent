@@ -5,10 +5,10 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.apache.lucene:lucene-core:4.0.0")
 
-    implementation("org.apache.solr:solr-core:5.0.0") {
+    implementation("org.apache.solr:solr-core:5.1.0") {
         transitive = false
     }
-    implementation("org.apache.solr:solr-solrj:5.0.0") {
+    implementation("org.apache.solr:solr-solrj:5.1.0") {
         transitive = false
     }
     implementation("org.apache.httpcomponents:httpclient:4.3.1") {
@@ -17,11 +17,11 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.security.instrumentation.solr-5.0.0' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.security.instrumentation.solr-5.1.0' }
 }
 
 verifyInstrumentation {
-    passesOnly 'org.apache.solr:solr-core:[5.0.0,5.1.0)'
+    passesOnly 'org.apache.solr:solr-core:[5.1.0,7.0.0)'
 
     excludeRegex 'org.apache.solr:solr-core:.*(ALPHA|BETA)+$'
 }
