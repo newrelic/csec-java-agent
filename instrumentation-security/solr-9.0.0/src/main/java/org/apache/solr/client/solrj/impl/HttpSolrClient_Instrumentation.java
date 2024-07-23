@@ -69,7 +69,7 @@ public abstract class HttpSolrClient_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable e){
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_4.0.0", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_9.0.0", e.getMessage()), e, this.getClass().getName());
         }
     }
 
@@ -99,15 +99,15 @@ public abstract class HttpSolrClient_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(solrDbOperation);
             return solrDbOperation;
         } catch (MalformedURLException e){
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format("Instrumentation library: %s , error while extracting collection from baseUrl : %s, %s", "HTTP_SOLR_SERVER_4.0.0", getBaseURL(), e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format("Instrumentation library: %s , error while extracting collection from baseUrl : %s, %s", "HTTP_SOLR_SERVER_4.0.0", getBaseURL(), e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format("Instrumentation library: %s , error while extracting collection from baseUrl : %s, %s", "HTTP_SOLR_SERVER_9.0.0", getBaseURL(), e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format("Instrumentation library: %s , error while extracting collection from baseUrl : %s, %s", "HTTP_SOLR_SERVER_9.0.0", getBaseURL(), e.getMessage()), e, this.getClass().getName());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_4.0.0", e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_9.0.0", e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_4.0.0", e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_4.0.0", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_9.0.0", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "HTTP_SOLR_SERVER_9.0.0", e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
