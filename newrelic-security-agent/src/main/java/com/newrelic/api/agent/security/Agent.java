@@ -287,9 +287,6 @@ public class Agent implements SecurityAgent {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                     operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
-                if(securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()){
-                    operation.setUserClassEntity(setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace()));
-                }
 
                 // added to fetch request/response in case of grpc requests
                 if (securityMetaData.getRequest().getIsGrpc()) {
@@ -484,6 +481,13 @@ public class Agent implements SecurityAgent {
         for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
 
+            // user class identification using annotations
+            if (securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                    && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())) {
+                userClassEntity.setUserClassElement(stackTraceElement);
+                userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+                return userClassEntity;
+            }
             // Section for user class identification using API handlers
             if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
                 //Found -> assign user class and return
