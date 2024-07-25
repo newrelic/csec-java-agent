@@ -1,6 +1,6 @@
 package com.newrelic.api.agent.security;
 
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
@@ -29,8 +29,6 @@ import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -118,7 +117,7 @@ public class Agent implements SecurityAgent {
 
         try {
             info.setBuildInfo(readCollectorBuildInfo());
-            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", new JavaPropsMapper().writeValueAsProperties(info.getBuildInfo())), this.getClass().getName());
+            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", new ObjectMapper().writeValueAsString(info.getBuildInfo())), this.getClass().getName());
         } catch (IOException e) {
             // TODO: Need to confirm requirement of this throw.
             throw new RuntimeException("Unable to read CSEC Collector build info", e);
@@ -155,9 +154,9 @@ public class Agent implements SecurityAgent {
     private BuildInfo readCollectorBuildInfo() {
         BuildInfo buildInfo = new BuildInfo();
         try {
-            JavaPropsMapper mapper = new JavaPropsMapper();
-            buildInfo = mapper.
-                    readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
+            Properties properties = new Properties();
+            properties.load(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"));
+            buildInfo = new ObjectMapper().convertValue(properties, BuildInfo.class);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
