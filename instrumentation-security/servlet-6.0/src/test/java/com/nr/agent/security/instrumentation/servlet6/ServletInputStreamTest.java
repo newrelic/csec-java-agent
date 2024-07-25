@@ -47,6 +47,7 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
         
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
 
@@ -67,6 +68,7 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
         
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -86,6 +88,7 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
         
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Trace(dispatcher = true)

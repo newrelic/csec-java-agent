@@ -57,6 +57,7 @@ public class HttpSessionTest {
                 i++;
             }
         }
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -77,6 +78,7 @@ public class HttpSessionTest {
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
         Assert.assertEquals("Wrong key detected", "false", targetOperation.getValue());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -97,6 +99,7 @@ public class HttpSessionTest {
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
         Assert.assertEquals("Wrong key detected", "true", targetOperation.getValue());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     private void makeRequest( String Method, final String POST_PARAMS, String path) throws URISyntaxException, IOException{

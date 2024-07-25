@@ -4,16 +4,18 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletMapping;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.MappingMatch;
 
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {
@@ -152,6 +154,23 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
+        }
+    }
+
+    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData){
+        try {
+            if (URLMappingsHelper.getApplicationURLMappings().isEmpty()){
+                return;
+            }
+            HttpServletMapping mapping = request.getHttpServletMapping();
+            if (!mapping.getMappingMatch().equals(MappingMatch.EXTENSION) && URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, mapping.getPattern()))){
+                securityRequest.setRoute(mapping.getPattern());
+            } else if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, mapping.getPattern()))) {
+                securityRequest.setRoute(request.getServletPath());
+            }
+            metaData.setFramework(Framework.SERVLET);
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }
