@@ -324,11 +324,7 @@ public class Agent implements SecurityAgent {
                     frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
                 }
                 if (!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isEmpty(request.getRoute())){
-                    String route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork);
-                    if( route != null){
-                        request.setRoute(route);
-                    }
-
+                    request.setRoute(getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork), true);
                     logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
                 }
 //                }
@@ -383,7 +379,7 @@ public class Agent implements SecurityAgent {
                 }
             }
         }
-        return null;
+        return StringUtils.EMPTY;
     }
 
     private int jumpRoute(List<RouteSegment> value, int i1, List<String> uriSegments, int i) {
