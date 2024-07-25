@@ -61,7 +61,9 @@ java {
 
 dependencies {
     shadowIntoJar project(":newrelic-security-api")
-    shadowIntoJar 'com.googlecode.json-simple:json-simple:1.1.1'
+    shadowIntoJar ('com.googlecode.json-simple:json-simple:1.1.1'){
+        exclude(module:'junit', group:'junit')
+    }
     shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
     shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.14.2'
     shadowIntoJar 'org.java-websocket:Java-WebSocket:1.5.3'
