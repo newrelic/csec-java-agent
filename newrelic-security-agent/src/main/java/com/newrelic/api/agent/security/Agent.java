@@ -317,17 +317,21 @@ public class Agent implements SecurityAgent {
                 processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
-                HttpRequest request = securityMetaData.getRequest();
-//                if (StringUtils.isEmpty(request.getRoute())){
+
+                // fallback mechanism for route detection
                 Framework frameWork = Framework.UNKNOWN;
-                if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
+                if(StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
                     frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
                 }
+                HttpRequest request = securityMetaData.getRequest();
                 if (!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isEmpty(request.getRoute())){
-                    request.setRoute(getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork), true);
+                    String route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork);
+                    if( route != null){
+                        request.setRoute(route);
+                    }
                     logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
                 }
-//                }
+
                 if (needToGenerateEvent(operation.getApiID())) {
                     DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
                     if (!firstEventProcessed.get()) {
@@ -379,7 +383,7 @@ public class Agent implements SecurityAgent {
                 }
             }
         }
-        return StringUtils.EMPTY;
+        return null;
     }
 
     private int jumpRoute(List<RouteSegment> value, int i1, List<String> uriSegments, int i) {
