@@ -115,13 +115,9 @@ public class Agent implements SecurityAgent {
                 String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
         config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
-        try {
-            info.setBuildInfo(readCollectorBuildInfo());
-            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", new ObjectMapper().writeValueAsString(info.getBuildInfo())), this.getClass().getName());
-        } catch (IOException e) {
-            // TODO: Need to confirm requirement of this throw.
-            throw new RuntimeException("Unable to read CSEC Collector build info", e);
-        }
+        info.setBuildInfo(readCollectorBuildInfo());
+        logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", info.getBuildInfo()), this.getClass().getName());
+
         logger.logInit(
                 LogLevel.INFO,
                 "[STEP-3] => Gathering information about the application",
