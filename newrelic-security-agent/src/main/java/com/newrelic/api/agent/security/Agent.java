@@ -481,13 +481,6 @@ public class Agent implements SecurityAgent {
         for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
 
-            // user class identification using annotations
-            if (securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
-                    && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())) {
-                userClassEntity.setUserClassElement(stackTraceElement);
-                userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                return userClassEntity;
-            }
             // Section for user class identification using API handlers
             if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
                 //Found -> assign user class and return
@@ -521,6 +514,12 @@ public class Agent implements SecurityAgent {
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
             return userClassEntity;
         }
+
+        // user class identification using annotations
+        if (userClassEntity.getUserClassElement() == null && securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+            return setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace());
+        }
+
         if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
             userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
