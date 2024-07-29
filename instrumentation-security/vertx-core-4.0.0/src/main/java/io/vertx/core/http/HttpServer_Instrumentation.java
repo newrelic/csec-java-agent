@@ -8,7 +8,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.impl.RouterImpl;
+
 
 
 @Weave(originalName = "io.vertx.core.http.HttpServer", type = MatchType.Interface)
@@ -17,9 +17,7 @@ public class HttpServer_Instrumentation {
     public HttpServer_Instrumentation requestHandler(Handler<HttpServerRequest> handler){
         HttpServer_Instrumentation server = Weaver.callOriginal();
         try {
-            if (handler instanceof RouterImpl) {
-                VertxApiEndpointUtils.getInstance().generateAPIEndpoints(handler.hashCode());
-            }
+            VertxApiEndpointUtils.getInstance().generateAPIEndpoints(handler.hashCode());
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, "VERTX-CORE-4.0.0", e.getMessage()), e, VertxApiEndpointUtils.class.getName());
         }

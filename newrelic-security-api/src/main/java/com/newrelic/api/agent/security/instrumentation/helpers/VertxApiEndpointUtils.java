@@ -155,6 +155,9 @@ public class VertxApiEndpointUtils {
 
     public void routeDetection(String path, Pattern pattern) {
         if (NewRelicSecurity.isHookProcessingActive()){
+            if (URLMappingsHelper.getSegmentCount(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getRoute()) == URLMappingsHelper.getSegmentCount(path)) {
+                return;
+            }
             boolean isAlreadyServlet = Objects.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework(), Framework.SERVLET.name());
             if (path != null){
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(path, isAlreadyServlet);
