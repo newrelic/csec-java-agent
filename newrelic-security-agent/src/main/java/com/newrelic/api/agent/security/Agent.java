@@ -841,13 +841,21 @@ public class Agent implements SecurityAgent {
 
     @Override
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
-        String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
-        if(EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
-            return decryptedData;
-        } else {
-            NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
-            return null;
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
+                if (EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
+                    return decryptedData;
+                } else {
+                    NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
+                    return null;
+                }
+            }
+        } finally {
+            ThreadLocalLockHelper.releaseLock();
         }
+        return null;
     }
 
     @Override
