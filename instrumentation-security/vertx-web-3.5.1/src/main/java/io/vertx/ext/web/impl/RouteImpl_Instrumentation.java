@@ -46,6 +46,7 @@ public class RouteImpl_Instrumentation {
 
     void handleContext(RoutingContextImplBase context) {
         try {
+            VertxApiEndpointUtils.getInstance().generateAPIEndpointsIfNotPresent(this.hashCode());
             VertxApiEndpointUtils.getInstance().routeDetection(path, pattern);
         } catch (Exception e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, "VERTX-WEB-3.5.1", e.getMessage()), e, this.getClass().getName());

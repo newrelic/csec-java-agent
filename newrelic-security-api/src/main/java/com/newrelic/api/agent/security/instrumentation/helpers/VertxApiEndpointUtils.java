@@ -39,7 +39,7 @@ public class VertxApiEndpointUtils {
                 if (!routes.containsKey(routerHashCode)) {
                     routes.put(routerHashCode, new ConcurrentHashMap<>());
                 }
-                routes.get(routerHashCode).put(route.hashCode(), route);
+                routes.get(routerHashCode).put(routeHashCode, route);
             }
         } finally {
             if (isLockAcquired) {
@@ -54,7 +54,7 @@ public class VertxApiEndpointUtils {
             if (!routes.containsKey(routerHashCode)){
                 return;
             }
-            VertxRoute route = routes.get(routerHashCode).get(Objects.hash(routerHashCode, routeHashCode));
+            VertxRoute route = routes.get(routerHashCode).get(routeHashCode);
             if (route == null){
                 return;
             }
@@ -77,7 +77,7 @@ public class VertxApiEndpointUtils {
             if (!routes.containsKey(routerHashCode)){
                 return;
             }
-            VertxRoute route = routes.get(routerHashCode).get(Objects.hash(routerHashCode, routeHashCode));
+            VertxRoute route = routes.get(routerHashCode).get(routeHashCode);
             if (route == null || !Objects.isNull(route.getHandlerName())){
                 return;
             }
@@ -99,7 +99,7 @@ public class VertxApiEndpointUtils {
                 String subRoutePath = getPath(route.getPath(), route.getPattern());
                 route.setPath(StringUtils.removeEnd(path, StringUtils.SEPARATOR) + StringUtils.prependIfMissing(subRoutePath, StringUtils.SEPARATOR));
                 route.setRouterHashCode(parentRouterHashCode);
-                routes.get(parentRouterHashCode).put(route.hashCode(), route);
+                routes.get(parentRouterHashCode).put(route.getRouteHashCode(), route);
             }
         } catch (Exception e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, VERTX_FRAMEWORK, e.getMessage()), e, VertxApiEndpointUtils.class.getName());
@@ -155,16 +155,25 @@ public class VertxApiEndpointUtils {
 
     public void routeDetection(String path, Pattern pattern) {
         if (NewRelicSecurity.isHookProcessingActive()){
-            if (URLMappingsHelper.getSegmentCount(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getRoute()) == URLMappingsHelper.getSegmentCount(path)) {
+            String route = StringUtils.EMPTY;
+            if (path != null){
+                route = path;
+            } else if (pattern != null){
+                route = pattern.pattern();
+            }
+            if (URLMappingsHelper.getSegmentCount(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getRoute()) == URLMappingsHelper.getSegmentCount(route)) {
                 return;
             }
-            boolean isAlreadyServlet = Objects.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework(), Framework.SERVLET.name());
-            if (path != null){
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(path, isAlreadyServlet);
-            } else if (pattern != null){
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(pattern.pattern(), isAlreadyServlet);
-            }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(route, Objects.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework(), Framework.SERVLET.name()));
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.VERTX);
+        }
+    }
+
+    public void generateAPIEndpointsIfNotPresent(int routeHashCode) {
+        for (Map.Entry<Integer, Map<Integer, VertxRoute>> routesSet : routes.entrySet()) {
+            if (routesSet.getValue().containsKey(routeHashCode)) {
+                generateAPIEndpoints(routesSet.getKey());
+            }
         }
     }
 }

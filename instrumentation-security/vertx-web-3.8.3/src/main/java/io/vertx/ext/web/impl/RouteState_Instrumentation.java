@@ -13,8 +13,11 @@ import java.util.regex.Pattern;
 @Weave(originalName = "io.vertx.ext.web.impl.RouteState")
 abstract class RouteState_Instrumentation {
 
+    private final RouteImpl route = Weaver.callOriginal();
+
     void handleContext(RoutingContextImplBase context){
         try {
+            VertxApiEndpointUtils.getInstance().generateAPIEndpointsIfNotPresent(route.hashCode());
             VertxApiEndpointUtils.getInstance().routeDetection(getPath(), getPattern());
         } catch (Exception e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, "VERTX-WEB-3.8.3", e.getMessage()), e, this.getClass().getName());
