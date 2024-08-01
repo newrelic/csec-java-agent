@@ -35,6 +35,12 @@ public class URLMappingsHelper {
         add("weblogic.management.rest.JerseyServlet");
         add("com.caucho.jsp.XtpServlet");
         add("com.caucho.jsp.JspServlet");
+        add("com.caucho.xtpdoc.ResinDocServlet");
+        add("com.caucho.quercus.servlet.QuercusServlet");
+        add("com.caucho.servlets.FileServlet");
+        add("com.caucho.doc.JavadocRedirectServlet");
+        add("com.caucho.xtpdoc.ReferenceServlet");
+        add("com.caucho.doc.ViewFileServlet");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
