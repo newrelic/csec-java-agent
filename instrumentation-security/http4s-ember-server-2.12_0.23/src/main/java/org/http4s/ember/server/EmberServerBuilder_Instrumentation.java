@@ -13,9 +13,8 @@ public class EmberServerBuilder_Instrumentation<F> {
 
     public final Async<F> org$http4s$ember$server$EmberServerBuilder$$evidence$1 = Weaver.callOriginal();
 
-    public EmberServerBuilder<F> withHttpApp(Kleisli<F, Request<F>, Response<F>> httpApp) {
+    public EmberServerBuilder_Instrumentation<F> withHttpApp(Kleisli<F, Request<F>, Response<F>> httpApp) {
         httpApp = RequestProcessor$.MODULE$.genHttpApp(httpApp, this.org$http4s$ember$server$EmberServerBuilder$$evidence$1);
         return Weaver.callOriginal();
     }
 }
-

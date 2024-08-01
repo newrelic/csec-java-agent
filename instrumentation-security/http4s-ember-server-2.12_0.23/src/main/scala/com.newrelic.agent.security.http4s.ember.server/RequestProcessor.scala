@@ -19,7 +19,7 @@ import java.util
 object RequestProcessor {
 
   private val METHOD_WITH_HTTP_APP = "withHttpApp"
-  private val HTTP_4S_EMBER_SERVER_2_13_0_23 = "HTTP4S-EMBER-SERVER-2.13_0.23"
+  private val HTTP_4S_EMBER_SERVER_2_12_0_23 = "HTTP4S-EMBER-SERVER-2.12_0.23"
   private val X_FORWARDED_FOR = "x-forwarded-for"
 
   def genHttpApp[F[_] : Sync](httpApp: Kleisli[F, Request[F], Response[F]]): Kleisli[F, Request[F], Response[F]] = {
@@ -70,7 +70,7 @@ object RequestProcessor {
       }
 
     } catch {
-      case e: Throwable => NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HTTP_4S_EMBER_SERVER_2_13_0_23, e.getMessage), e, this.getClass.getName)
+      case e: Throwable => NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
     } finally {
       if (isLockAcquired) {
         EmberUtils.releaseLock()
@@ -97,11 +97,11 @@ object RequestProcessor {
     } catch {
       case e: Throwable =>
         if (e.isInstanceOf[NewRelicSecurityException]) {
-          NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_13_0_23, e.getMessage), e, this.getClass.getName)
+          NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
           throw e
         }
-        NewRelicSecurity.getAgent.log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_13_0_23, e.getMessage), e, this.getClass.getName)
-        NewRelicSecurity.getAgent.reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_13_0_23, e.getMessage), e, this.getClass.getName)
+        NewRelicSecurity.getAgent.log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
+        NewRelicSecurity.getAgent.reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
     }
   }
 
