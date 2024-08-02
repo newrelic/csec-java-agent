@@ -138,7 +138,6 @@ public class Agent implements SecurityAgent {
         info.initialiseHC();
         config.populateAgentPolicy();
         config.populateAgentPolicyParameters();
-        config.setupSnapshotDir();
         info.initStatusLogValues();
         setInitialised(true);
         populateLinkingMetadata();
