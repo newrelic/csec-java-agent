@@ -4,9 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
@@ -33,6 +31,15 @@ public class HttpServerHelper {
     public static final String SUN_NET_WRITER_OPERATION_LOCK = "SUN_NET_WRIITER_OPERATION_LOCK-";
     public static final String HTTP_METHOD = "*";
     public static final String SUN_NET_HTTP_SERVER = "sun-net-http-server";
+    private static String route = StringUtils.EMPTY;
+
+
+    public static void setRoute(String route) {
+        if (StringUtils.isEmpty(HttpServerHelper.route)) {
+            HttpServerHelper.route = route;
+        }
+    }
+
 
     public static void processHttpRequestHeaders(Headers headers, HttpRequest securityRequest){
         for (String headerKey : headers.keySet()) {
@@ -89,14 +96,11 @@ public class HttpServerHelper {
         return data;
     }
 
-    public static void detectRoute(String handler, String route){
+    public static void detectRoute(){
         if (NewRelicSecurity.isHookProcessingActive()) {
-            HttpRequest securityRequest = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
-            route = StringUtils.substringBefore(route, HttpServerHelper.QUESTION_MARK);
-            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(HTTP_METHOD, route, handler))) {
-                securityRequest.setRoute(route);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SUN_NET_HTTPSERVER);
-            }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(route);
+            route = StringUtils.EMPTY;
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SUN_NET_HTTPSERVER);
         }
     }
 
