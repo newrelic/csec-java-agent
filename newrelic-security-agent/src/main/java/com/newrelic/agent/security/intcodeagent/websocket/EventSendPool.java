@@ -91,7 +91,7 @@ public class EventSendPool {
             AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
             return;
         }
-        executor.submit(new EventSender(event));
+        Future<Boolean> f = executor.submit(new EventSender(event));
         AgentInfo.getInstance().getJaHealthCheck().incrementEventSentCount();
     }
 

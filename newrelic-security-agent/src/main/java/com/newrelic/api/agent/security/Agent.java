@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
+import com.newrelic.agent.security.intcodeagent.utils.RestrictionUtility;
 import com.newrelic.agent.security.intcodeagent.utils.RuntimeErrorReporter;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -29,8 +30,6 @@ import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +38,7 @@ import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,7 +92,18 @@ public class Agent implements SecurityAgent {
     }
 
     private void initialise() {
-        // TODO: All the bring up tasks are to be performed here.
+
+        if (!isInitialised()) {
+            config = AgentConfig.getInstance();
+            info = AgentInfo.getInstance();
+        }
+        long delay = config.instantiate();
+        SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+    }
+
+    private void triggerNrSecurity() {
+        // All the bring up tasks are to be performed here.
+
         /* *
          * 1. populate policy
          * 2. create application info
@@ -101,11 +112,6 @@ public class Agent implements SecurityAgent {
          * */
 
         //NOTE: The bellow call sequence is critical and dependent on each other
-        if (!isInitialised()) {
-            config = AgentConfig.getInstance();
-            info = AgentInfo.getInstance();
-        }
-        config.instantiate();
         logger = FileLoggerThreadPool.getInstance();
         logger.logInit(
                 LogLevel.INFO,
@@ -145,6 +151,24 @@ public class Agent implements SecurityAgent {
         populateApplicationTmpDir();
         startK2Services();
         info.agentStatTrigger(true);
+        //Schedule NR csec shutdown if required
+        scheduleShutdownTrigger();
+    }
+
+    private void scheduleShutdownTrigger() {
+        if(AgentConfig.getInstance().getAgentMode().getIastScan().getEnabled() && AgentConfig.getInstance().getAgentMode().getIastScan().getRestricted()){
+            int duration = AgentConfig.getInstance().getAgentMode().getIastScan().getRestrictionCriteria().getScanTime().getDuration();
+            Instant now = Instant.now();
+            Instant shutdownInstant = now.plus(duration, ChronoUnit.HOURS);
+            long shutdownTime = shutdownInstant.getEpochSecond() - now.getEpochSecond();
+            SchedulerHelper.getInstance().scheduleIastTrigger(this::IastRestrictedShutdown, shutdownTime, TimeUnit.SECONDS);
+        }
+    }
+
+    private void IastRestrictedShutdown() {
+        InstrumentationUtils.shutdownLogic();
+        long delay = config.trigerIAST();
+        SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
     }
 
     private void populateApplicationTmpDir() {
@@ -222,7 +246,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        WSClient.shutDownWSClient(false);
+        WSClient.shutDownWSClientAbnormal(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
 
@@ -245,9 +269,10 @@ public class Agent implements SecurityAgent {
          * 3. event pool
          * 4. HealthCheck
          **/
+        InstrumentationUtils.shutdownLogic();
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
-        WSClient.shutDownWSClient(true);
+        WSClient.shutDownWSClientAbnormal(true);
         WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
@@ -311,6 +336,13 @@ public class Agent implements SecurityAgent {
                                     JsonConverter.toJSON(operation),
                             Agent.class.getName());
                     return;
+                }
+
+                if(AgentConfig.getInstance().getAgentMode().getIastScan().getEnabled() && AgentConfig.getInstance().getAgentMode().getIastScan().getRestricted()) {
+                    if(!RestrictionUtility.hasValidAccountId(AgentConfig.getInstance().getAgentMode().getIastScan().getRestrictionCriteria(), securityMetaData.getRequest())){
+                        return;
+                    }
+                    logger.log(LogLevel.FINER, String.format("Valid event for iast restricted environment : %s", operation), Agent.class.getName());
                 }
 
                 logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());

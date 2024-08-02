@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
-import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.util.IUtilConstants;
@@ -11,7 +10,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SchedulerHelper {
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private final ScheduledExecutorService commonExecutor;
 
@@ -38,6 +36,10 @@ public class SchedulerHelper {
     }
 
     private final Map<String, ScheduledFuture<?>> scheduledFutureMap = new ConcurrentHashMap<>();
+
+    public ScheduledFuture<?> scheduleIastTrigger(Runnable runnable, long initialDelay, TimeUnit unit) {
+        return commonExecutor.schedule(runnable, initialDelay, unit);
+    }
 
     public ScheduledFuture<?> scheduleHealthCheck(Runnable command,
                                                long initialDelay,

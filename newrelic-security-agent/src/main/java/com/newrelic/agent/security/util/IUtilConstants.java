@@ -6,6 +6,21 @@ public interface IUtilConstants {
     String RASP = "RASP";
 
     String IAST = "IAST";
+    String IAST_RESTRICTED = "IAST_RESTRICTED";
+
+    String RESTRICTION_CRITERIA_SCAN_TIME = "security.restriction_criteria.scan_time";
+    String RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE = "security.restriction_criteria.scan_time.schedule";
+    String RESTRICTION_CRITERIA_SCAN_TIME_DURATION = "security.restriction_criteria.scan_time.duration";
+    String RESTRICTION_CRITERIA = "security.restriction_criteria";
+    String RESTRICTION_CRITERIA_ACCOUNT_INFO_ACCOUNT_ID = "security.restriction_criteria.account_info.account_id";
+    String RESTRICTION_CRITERIA_MAPPING_PARAMETERS = "security.restriction_criteria.mapping_parameters";
+    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS = "security.restriction_criteria.skip_scan_parameters";
+    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_HEADER = "security.restriction_criteria.skip_scan_parameters.header";
+    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_QUERY = "security.restriction_criteria.skip_scan_parameters.query";
+    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_BODY = "security.restriction_criteria.skip_scan_parameters.body";
+    String RESTRICTION_CRITERIA_STRICT = "security.restriction_criteria.strict";
+
+
     String GROUP_NAME = "group-name";
     String INFO = "INFO";
     String K_2_LOG_LEVEL = "K2_LOG_LEVEL";

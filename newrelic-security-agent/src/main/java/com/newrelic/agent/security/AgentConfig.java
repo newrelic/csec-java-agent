@@ -1,16 +1,24 @@
 package com.newrelic.agent.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
+import com.newrelic.agent.security.intcodeagent.utils.CronExpression;
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+import com.newrelic.api.agent.security.schema.annotations.JsonProperty;
+import com.newrelic.api.agent.security.schema.policy.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -21,10 +29,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
+import java.text.ParseException;
+import java.time.Instant;
+import java.util.*;
 
-import static com.newrelic.agent.security.util.IUtilConstants.DIRECTORY_PERMISSION;
+import static com.newrelic.agent.security.util.IUtilConstants.*;
 
 public class AgentConfig {
 
@@ -38,6 +47,8 @@ public class AgentConfig {
 
     private String groupName;
 
+    private AgentMode agentMode;
+
     private CollectorConfig config = new CollectorConfig();
 
     private boolean isNRSecurityEnabled;
@@ -49,7 +60,7 @@ public class AgentConfig {
     private AgentConfig(){
     }
 
-    public void instantiate(){
+    public long instantiate(){
         //Set k2 home path
         try {
             boolean validHomePath = setK2HomePath();
@@ -68,6 +79,90 @@ public class AgentConfig {
 
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
+
+        instantiateAgentMode(groupName);
+
+        return trigerIAST();
+    }
+
+    public long trigerIAST() {
+        if(agentMode.getIastScan().getEnabled() && agentMode.getIastScan().getRestricted()){
+            long date = agentMode.getIastScan().getRestrictionCriteria().getScanTime().getNextScanTime().getTime();
+            long currentTime = Instant.now().toEpochMilli();
+            System.out.println("IAST is in restricted mode will start at "+date);
+            return date-currentTime;
+        }
+        return 0;
+    }
+
+    private void instantiateAgentMode(String groupName) {
+        this.agentMode = new AgentMode(groupName);
+        switch (groupName){
+            case IAST:
+                //this is default case which requires no changes
+                break;
+            case RASP:
+                readRaspConfig();
+                break;
+            case IAST_RESTRICTED:
+                readIastRestrictedConfig();
+                break;
+            default:
+                //this is default case which requires no changes
+                break;
+        }
+
+    }
+
+    private void readIastRestrictedConfig() {
+        this.agentMode.getIastScan().setRestricted(true);
+        RestrictionCriteria restrictionCriteria = this.agentMode.getIastScan().getRestrictionCriteria();
+        restrictionCriteria.setAccountInfo(new AccountInfo(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_ACCOUNT_INFO_ACCOUNT_ID)));
+        if(StringUtils.isBlank(restrictionCriteria.getAccountInfo().getAccountId())) {
+            //TODO raise error
+
+        }
+
+        restrictionCriteria.getScanTime().setDuration(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SCAN_TIME_DURATION, 5));
+        restrictionCriteria.getScanTime().setSchedule(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE, "0 0 2 * * MON"));
+        if(CronExpression.isValidExpression(restrictionCriteria.getScanTime().getSchedule())){
+            try {
+                restrictionCriteria.getScanTime().setNextScanTime(new CronExpression(restrictionCriteria.getScanTime().getSchedule()).getTimeAfter(new Date()));
+            } catch (ParseException e) {
+                //TODO log error and set default scan time
+            }
+        } else {
+            //TODO raise error
+        }
+
+        //Mapping parameters
+        List<Map<String, String>> mappingParameters = NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_MAPPING_PARAMETERS, Collections.emptyList());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+
+        });
+        for (Map<String, String> mappingParameter : mappingParameters) {
+            MappingParameters matchingCriteria = new MappingParameters(HttpParameterLocation.valueOf(mappingParameter.get("account_id_location")), mappingParameter.get("account_id_key"));
+//            MappingParameters matchingCriteria = mapper.convertValue(mappingParameter, MappingParameters.class);
+            restrictionCriteria.getMappingParameters().add(matchingCriteria);
+        }
+        //Skip Scan Parameters
+        restrictionCriteria.getSkipScanParameters().setBody(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_BODY, Collections.emptyList()));
+        restrictionCriteria.getSkipScanParameters().setHeader(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_HEADER, Collections.emptyList()));
+        restrictionCriteria.getSkipScanParameters().setQuery(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_QUERY, Collections.emptyList()));
+
+        //Strict Criteria
+        List<Map<String, String>> strictCriteria = NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_STRICT, Collections.emptyList());
+        for (Map<String, String> strictCriterion : strictCriteria) {
+            StrictMappings matchingCriteria = mapper.convertValue(strictCriterion, StrictMappings.class);
+            restrictionCriteria.getStrictMappings().add(matchingCriteria);
+        }
+
+    }
+
+    private void readRaspConfig() {
+        this.agentMode.getIastScan().setEnabled(false);
+        this.agentMode.getRaspScan().setEnabled(true);
     }
 
     private static final class InstanceHolder {
@@ -164,6 +259,10 @@ public class AgentConfig {
         this.config = config;
     }
 
+    public String getLogLevel() {
+        return logLevel;
+    }
+
     public void createSnapshotDirectory() throws IOException {
         Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
         // Remove any file with this name from target.
@@ -206,5 +305,9 @@ public class AgentConfig {
 
     public String getK2Home() {
         return NR_CSEC_HOME;
+    }
+
+    public AgentMode getAgentMode() {
+        return agentMode;
     }
 }

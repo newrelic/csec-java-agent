@@ -347,8 +347,14 @@ public class WSClient extends WebSocketClient {
         return instance;
     }
 
-    public static void shutDownWSClient(boolean clean) {
+    public static void shutDownWSClientAbnormal(boolean clean) {
         logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
+                WSClient.class.getName());
+        shutDownWSClient(clean, CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
+    }
+
+    public static void shutDownWSClient(boolean clean, int frame, String message) {
+        logger.log(LogLevel.WARNING, String.format("WebSocket Shutdown initiated with %s", frame),
                 WSClient.class.getName());
         WSUtils.getInstance().setConnected(false);
         if(clean) {
@@ -356,7 +362,7 @@ public class WSClient extends WebSocketClient {
             GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
         }
         if (instance != null) {
-            instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
+            instance.close(frame, message);
         }
     }
 

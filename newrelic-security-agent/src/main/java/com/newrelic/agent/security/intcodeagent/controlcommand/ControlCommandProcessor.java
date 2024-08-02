@@ -12,7 +12,6 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -107,13 +106,13 @@ public class ControlCommandProcessor implements Runnable {
         switch (controlCommand.getControlCommand()) {
 
             case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
-                InstrumentationUtils.shutdownLogic(true);
+                InstrumentationUtils.shutdownLogic();
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
                 System.err.println(controlCommand.getArguments().get(0));
-                InstrumentationUtils.shutdownLogic(true);
+                InstrumentationUtils.shutdownLogic();
                 break;
 
             case IntCodeControlCommand.SEND_POLICY_PARAMETERS:

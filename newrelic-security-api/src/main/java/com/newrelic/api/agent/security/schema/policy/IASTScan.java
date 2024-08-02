@@ -3,8 +3,10 @@ package com.newrelic.api.agent.security.schema.policy;
 
 public class IASTScan {
 
-    private Boolean enabled = false;
+    private Boolean enabled = true;
     private Probing probing = new Probing();
+    private Boolean restricted = false;
+    private RestrictionCriteria restrictionCriteria = new RestrictionCriteria();
 
     /**
      * No args constructor for use in serialization
@@ -36,4 +38,19 @@ public class IASTScan {
         this.probing = probing;
     }
 
+    public Boolean getRestricted() {
+        return restricted;
+    }
+
+    public void setRestricted(Boolean restricted) {
+        this.restricted = restricted;
+    }
+
+    public RestrictionCriteria getRestrictionCriteria() {
+        return restrictionCriteria;
+    }
+
+    public void setRestrictionCriteria(RestrictionCriteria restrictionCriteria) {
+        this.restrictionCriteria = restrictionCriteria;
+    }
 }

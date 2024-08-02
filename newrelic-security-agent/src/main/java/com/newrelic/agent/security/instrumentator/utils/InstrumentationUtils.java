@@ -5,6 +5,7 @@ import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -13,6 +14,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import org.apache.commons.io.FileUtils;
+import org.java_websocket.framing.CloseFrame;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +49,7 @@ public class InstrumentationUtils {
 
     private static Boolean IAST = false;
 
-    public static void shutdownLogic(boolean doResetInstrumentation) {
+    public static void shutdownLogic() {
 //        System.out.println("K2 Collector's shutdown hooked called.");
 //        AgentUtils.getInstance().setAgentActive(false);
         try {
@@ -67,13 +69,13 @@ public class InstrumentationUtils {
         } catch (Throwable e) {
         }
         try {
-//            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
             HealthCheckScheduleThread.getInstance().cancelTask(true);
-//            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
             DispatcherPool.shutDownPool();
             ControlCommandProcessorThreadPool.shutDownPool();
             EventSendPool.shutDownPool();
             WSReconnectionST.shutDownPool();
+            WSClient.shutDownWSClient(true, CloseFrame.NORMAL, "IAST agent shutting down");
+            FileCleaner.cancelTask();
             FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
         } catch (Throwable e) {
