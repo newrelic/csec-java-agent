@@ -93,8 +93,6 @@ public class HealthCheckScheduleThread {
             } catch (Throwable e) {
                 logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
                         HealthCheckScheduleThread.class.getName());
-            } finally {
-                writeStatusLogFile(sendJaHealthCheck);
             }
         }
     };
