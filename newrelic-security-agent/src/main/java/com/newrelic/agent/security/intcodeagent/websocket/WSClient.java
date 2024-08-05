@@ -279,10 +279,10 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
-                + REASON + reason, WSClient.class.getName());
-        NewRelic.noticeError( CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
-                + REASON + reason, noticeErrorCustomParameters, true);
+        String message = CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+                + REASON + reason;
+        logger.log(LogLevel.WARNING, message, WSClient.class.getName());
+        NewRelic.noticeError( message, true);
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
