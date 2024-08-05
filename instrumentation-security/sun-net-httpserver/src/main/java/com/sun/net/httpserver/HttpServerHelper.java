@@ -97,7 +97,7 @@ public class HttpServerHelper {
     }
 
     public static void detectRoute(){
-        if (NewRelicSecurity.isHookProcessingActive()) {
+        if (NewRelicSecurity.isHookProcessingActive() && StringUtils.isEmpty(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getRoute())) {
             NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(route);
             route = StringUtils.EMPTY;
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SUN_NET_HTTPSERVER);
