@@ -281,6 +281,8 @@ public class WSClient extends WebSocketClient {
     public void onClose(int code, String reason, boolean remote) {
         logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
+        NewRelic.noticeError( CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+                + REASON + reason, noticeErrorCustomParameters, true);
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
