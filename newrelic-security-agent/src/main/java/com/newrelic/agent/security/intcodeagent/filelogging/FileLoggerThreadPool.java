@@ -1,12 +1,15 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.os.OSVariables;
+import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.concurrent.*;
@@ -26,6 +29,8 @@ public class FileLoggerThreadPool {
 
     protected boolean isLoggingToStdOut = false;
 
+    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
     private FileLoggerThreadPool() throws IOException {
         // load the settings
         int queueSize = 15000;
@@ -36,6 +41,19 @@ public class FileLoggerThreadPool {
         maxfilesize = LogFileHelper.logFileLimit()*1024;
 
         TimeUnit timeUnit = TimeUnit.SECONDS;
+        try {
+            if(LogFileHelper.isLoggingToStdOut()){
+                this.isLoggingToStdOut = true;
+            }
+        } catch (NumberFormatException e){}
+
+        if(!isLoggingToStdOut && StringUtils.isNotBlank(osVariables.getLogDirectory())) {
+            isLoggingActive = false;
+            isInitLoggingActive = false;
+            return;
+        }
+
+
 
         boolean allowCoreThreadTimeOut = false;
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
@@ -62,11 +80,6 @@ public class FileLoggerThreadPool {
                 return t;
             }
         });
-        try {
-            if(LogFileHelper.isLoggingToStdOut()){
-                this.isLoggingToStdOut = true;
-            }
-        } catch (NumberFormatException e){}
 
     }
 
@@ -122,14 +135,14 @@ public class FileLoggerThreadPool {
     }
 
     public void log(LogLevel logLevel, String event, String logSourceClassName) {
-        if (logLevel.getLevel() == 1 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
+        if (!isLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new LogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
     }
 
     public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
-        if (logLevel.getLevel() == 1 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
+        if (!isLoggingActive ||logLevel.getLevel() == 1 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new LogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
@@ -137,7 +150,7 @@ public class FileLoggerThreadPool {
 
     public void logInit(LogLevel logLevel, String event, String logSourceClassName) {
         postLogMessage(logLevel, event, null, logSourceClassName);
-        if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
+        if (!isInitLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
         if(!isLoggingToStdOut) {
@@ -148,7 +161,7 @@ public class FileLoggerThreadPool {
 
     public void logInit(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
         postLogMessage(logLevel, event, throwableEvent, logSourceClassName);
-        if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
+        if (!isInitLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
         if(!isLoggingToStdOut) {
