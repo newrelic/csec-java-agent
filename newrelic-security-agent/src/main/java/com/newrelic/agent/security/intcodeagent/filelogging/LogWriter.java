@@ -103,14 +103,7 @@ public class LogWriter implements Runnable {
             fileName = new File(osVariables.getLogDirectory(), "java-security-collector.log").getAbsolutePath();
             currentLogFile = new File(fileName);
             currentLogFileName = fileName;
-            if(!createLogFile()) {
-                osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
-                fileName = new File(osVariables.getLogDirectory(), "java-security-collector.log").getAbsolutePath();
-                currentLogFile = new File(fileName);
-                currentLogFileName = fileName;
-                createLogFile();
-            }
-
+            createLogFile();
         }
     }
 

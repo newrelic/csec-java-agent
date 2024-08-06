@@ -60,12 +60,10 @@ public class AgentConfig {
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLED, false);
         // Set required Group
         groupName = applyRequiredGroup();
-        // Enable low severity hooks
-        // Set required LogLevel
-        logLevel = applyRequiredLogLevel();
-
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
+        // Set required LogLevel
+        logLevel = applyRequiredLogLevel();
     }
 
     private static final class InstanceHolder {
