@@ -116,6 +116,7 @@ public class AgentConfig {
             return false;
         }
         Path k2homePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
+        NR_CSEC_HOME = k2homePath.toString();
         try {
             noticeErrorCustomParams.put("CSEC_HOME", k2homePath.toString());
             if(!CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION)){
@@ -126,7 +127,6 @@ public class AgentConfig {
             NewRelic.noticeError(e, noticeErrorCustomParams, true);
             return false;
         }
-        NR_CSEC_HOME = k2homePath.toString();
         AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
         AgentUtils.getInstance().getStatusLogValues().put("agent-location", NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION));
