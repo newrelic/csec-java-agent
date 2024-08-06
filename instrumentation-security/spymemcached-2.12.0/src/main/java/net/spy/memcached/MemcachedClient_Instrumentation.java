@@ -4,18 +4,34 @@ import com.newrelic.agent.security.instrumentation.spy.memcached.MemcachedHelper
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
-import com.newrelic.api.agent.security.schema.operation.MemcachedOperation;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import net.spy.memcached.internal.OperationFuture;
 import net.spy.memcached.ops.ConcatenationType;
-import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.transcoders.Transcoder;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.List;
+
 @Weave(originalName = "net.spy.memcached.MemcachedClient")
 public class MemcachedClient_Instrumentation {
+
+    public MemcachedClient_Instrumentation(ConnectionFactory cf, List<InetSocketAddress> addrs) throws IOException {
+        try {
+            if (addrs != null) {
+                for (InetSocketAddress address : addrs) {
+                    NewRelicSecurity.getAgent().recordExternalConnection(address.getHostName(), address.getPort(), null, address.getAddress().getHostAddress(),
+                                    ExternalConnectionType.DATABASE_CONNECTION.name(), MemcachedHelper.SPYMEMCACHED_2_12_0);
+                }
+            }
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_DETECTING_CONNECTION_STATS, MemcachedHelper.SPYMEMCACHED_2_12_0, e.getMessage()), this.getClass().getName());
+        }
+    }
 
     private <T> OperationFuture<Boolean> asyncStore(StoreType storeType,
                 String key, int exp, T value, Transcoder<T> tc) {

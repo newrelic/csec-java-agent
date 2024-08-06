@@ -4,18 +4,35 @@ import com.newrelic.agent.security.instrumentation.jedis_4_0_0.JedisHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.newrelic.agent.security.instrumentation.jedis_4_0_0.JedisHelper.NR_SEC_CUSTOM_ATTRIB_NAME;
 
 @Weave(type = MatchType.BaseClass, originalName = "redis.clients.jedis.Connection")
 public abstract class Connection_Instrumentation {
+
+    final HostAndPort getHostAndPort() {
+       return Weaver.callOriginal();
+    }
+
+    public void connect() throws JedisConnectionException {
+        Weaver.callOriginal();
+        try {
+            HostAndPort hostAndPort = getHostAndPort();
+            NewRelicSecurity.getAgent().recordExternalConnection(hostAndPort.getHost(), hostAndPort.getPort(), null, null, ExternalConnectionType.DATABASE_CONNECTION.name(), "JEDIS-4.0.0");
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_DETECTING_CONNECTION_STATS, "JEDIS-4.0.0", e.getMessage()), this.getClass().getName());
+        }
+    }
+
     public void sendCommand(final CommandArguments args) {
         boolean isLockAcquired = JedisHelper.acquireLockIfPossible(args.hashCode());
         AbstractOperation operation = null;

@@ -24,6 +24,8 @@ public class GenericHelper {
     public static final String ERROR_WHILE_DETECTING_USER_CLASS = "Instrumentation library: %s error while detecting user class";
     public static final String ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST = "Instrumentation library: %s , error while getting route for incoming request : %s";
 
+    public static final String ERROR_WHILE_DETECTING_CONNECTION_STATS = "Instrumentation library: %s, error while detecting connection stats : %s";
+
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {

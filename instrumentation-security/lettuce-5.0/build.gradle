@@ -2,7 +2,7 @@ dependencies {
     implementation(project(":newrelic-security-api"))
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
-    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.0.3.RELEASE'
+    implementation ("io.lettuce:lettuce-core:5.0.3.RELEASE")
     testImplementation('org.testcontainers:testcontainers:1.17.1')
 }
 
