@@ -16,7 +16,7 @@ public class MemcachedHelper {
     public static final String METHOD_ASYNC_STORE = "asyncStore";
     public static final String METHOD_ASYNC_CAT = "asyncCat";
     public static final String METHOD_ASYNC_CAS = "asyncCAS";
-    private static final String SPYMEMCACHED_2_12_0 = "SPYMEMCACHED-2.12.0";
+    public static final String SPYMEMCACHED_2_12_0 = "SPYMEMCACHED-2.12.0";
 
     public static AbstractOperation preprocessSecurityHook(String type, String command, String key, Object val, String klass, String method) {
         try {
