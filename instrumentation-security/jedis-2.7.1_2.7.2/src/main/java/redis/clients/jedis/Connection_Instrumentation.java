@@ -23,6 +23,7 @@ public abstract class Connection_Instrumentation {
     public abstract String getHost();
 
     public void connect() {
+        Weaver.callOriginal();
         try {
             NewRelicSecurity.getAgent().recordExternalConnection(getHost(), getPort(), null, getSocket().getInetAddress().getHostAddress(), ExternalConnectionType.DATABASE_CONNECTION.name(), "JEDIS-2.7.1");
         } catch (Exception e) {
