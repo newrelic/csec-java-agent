@@ -7,6 +7,8 @@ import com.newrelic.api.agent.security.schema.ExternalConnectionType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
+import com.newrelic.api.agent.weaver.WeaveAllConstructors;
+import com.newrelic.api.agent.weaver.Weaver;
 import software.amazon.awssdk.core.client.config.SdkClientConfiguration;
 import software.amazon.awssdk.core.client.config.SdkClientOption;
 
@@ -15,7 +17,10 @@ import java.net.URI;
 @Weave(originalName = "software.amazon.awssdk.services.dynamodb.DefaultDynamoDbAsyncClient", type = MatchType.ExactClass)
 final class DefaultDynamoDbAsyncClient_Instrumentation {
 
-    protected DefaultDynamoDbAsyncClient_Instrumentation(SdkClientConfiguration clientConfiguration) {
+    private final SdkClientConfiguration clientConfiguration = Weaver.callOriginal();
+
+    @WeaveAllConstructors
+    protected DefaultDynamoDbAsyncClient_Instrumentation() {
         try {
             URI endpoint = clientConfiguration != null ? clientConfiguration.option(SdkClientOption.ENDPOINT) : null;
             if (endpoint != null) {
