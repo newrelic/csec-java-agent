@@ -3,8 +3,6 @@ package com.newrelic.agent.security.instrumentator.os;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.util.IUtilConstants;
-import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -28,9 +26,9 @@ public class OsVariablesInstance {
     private OsVariablesInstance() {
         osVariables = new OSVariables();
 
-        if(StringUtils.isNotBlank(AgentConfig.getInstance().getK2Home())) {
-            osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
-            osVariables.setTmpDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), TMP, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
+        if(StringUtils.isNotBlank(AgentConfig.getInstance().getSecurityHome())) {
+            osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getSecurityHome(), LOGS).toString());
+            osVariables.setTmpDirectory(Paths.get(AgentConfig.getInstance().getSecurityHome(), TMP, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
         }
         osVariables.setSnapshotDir(Paths.get(osVariables.getLogDirectory(), SNAPSHOTS).toString());
 //        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());

@@ -11,7 +11,6 @@ import com.newrelic.agent.security.intcodeagent.models.collectorconfig.Collector
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -56,7 +55,7 @@ public class AgentConfig {
 
     public void instantiate(){
         //Set k2 home path
-        boolean validHomePath = setK2HomePath();
+        boolean validHomePath = setSecurityHomePath();
         if(validHomePath) {
             System.out.println("New Relic Security Agent: Setting csec home path to directory: " + NR_CSEC_HOME);
         }
@@ -102,7 +101,7 @@ public class AgentConfig {
         return logLevel;
     }
 
-    public boolean setK2HomePath(){
+    public boolean setSecurityHomePath(){
         noticeErrorCustomParams.put(IUtilConstants.LOG_FILE_PATH, NewRelic.getAgent().getConfig().getValue(IUtilConstants.LOG_FILE_PATH));
         noticeErrorCustomParams.put(AGENT_JAR_LOCATION, NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION));
         noticeErrorCustomParams.put(AGENT_HOME, NewRelic.getAgent().getConfig().getValue(AGENT_HOME));
@@ -118,11 +117,11 @@ public class AgentConfig {
             System.err.println("[NR-CSEC-JA] CSEC home directory not found. Please check the agent configs or system property `newrelic.home` or environment variable `NEWRELIC_HOME`.");
             return false;
         }
-        Path k2homePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
-        NR_CSEC_HOME = k2homePath.toString();
+        Path SecurityhomePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
+        NR_CSEC_HOME = SecurityhomePath.toString();
         try {
-            noticeErrorCustomParams.put("CSEC_HOME", k2homePath.toString());
-            if(!CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION)){
+            noticeErrorCustomParams.put("CSEC_HOME", SecurityhomePath.toString());
+            if(!CommonUtils.forceMkdirs(SecurityhomePath, DIRECTORY_PERMISSION)){
                 NewRelic.noticeError(String.format("CSEC home directory creation failed, reason : %s", NR_CSEC_HOME), noticeErrorCustomParams, true);
                 System.err.printf("[NR-CSEC-JA] CSEC home directory creation failed at %s%n", NR_CSEC_HOME);
                 return false;
@@ -132,16 +131,16 @@ public class AgentConfig {
             return false;
         }
         AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
-        AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
+        AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(SecurityhomePath.toFile().canWrite() && SecurityhomePath.toFile().canRead()));
         AgentUtils.getInstance().getStatusLogValues().put("agent-location", NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION));
-        return isValidK2HomePath(NR_CSEC_HOME);
+        return isValidSecurityHomePath(NR_CSEC_HOME);
     }
 
-    private boolean isValidK2HomePath(String k2Home) {
-        if (StringUtils.isNotBlank(k2Home) && Paths.get(k2Home).toFile().isDirectory()) {
+    private boolean isValidSecurityHomePath(String securityHome) {
+        if (StringUtils.isNotBlank(securityHome) && Paths.get(securityHome).toFile().isDirectory()) {
             long avail = 0;
             try {
-                avail = Files.getFileStore(Paths.get(k2Home)).getUsableSpace();
+                avail = Files.getFileStore(Paths.get(securityHome)).getUsableSpace();
             } catch (Exception e) {
                 return true;
             }
@@ -150,11 +149,11 @@ public class AgentConfig {
                 return true;
             }
             noticeErrorCustomParams.put("CSEC_HOME_DISK_AVL_BYTES", String.valueOf(avail));
-            NewRelic.noticeError("CSEC home directory creation failed, reason : Insufficient disk space available to the location " + k2Home + " is : " + FileUtils.byteCountToDisplaySize(avail), noticeErrorCustomParams, true);
-            System.err.println(String.format("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)));
+            NewRelic.noticeError("CSEC home directory creation failed, reason : Insufficient disk space available to the location " + securityHome + " is : " + FileUtils.byteCountToDisplaySize(avail), noticeErrorCustomParams, true);
+            System.err.println(String.format("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s", securityHome, FileUtils.byteCountToDisplaySize(avail)));
             return false;
         }
-        NewRelic.noticeError("CSEC home directory creation failed, reason : CSEC home directory not found :"+k2Home, noticeErrorCustomParams, true);
+        NewRelic.noticeError("CSEC home directory creation failed, reason : CSEC home directory not found :"+securityHome, noticeErrorCustomParams, true);
         return false;
     }
 
@@ -214,7 +213,7 @@ public class AgentConfig {
         isNRSecurityEnabled = NRSecurityEnabled;
     }
 
-    public String getK2Home() {
+    public String getSecurityHome() {
         return NR_CSEC_HOME;
     }
 }
