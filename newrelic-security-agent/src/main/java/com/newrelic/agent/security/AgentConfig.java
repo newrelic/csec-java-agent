@@ -3,6 +3,7 @@ package com.newrelic.agent.security;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
@@ -113,7 +114,7 @@ public class AgentConfig {
             //system property `newrelic.home` or environment variable `NEWRELIC_HOME`
             NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue(AGENT_HOME);
         } else {
-            NewRelic.noticeError("CSEC home directory creation failed, reason directory not found. Please check the agent configs", noticeErrorCustomParams, true);
+            NewRelic.noticeError(new SecurityNoticeError("CSEC home directory creation failed, reason directory not found. Please check the agent configs"), noticeErrorCustomParams, true);
             System.err.println("[NR-CSEC-JA] CSEC home directory not found. Please check the agent configs or system property `newrelic.home` or environment variable `NEWRELIC_HOME`.");
             return false;
         }
@@ -122,12 +123,12 @@ public class AgentConfig {
         try {
             noticeErrorCustomParams.put("CSEC_HOME", k2homePath.toString());
             if(!CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION)){
-                System.err.println(String.format("[NR-CSEC-JA] CSEC home directory creation failed at %s", NR_CSEC_HOME));
+                NewRelic.noticeError(String.format("CSEC home directory creation failed, reason : %s", NR_CSEC_HOME), noticeErrorCustomParams, true);
+                System.err.printf("[NR-CSEC-JA] CSEC home directory creation failed at %s%n", NR_CSEC_HOME);
                 return false;
             }
         } catch (IOException e) {
-            NewRelic.noticeError(e, noticeErrorCustomParams, true);
-            NewRelic.noticeError(String.format("CSEC home directory creation failed, reason %s. Please check the agent configs", e.getMessage()), noticeErrorCustomParams, true);
+            NewRelic.noticeError(new SecurityNoticeError(String.format("CSEC home directory creation failed, reason %s. Please check the agent configs", e.getMessage()), e), noticeErrorCustomParams, true);
             return false;
         }
         AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
