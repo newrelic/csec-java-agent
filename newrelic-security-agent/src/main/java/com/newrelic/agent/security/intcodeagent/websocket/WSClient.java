@@ -188,6 +188,7 @@ public class WSClient extends WebSocketClient {
                  */
                 // Requires System.setProperty("jdk.http.auth.tunneling.disabledSchemes", ""); reference https://github.com/TooTallNate/Java-WebSocket/issues/1179#issuecomment-2184917604
                 System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+                System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
                 Authenticator.setDefault(new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
