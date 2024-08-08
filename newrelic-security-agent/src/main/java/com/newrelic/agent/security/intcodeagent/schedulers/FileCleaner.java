@@ -12,6 +12,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.concurrent.ScheduledFuture;
@@ -45,7 +46,7 @@ public class FileCleaner {
                     if(age > 0){
                         FileUtils.deleteQuietly(new File(file));
                     }
-                } catch (IOException e) {
+                } catch (IOException | InvalidPathException e) {
                 }
             }
         }
