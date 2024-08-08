@@ -1,17 +1,14 @@
 package com.newrelic.agent.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
 import com.newrelic.agent.security.intcodeagent.utils.CronExpression;
-import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
-import com.newrelic.api.agent.security.schema.annotations.JsonProperty;
 import com.newrelic.api.agent.security.schema.policy.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
@@ -32,6 +29,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.*;
+import java.util.logging.Level;
 
 import static com.newrelic.agent.security.util.IUtilConstants.*;
 
@@ -86,11 +84,17 @@ public class AgentConfig {
     }
 
     public long trigerIAST() {
-        if(agentMode.getIastScan().getEnabled() && agentMode.getIastScan().getRestricted()){
-            long date = agentMode.getIastScan().getRestrictionCriteria().getScanTime().getNextScanTime().getTime();
-            long currentTime = Instant.now().toEpochMilli();
-            System.out.println("IAST is in restricted mode will start at "+date);
-            return date-currentTime;
+        try {
+            if(agentMode.getIastScan().getEnabled() && agentMode.getIastScan().getRestricted()){
+                long date = agentMode.getIastScan().getRestrictionCriteria().getScanTime().getNextScanTime().getTime();
+                long currentTime = Instant.now().toEpochMilli();
+                return date-currentTime;
+            }
+        } catch (Exception e){
+            //TODO send notice error
+            System.err.println("[NR-CSEC-JA] Error while calculating next scan time for IAST Restricted Mode. IAST Restricted Mode will be disabled.");
+            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while calculating next scan time for IAST Restricted Mode. IAST Restricted Mode will be disabled.");
+            return Long.MAX_VALUE;
         }
         return 0;
     }
@@ -105,7 +109,14 @@ public class AgentConfig {
                 readRaspConfig();
                 break;
             case IAST_RESTRICTED:
-                readIastRestrictedConfig();
+                try {
+                    readIastRestrictedConfig();
+                } catch (RestrictionModeException e) {
+                    System.err.println("[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
+                    NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
+                    //TODO Send Notice Error
+                    this.agentMode.getIastScan().setEnabled(false);
+                }
                 break;
             default:
                 //this is default case which requires no changes
@@ -114,25 +125,24 @@ public class AgentConfig {
 
     }
 
-    private void readIastRestrictedConfig() {
+    private void readIastRestrictedConfig() throws RestrictionModeException {
         this.agentMode.getIastScan().setRestricted(true);
         RestrictionCriteria restrictionCriteria = this.agentMode.getIastScan().getRestrictionCriteria();
         restrictionCriteria.setAccountInfo(new AccountInfo(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_ACCOUNT_INFO_ACCOUNT_ID)));
-        if(StringUtils.isBlank(restrictionCriteria.getAccountInfo().getAccountId())) {
-            //TODO raise error
-
+        if(restrictionCriteria.getAccountInfo().isEmpty()) {
+            throw new RestrictionModeException("Account ID is required for IAST Restricted Mode");
         }
 
         restrictionCriteria.getScanTime().setDuration(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SCAN_TIME_DURATION, 5));
-        restrictionCriteria.getScanTime().setSchedule(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE, "0 0 2 * * MON"));
+        restrictionCriteria.getScanTime().setSchedule(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE, "0 0 0 * * ?"));
         if(CronExpression.isValidExpression(restrictionCriteria.getScanTime().getSchedule())){
             try {
                 restrictionCriteria.getScanTime().setNextScanTime(new CronExpression(restrictionCriteria.getScanTime().getSchedule()).getTimeAfter(new Date()));
             } catch (ParseException e) {
-                //TODO log error and set default scan time
+                throw new RestrictionModeException("Invalid cron expression provided for IAST Restricted Mode", e);
             }
         } else {
-            //TODO raise error
+            throw new RestrictionModeException("Invalid cron expression provided for IAST Restricted Mode");
         }
 
         //Mapping parameters

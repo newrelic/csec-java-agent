@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.MappingParameters;
 import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
@@ -39,7 +41,7 @@ public class RestrictionUtility {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static boolean hasValidAccountId(RestrictionCriteria restrictionCriteria, HttpRequest request) {
-        String accountId = restrictionCriteria.getAccountInfo().getAccountId();
+        List<String> accountIds = restrictionCriteria.getAccountInfo().getAccountIds();
         if (request == null) {
             return false;
         }
@@ -51,18 +53,18 @@ public class RestrictionUtility {
             switch (mappingParameter.getAccountIdLocation()) {
                 case QUERY:
                     List<String> queryParameters = getQueryString(mappingParameter.getAccountIdKey(), request.getQueryParameters());
-                    match = matcher(accountId, queryParameters);
+                    match = matcher(accountIds, queryParameters);
                     break;
                 case PATH:
-                    match = matcher(accountId, request.getPathParameters());
+                    match = matcher(accountIds, request.getPathParameters());
                     break;
                 case HEADER:
                     List<String> headerValues = getHeaderParameters(mappingParameter.getAccountIdKey(), request.getRequestHeaderParameters());
-                    match = matcher(accountId, headerValues);
+                    match = matcher(accountIds, headerValues);
                     break;
                 case BODY:
                     List<String> bodyValues = getBodyParameters(mappingParameter.getAccountIdKey(), request.getRequestBodyParameters());
-                    match = matcher(accountId, bodyValues);
+                    match = matcher(accountIds, bodyValues);
                     break;
             }
             if(match){
@@ -96,12 +98,18 @@ public class RestrictionUtility {
         return queryParameters.get(lowerCaseAccountId);
     }
 
-    private static boolean matcher(String accountId, List<String> values) {
-        if(values == null || values.isEmpty() || StringUtils.isBlank(accountId)) {
-            return false;
+    private static boolean matcher(List<String> accountIds, List<String> values) {
+        for (String accountId : accountIds) {
+            if(values == null || values.isEmpty() || StringUtils.isBlank(accountId)) {
+                continue;
+            }
+            String lowerCaseAccountId = accountId.toLowerCase();
+            boolean contains = values.contains(lowerCaseAccountId);
+            if(contains){
+                return true;
+            }
         }
-        String lowerCaseAccountId = accountId.toLowerCase();
-        return values.contains(lowerCaseAccountId);
+        return false;
     }
 
     private static void parseHttpRequestParameters(HttpRequest request) {
@@ -109,7 +117,11 @@ public class RestrictionUtility {
                 SEPARATOR_CHARS_QUESTION_MARK)));
         request.setQueryParameters(parseQueryParameters(request.getUrl()));
         request.setRequestHeaderParameters(parseRequestHeaders(request.getHeaders()));
-        request.setRequestBodyParameters(parseRequestBody(request.getBody(), request.getContentType(), request.getRequestBodyParameters()));
+        try {
+            request.setRequestBodyParameters(parseRequestBody(request.getBody(), request.getContentType(), request.getRequestBodyParameters()));
+        } catch (RestrictionModeException e) {
+            logger.log(LogLevel.WARNING, String.format("Request Body parsing failed reason %s", e.getMessage()), RestrictionUtility.class.getName());
+        }
         request.setRequestBodyParameters(parseRequestParameterMap(request.getParameterMap(), request.getRequestBodyParameters()));
         request.setRequestParsed(true);
     }
@@ -138,7 +150,7 @@ public class RestrictionUtility {
         return requestBodyParameters;
     }
 
-    private static Map<String, List<String>> parseRequestBody(StringBuilder body, String contentType, Map<String, List<String>> requestBodyParameters) {
+    private static Map<String, List<String>> parseRequestBody(StringBuilder body, String contentType, Map<String, List<String>> requestBodyParameters) throws RestrictionModeException {
         if(StringUtils.isBlank(body.toString())) {
             return requestBodyParameters;
         }
@@ -166,7 +178,7 @@ public class RestrictionUtility {
 
     }
 
-    private static Map<String,? extends List<String>> parseXmlRequestBody(String body) {
+    private static Map<String,? extends List<String>> parseXmlRequestBody(String body) throws RestrictionModeException {
         //write logic to xml parsing
         Map<String, List<String>> requestBodyParameters = new HashMap<>();
         try {
@@ -177,7 +189,8 @@ public class RestrictionUtility {
             Element root = document.getDocumentElement();
             parseXmlNode(root, StringUtils.EMPTY, requestBodyParameters);
         } catch (Exception e) {
-            // TODO: log error
+            logger.log(LogLevel.FINER, String.format("JSON Request Body parsing failed for %s : reason %s", body, e.getMessage()), RestrictionUtility.class.getName());
+            throw new RestrictionModeException(String.format("XML Request Body parsing failed : reason %s", e.getMessage()), e);
         }
         return requestBodyParameters;
     }
@@ -200,7 +213,7 @@ public class RestrictionUtility {
         }
     }
 
-    private static Map<String,? extends List<String>> parseJsonRequestBody(String body) {
+    private static Map<String,? extends List<String>> parseJsonRequestBody(String body) throws RestrictionModeException {
         JsonNode node;
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -208,10 +221,9 @@ public class RestrictionUtility {
             Map<String, List<String>> requestBodyParameters = new HashMap<>();
             return parseJsonNode(node, StringUtils.EMPTY, requestBodyParameters);
         } catch (JsonProcessingException e) {
-            //TODO log error
+            logger.log(LogLevel.FINER, String.format("JSON Request Body parsing failed for %s : reason %s", body, e.getMessage()), RestrictionUtility.class.getName());
+            throw new RestrictionModeException(String.format("JSON Request Body parsing failed : reason %s", e.getMessage())+ e.getMessage(), e);
         }
-        return Collections.emptyMap();
-
     }
 
     private static Map<String, List<String>> parseJsonNode(JsonNode node, String baseKey, Map<String, List<String>> requestBodyParameters) {

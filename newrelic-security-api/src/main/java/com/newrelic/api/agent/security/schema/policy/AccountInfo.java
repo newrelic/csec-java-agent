@@ -1,18 +1,27 @@
 package com.newrelic.api.agent.security.schema.policy;
 
+import java.util.List;
+
 public class AccountInfo {
 
-    private final String accountId;
+    private final List<String> accountIds;
 
     public AccountInfo() {
-        this.accountId = null;
+        this.accountIds = null;
     }
 
-    public AccountInfo(String accountId) {
-        this.accountId = accountId;
+    public AccountInfo(List<String> accountIds) {
+        this.accountIds = accountIds;
     }
 
-    public String getAccountId() {
-        return accountId;
+    public List<String> getAccountIds() {
+        return accountIds;
+    }
+
+    public boolean isEmpty() {
+        if(accountIds == null) {
+            return true;
+        }
+        return accountIds.isEmpty();
     }
 }
