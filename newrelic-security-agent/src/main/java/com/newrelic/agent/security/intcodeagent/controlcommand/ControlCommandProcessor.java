@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
@@ -29,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -113,6 +115,7 @@ public class ControlCommandProcessor implements Runnable {
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
                 System.err.println(controlCommand.getArguments().get(0));
+                NewRelic.getAgent().getLogger().log(Level.SEVERE, controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic(true);
                 break;
 
