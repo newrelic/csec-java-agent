@@ -2,7 +2,7 @@ package com.newrelic.api.agent.security.schema.policy;
 
 public class RASPScan {
 
-    private Boolean enabled = true;
+    private Boolean enabled = false;
 
     public RASPScan() {
     }

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -70,6 +71,8 @@ public class Agent implements SecurityAgent {
     private java.net.URL agentJarURL;
     private Instrumentation instrumentation;
 
+    private static final Map<String, String> customNoticeErrorParameters = new ConcurrentHashMap<>();
+
     private static final class InstanceHolder {
         static final Agent instance = new Agent();
     }
@@ -89,6 +92,10 @@ public class Agent implements SecurityAgent {
          * */
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
+    }
+
+    public static Map<String, String> getCustomNoticeErrorParameters() {
+        return customNoticeErrorParameters;
     }
 
     private void initialise() {

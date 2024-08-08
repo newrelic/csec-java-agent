@@ -9,6 +9,7 @@ import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeExcept
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
 import com.newrelic.agent.security.intcodeagent.utils.CronExpression;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.policy.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
@@ -76,6 +77,7 @@ public class AgentConfig {
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLED, false);
         // Set required Group
         groupName = applyRequiredGroup();
+        Agent.getCustomNoticeErrorParameters().put(IUtilConstants.SECURITY_MODE, groupName);
         // Enable low severity hooks
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
@@ -108,7 +110,7 @@ public class AgentConfig {
         this.agentMode = new AgentMode(groupName);
         switch (groupName){
             case IAST:
-                //this is default case which requires no changes
+                readIastConfig();
                 break;
             case RASP:
                 readRaspConfig();
@@ -119,7 +121,7 @@ public class AgentConfig {
                 } catch (RestrictionModeException e) {
                     System.err.println("[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
                     NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
-                    //TODO Send Notice Error
+                    NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
                     this.agentMode.getIastScan().setEnabled(false);
                 }
                 break;
@@ -130,8 +132,14 @@ public class AgentConfig {
 
     }
 
+    private void readIastConfig() {
+        this.agentMode.getIastScan().setEnabled(true);
+        this.agentMode.getRaspScan().setEnabled(false);
+    }
+
     private void readIastRestrictedConfig() throws RestrictionModeException {
         this.agentMode.getIastScan().setRestricted(true);
+        Agent.getCustomNoticeErrorParameters().put(IAST_RESTRICTED, String.valueOf(true));
         RestrictionCriteria restrictionCriteria = this.agentMode.getIastScan().getRestrictionCriteria();
         restrictionCriteria.setAccountInfo(new AccountInfo(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_ACCOUNT_INFO_ACCOUNT_ID)));
         if(restrictionCriteria.getAccountInfo().isEmpty()) {
@@ -226,6 +234,7 @@ public class AgentConfig {
             return false;
         }
         NR_CSEC_HOME = k2homePath.toString();
+        Agent.getCustomNoticeErrorParameters().put(IUtilConstants.NR_SECURITY_HOME, NR_CSEC_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
         AgentUtils.getInstance().getStatusLogValues().put("agent-location", agentJarLocation);
