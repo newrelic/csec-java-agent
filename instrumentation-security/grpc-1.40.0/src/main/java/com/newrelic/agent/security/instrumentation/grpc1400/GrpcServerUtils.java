@@ -88,11 +88,14 @@ public class GrpcServerUtils {
         }
     }
 
-    public static void postProcessSecurityHook(Metadata metadata, String className, String methodName) {
+    public static void postProcessSecurityHook(Metadata metadata, int statusCode, String className, String methodName) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(statusCode);
+
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

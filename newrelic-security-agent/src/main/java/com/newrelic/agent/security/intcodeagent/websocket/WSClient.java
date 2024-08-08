@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -28,8 +29,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
@@ -59,6 +59,12 @@ public class WSClient extends WebSocketClient {
     public static final String COLON_STRING = " : ";
     public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
     public static final String INCOMING_CONTROL_COMMAND_S = "Incoming control command : %s";
+
+    public static final String PROXY_HOST = "proxy_host";
+    public static final String PROXY_PASS = "proxy_password";
+    public static final String PROXY_PORT = "proxy_port";
+    public static final String PROXY_SCHEME = "proxy_scheme";
+    public static final String PROXY_USER = "proxy_user";
 
     private static WSClient instance;
 
@@ -141,6 +147,10 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
+        Proxy proxy = proxyManager();
+        if(proxy != null) {
+            this.setProxy(proxy);
+        }
         if (StringUtils.startsWithIgnoreCase(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(), "wss:")) {
             try {
                 this.setSocketFactory(createSSLContext().getSocketFactory());
@@ -150,6 +160,51 @@ public class WSClient extends WebSocketClient {
             }
         }
         logger.log(LogLevel.INFO, String.format("Connecting to WS client %s", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()), WSClient.class.getName());
+    }
+
+    private static Proxy proxyManager() {
+        try {
+            String proxyHost = NewRelic.getAgent().getConfig().getValue(PROXY_HOST, null);
+            Integer proxyPort = NewRelic.getAgent().getConfig().getValue(PROXY_PORT, 8080);
+            String proxyScheme = NewRelic.getAgent().getConfig().getValue(PROXY_SCHEME, "https");
+            String proxyUser = NewRelic.getAgent().getConfig().getValue(PROXY_USER, null);
+            String proxyPass = NewRelic.getAgent().getConfig().getValue(PROXY_PASS, null);
+
+//            logger.log(LogLevel.FINER, String.format("Connecting to WS client %s:%s with scheme :%s, user: %s, pass: %s", proxyHost, proxyPort, proxyScheme, proxyUser, proxyPass), WSClient.class.getName());
+
+            if (proxyHost == null || proxyPort == null || proxyScheme == null) {
+                return null;
+            }
+
+//            logger.log(LogLevel.FINER, String.format("Proxy Type used is %s", getProxyScheme(proxyScheme)), WSClient.class.getName());
+
+            Proxy proxy = new Proxy(getProxyScheme(proxyScheme), new InetSocketAddress(proxyHost, proxyPort));
+
+            if (proxyUser != null && proxyPass != null) {
+                // This Sets the authenticator that will be used by
+                // the networking code when a proxy or an HTTP server asks for authentication.
+                // This can lead to potential leak of authentication info by the application itself.
+//                Authenticator.setDefault(new Authenticator() {
+//                    @Override
+//                    protected PasswordAuthentication getPasswordAuthentication() {
+//                        return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
+//                    }
+//                });
+//                logger.log(LogLevel.FINER, "Authenticated proxy using username and password", WSClient.class.getName());
+            }
+            logger.log(LogLevel.FINER, String.format("Proxy being used to connect with WSS %s", proxy), WSClient.class.getName());
+            return proxy;
+        } catch (Exception e) {
+            logger.log(LogLevel.SEVERE, String.format("Error creating proxy %s", e.getMessage()), WSClient.class.getName());
+            return null;
+        }
+    }
+
+    private static Proxy.Type getProxyScheme(String proxyScheme) {
+        if (proxyScheme == null || proxyScheme.equalsIgnoreCase("http") || proxyScheme.equalsIgnoreCase("https")) {
+            return Proxy.Type.HTTP;
+        } else
+            return Proxy.Type.SOCKS;
     }
 
     @Override
@@ -182,10 +237,7 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
-//        RestRequestThreadPool.getInstance().resetIASTProcessing();
-//        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
-//        DispatcherPool.getInstance().reset();
-//        EventSendPool.getInstance().reset();
+        cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
@@ -194,6 +246,15 @@ public class WSClient extends WebSocketClient {
         WSUtils.getInstance().setConnected(true);
         AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
+    }
+
+    private static void cleanIASTState() {
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
+        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        RestRequestThreadPool.getInstance().getRejectedIds().clear();
+        GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
+        DispatcherPool.getInstance().reset();
+        EventSendPool.getInstance().reset();
     }
 
     @Override
@@ -218,6 +279,8 @@ public class WSClient extends WebSocketClient {
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
+        ControlCommandProcessorThreadPool.getInstance().getQueue().clear();
+        cleanIASTState();
         WSUtils.getInstance().setConnected(false);
         if (code == CloseFrame.POLICY_VALIDATION) {
             WSReconnectionST.cancelTask(true);
