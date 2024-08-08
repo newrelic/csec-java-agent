@@ -39,6 +39,11 @@ public class AgentConfig {
 
     public static final String AGENT_JAR_LOCATION = "agent_jar_location";
     public static final String AGENT_HOME = "agent_home";
+    public static final String INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE = "Invalid cron expression provided for IAST Restricted Mode";
+    public static final String ACCOUNT_ID_IS_REQUIRED_FOR_IAST_RESTRICTED_MODE = "Account ID is required for IAST Restricted Mode";
+    public static final String ACCOUNT_ID_LOCATION = "account_id_location";
+    public static final String ACCOUNT_ID_KEY = "account_id_key";
+    public static final String ROUTE = "route";
     private String NR_CSEC_HOME;
 
     private String logLevel;
@@ -130,7 +135,7 @@ public class AgentConfig {
         RestrictionCriteria restrictionCriteria = this.agentMode.getIastScan().getRestrictionCriteria();
         restrictionCriteria.setAccountInfo(new AccountInfo(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_ACCOUNT_INFO_ACCOUNT_ID)));
         if(restrictionCriteria.getAccountInfo().isEmpty()) {
-            throw new RestrictionModeException("Account ID is required for IAST Restricted Mode");
+            throw new RestrictionModeException(ACCOUNT_ID_IS_REQUIRED_FOR_IAST_RESTRICTED_MODE);
         }
 
         restrictionCriteria.getScanTime().setDuration(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_SCAN_TIME_DURATION, 5));
@@ -139,20 +144,16 @@ public class AgentConfig {
             try {
                 restrictionCriteria.getScanTime().setNextScanTime(new CronExpression(restrictionCriteria.getScanTime().getSchedule()).getTimeAfter(new Date()));
             } catch (ParseException e) {
-                throw new RestrictionModeException("Invalid cron expression provided for IAST Restricted Mode", e);
+                throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE, e);
             }
         } else {
-            throw new RestrictionModeException("Invalid cron expression provided for IAST Restricted Mode");
+            throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE);
         }
 
         //Mapping parameters
         List<Map<String, String>> mappingParameters = NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_MAPPING_PARAMETERS, Collections.emptyList());
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
-
-        });
         for (Map<String, String> mappingParameter : mappingParameters) {
-            MappingParameters matchingCriteria = new MappingParameters(HttpParameterLocation.valueOf(mappingParameter.get("account_id_location")), mappingParameter.get("account_id_key"));
+            MappingParameters matchingCriteria = new MappingParameters(HttpParameterLocation.valueOf(mappingParameter.get(ACCOUNT_ID_LOCATION)), mappingParameter.get(ACCOUNT_ID_KEY));
 //            MappingParameters matchingCriteria = mapper.convertValue(mappingParameter, MappingParameters.class);
             restrictionCriteria.getMappingParameters().add(matchingCriteria);
         }
@@ -164,7 +165,7 @@ public class AgentConfig {
         //Strict Criteria
         List<Map<String, String>> strictCriteria = NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_STRICT, Collections.emptyList());
         for (Map<String, String> strictCriterion : strictCriteria) {
-            StrictMappings matchingCriteria = mapper.convertValue(strictCriterion, StrictMappings.class);
+            StrictMappings matchingCriteria = new StrictMappings(strictCriterion.get(ROUTE), HttpParameterLocation.valueOf(strictCriterion.get(ACCOUNT_ID_LOCATION)), strictCriterion.get(ACCOUNT_ID_KEY));
             restrictionCriteria.getStrictMappings().add(matchingCriteria);
         }
 

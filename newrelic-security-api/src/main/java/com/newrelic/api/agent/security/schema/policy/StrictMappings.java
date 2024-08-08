@@ -15,6 +15,13 @@ public class StrictMappings {
     public StrictMappings() {
     }
 
+    public StrictMappings(String route, HttpParameterLocation accountIdLocation, String accountIdKey) {
+        this.route = route;
+        this.accountIdLocation = accountIdLocation;
+        this.accountIdKey = accountIdKey;
+        this.routePattern = Pattern.compile(route);
+    }
+
     public String getRoute() {
         return route;
     }
