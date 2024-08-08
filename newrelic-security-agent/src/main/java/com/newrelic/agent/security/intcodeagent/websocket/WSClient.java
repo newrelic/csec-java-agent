@@ -8,6 +8,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
+import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -46,7 +47,7 @@ public class WSClient extends WebSocketClient {
     public static final String SENDING_EVENT = "sending event: ";
     public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
     public static final String ERROR_IN_WSOCK_CONNECTION = "Error in WSock connection : ";
-    public static final String CONNECTION_CLOSED_BY = "Connection closed by ";
+    public static final String CONNECTION_CLOSED_BY = "WS Connection closed by ";
     public static final String REMOTE_PEER = "remote peer.";
     public static final String LOCAL = "local.";
     public static final String CODE = " Code: ";
@@ -282,7 +283,7 @@ public class WSClient extends WebSocketClient {
         String message = CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason;
         logger.log(LogLevel.WARNING, message, WSClient.class.getName());
-        NewRelic.noticeError( message, true);
+        NewRelic.noticeError(new SecurityNoticeError(message), noticeErrorCustomParameters, true);
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
@@ -296,7 +297,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        NewRelic.noticeError(ex, noticeErrorCustomParameters, true);
+        NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
