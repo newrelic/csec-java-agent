@@ -1,11 +1,15 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpRequest {
     public static final String HTTP = "http";
+
+    @JsonIgnore
+    public static final int MAX_ALLOWED_REQUEST_BODY_LENGTH = 500000;
 
     private StringBuilder body;
 
