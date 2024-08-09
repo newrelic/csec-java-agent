@@ -9,7 +9,6 @@ import org.json.simple.JSONArray;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
     private Integer pid;
-    private String applicationUUID;
     private Long startTime;
     private String sourceMethod;
     private String userFileName;
@@ -156,20 +155,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
      */
     public void setEventGenerationTime(Long eventGenerationTime) {
         this.eventGenerationTime = eventGenerationTime;
-    }
-
-    /**
-     * @return the applicationUUID
-     */
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    /**
-     * @param applicationUUID the applicationUUID to set
-     */
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     /**
