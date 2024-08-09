@@ -1,7 +1,6 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class SecureCookieOperation extends AbstractOperation {

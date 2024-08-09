@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -155,7 +156,7 @@ public class FileIntegrityOperation extends AbstractOperation {
                 permissions = permissionSet.toString();
             }
             return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
         }
         return false;
     }

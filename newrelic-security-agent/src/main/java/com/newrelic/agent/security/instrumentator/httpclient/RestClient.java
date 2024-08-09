@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
-import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
@@ -131,16 +130,13 @@ public class RestClient {
                 try {
                     responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
                 } catch (SSLException e) {
-                    NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), fuzzRequestId,
-                            String.format(IAgentConstants.SSL_EXCEPTION_FAILURE_MESSAGE, request.url()));
                     logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request, e.getMessage()), e, RestClient.class.getName());
                     logger.postLogMessageIfNecessary(LogLevel.WARNING,
                             String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId, e.getMessage()),
                             e, RestRequestProcessor.class.getName());
                     RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                     // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
-                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
                     fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
                     EventSendPool.getInstance().sendEvent(fuzzFailEvent);
                 }
@@ -202,9 +198,6 @@ public class RestClient {
             }
             else if(response.code() >= 400){
                 String responseBody = response.body().string();
-                NewRelicSecurity.getAgent().reportIASTScanFailure(null, null, null,
-                        RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
-                        String.format(IAgentConstants.REQUEST_FAILURE_FOR_S_WITH_RESPONSE_CODE, request.url(), response, responseBody));
                 RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
                         String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, responseBody), null,
@@ -227,9 +220,6 @@ public class RestClient {
                 return fireRequest(request, --repeatCount, fuzzRequestId);
             }
         } catch (IOException e) {
-            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
-                    e, RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
-                    IAgentConstants.REQUEST_FAILURE_DUE_TO_IOEXCEPTION);
 
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
@@ -237,7 +227,7 @@ public class RestClient {
                     e, RestRequestProcessor.class.getName());
             RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
             // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
-            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
         } catch (Exception e){

@@ -11,6 +11,8 @@ import java.util.Set;
 public class IASTDataTransferRequest {
     private String jsonName = "iast-data-request";
     private String applicationUUID;
+    private String appAccountId;
+    private String appEntityGuid;
 
     private int batchSize;
 
@@ -63,6 +65,22 @@ public class IASTDataTransferRequest {
 
     public void setJsonName(String jsonName) {
         this.jsonName = jsonName;
+    }
+
+    public String getAppAccountId() {
+        return appAccountId;
+    }
+
+    public void setAppAccountId(String appAccountId) {
+        this.appAccountId = appAccountId;
+    }
+
+    public String getAppEntityGuid() {
+        return appEntityGuid;
+    }
+
+    public void setAppEntityGuid(String appEntityGuid) {
+        this.appEntityGuid = appEntityGuid;
     }
 
     @Override

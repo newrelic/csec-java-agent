@@ -60,6 +60,7 @@ public class Dispatcher implements Callable {
     public static final String SYSCOMMAND_ENVIRONMENT = "environment";
     public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
     public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
+    public static final String COOKIE_NAME = "name";
     public static final String COOKIE_VALUE = "value";
     public static final String COOKIE_IS_SECURE = "isSecure";
     public static final String COOKIE_IS_HTTP_ONLY = "isHttpOnly";
@@ -220,6 +221,10 @@ public class Dispatcher implements Callable {
                         eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
                     }
                     break;
+                case SOLR_DB_REQUEST:
+                    SolrDbOperation solrDbOperation = (SolrDbOperation) operation;
+                    eventBean = prepareSolrDbRequestEvent(eventBean, solrDbOperation);
+                    break;
                 default:
 
             }
@@ -249,6 +254,20 @@ public class Dispatcher implements Callable {
                     this.getClass().getName());
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareSolrDbRequestEvent(JavaAgentEventBean eventBean, SolrDbOperation solrDbOperation) {
+        JSONArray params = new JSONArray();
+        JSONObject request = new JSONObject();
+        request.put("collection", solrDbOperation.getCollection());
+        request.put("method", solrDbOperation.getMethod());
+        request.put("connectionURL", solrDbOperation.getConnectionURL());
+        request.put("path", solrDbOperation.getPath());
+        request.put("params", solrDbOperation.getParams());
+        request.put("documents", solrDbOperation.getDocuments());
+        params.add(request);
+        eventBean.setParameters(params);
+        return eventBean;
     }
 
     private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
@@ -463,6 +482,7 @@ public class Dispatcher implements Callable {
         cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperationalBean.isHttpOnly());
         cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperationalBean.isSameSiteStrict());
         params.add(cookie);
+
         eventBean.setParameters(params);
         return eventBean;
     }

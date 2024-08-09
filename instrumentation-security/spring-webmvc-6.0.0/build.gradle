@@ -1,0 +1,43 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.springframework:spring-webmvc:6.0.0")
+    implementation('jakarta.servlet:jakarta.servlet-api:5.0.0')
+    testImplementation("org.springframework:spring-web:6.0.0")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-webmvc-6.0.0'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly('org.springframework:spring-webmvc:[6.0.0,)'){
+        implementation('jakarta.servlet:jakarta.servlet-api:5.0.0')
+    }
+    excludeRegex 'org.springframework:spring-webmvc:.*(rc|m|RC|SEC|M)[0-9]*$'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+test {
+    // These instrumentation tests only run on Java 17+ regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        !project.hasProperty('test8') && !project.hasProperty('test11')
+    }
+}
+
+site {
+    title 'Spring'
+    type 'Framework'
+}
