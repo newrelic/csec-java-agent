@@ -22,7 +22,7 @@ public class GraphQL_Instrumentation {
                 if (executionInput.getQuery() != null && !executionInput.getQuery().isEmpty()) {
                     request.getCustomDataType().put("*.query", HttpRequestCustomDataTypeEnum.GRAPHQL_QUERY.name());
                 }
-                if (executionInput.getQuery() != null && !executionInput.getVariables().isEmpty()) {
+                if (executionInput.getVariables() != null && !executionInput.getVariables().isEmpty()) {
                     request.getCustomDataType().put("*.variables", HttpRequestCustomDataTypeEnum.GRAPHQL_VARIABLE.name());
                 }
             }
