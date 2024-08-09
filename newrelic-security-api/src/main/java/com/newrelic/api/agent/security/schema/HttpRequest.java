@@ -32,8 +32,12 @@ public class HttpRequest {
     private Map<String, String> pathParameterMap;
 
     private boolean isRequestParsed;
+
     private boolean isGrpc;
+
     private String route;
+
+    private Map<String, String> customDataType;
 
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
@@ -50,6 +54,7 @@ public class HttpRequest {
         this.isRequestParsed = false;
         this.isGrpc = false;
         this.route = StringUtils.EMPTY;
+        this.customDataType = new HashMap<>();
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -67,6 +72,7 @@ public class HttpRequest {
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
+        this.customDataType = servletInfo.customDataType;
     }
 
     public String getMethod() {
@@ -229,6 +235,11 @@ public class HttpRequest {
             this.route = Paths.get(this.route, formatedSegment).normalize().toString();
         }
     }
+
+    public Map<String, String> getCustomDataType() {
+        return customDataType;
+    }
+
 }
 
 
