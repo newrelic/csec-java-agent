@@ -13,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +75,9 @@ public class InstrumentationUtils {
             ControlCommandProcessorThreadPool.shutDownPool();
             EventSendPool.shutDownPool();
             WSReconnectionST.shutDownPool();
-            FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
+            if(StringUtils.isNotBlank(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory())) {
+                FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
+            }
 
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, "Error while shutting down executor pools : ", e,
