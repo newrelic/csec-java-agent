@@ -282,9 +282,6 @@ public class Agent implements SecurityAgent {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                     operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
-                if(securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()){
-                    operation.setUserClassEntity(setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace()));
-                }
 
                 // added to fetch request/response in case of grpc requests
                 if (securityMetaData.getRequest().getIsGrpc()) {
@@ -512,6 +509,12 @@ public class Agent implements SecurityAgent {
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
             return userClassEntity;
         }
+
+        // user class identification using annotations
+        if (userClassEntity.getUserClassElement() == null && securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+            return setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace());
+        }
+
         if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
             userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
