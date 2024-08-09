@@ -36,6 +36,7 @@ public class EventStats {
         this.iastEvents.reset();
         this.dispatcher.reset();
         this.exitEvents.reset();
+        this.droppedDueTo.reset();
     }
 
     public String toString() {

@@ -298,7 +298,7 @@ public class Agent implements SecurityAgent {
                     logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                                     JsonConverter.toJSON(operation),
                             Agent.class.getName());
-                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().getCsecInternalEvent();
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementCsecInternalEvent();
                     return;
                 }
 
@@ -306,7 +306,7 @@ public class Agent implements SecurityAgent {
                     logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                                     JsonConverter.toJSON(operation),
                             Agent.class.getName());
-                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().getNrInternalEvent();
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementNrInternalEvent();
                     return;
                 }
 

@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
@@ -44,11 +45,21 @@ public class EventSendPool {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 try {
-                    if (t != null) {
-                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();
-                    } else {
-                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementCompleted();
+                    if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof EventSender) {
+                        EventSender task = (EventSender) ((CustomFutureTask<?>) r).get();
+                        if(task.getEvent() instanceof JavaAgentEventBean){
+                            if (t != null) {
+                                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();
+                            } else {
+                                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementCompleted();
+                            }
+                        }
                     }
+//                    if (t != null) {
+//                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();
+//                    } else {
+//                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementCompleted();
+//                    }
                 } catch (Throwable ignored){}
                 super.afterExecute(r, t);
             }
