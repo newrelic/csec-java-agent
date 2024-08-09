@@ -7,7 +7,10 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolActiveStat;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolStats;
@@ -76,7 +79,8 @@ public class HealthCheckScheduleThread {
                 }
 
                 logger.log(LogLevel.INFO, String.format("Pending CCs to be processed : %s", RestRequestThreadPool.getInstance().getQueueSize()), this.getClass().getName());
-                AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(RestRequestThreadPool.getInstance().getQueueSize());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
                 AgentUtils.getInstance().addStatusLogMostRecentHCs(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                 if (WSClient.getInstance().isOpen()) {
@@ -101,8 +105,17 @@ public class HealthCheckScheduleThread {
 
     private ThreadPoolStats populateThreadPoolStats() {
         ThreadPoolStats threadPoolStats = new ThreadPoolStats();
-        threadPoolStats.setDispatcherQueueSize(DispatcherPool.getInstance().getExecutor().getQueue().size());
-        threadPoolStats.setEventSendQueueSize(EventSendPool.getInstance().getExecutor().getQueue().size());
+        threadPoolStats.setDispatcher(new ThreadPoolActiveStat(DispatcherPool.getInstance().getExecutor().getActiveCount(),
+                DispatcherPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setEventSender(new ThreadPoolActiveStat(EventSendPool.getInstance().getExecutor().getActiveCount(),
+                EventSendPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setControlCommandProcessor(new ThreadPoolActiveStat(ControlCommandProcessorThreadPool.getInstance().getExecutor().getActiveCount(),
+                ControlCommandProcessorThreadPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setIastHttpRequestProcessor(new ThreadPoolActiveStat(RestRequestThreadPool.getInstance().getExecutor().getActiveCount(),
+                RestRequestThreadPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setFileLogger(new ThreadPoolActiveStat(FileLoggerThreadPool.getInstance().getExecutor().getActiveCount(),
+                FileLoggerThreadPool.getInstance().getExecutor().getQueue().size()));
+
         return threadPoolStats;
     }
 
