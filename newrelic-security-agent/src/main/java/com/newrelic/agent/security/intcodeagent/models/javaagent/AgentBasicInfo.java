@@ -60,6 +60,9 @@ public class AgentBasicInfo {
     private String eventType;
 
     private Map<String, String> linkingMetadata;
+    private String appAccountId;
+    private String appEntityGuid;
+    private String applicationUUID;
 
     @JsonInclude
     private static String policyVersion;
@@ -79,7 +82,9 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
-        setAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        setAppEntityGuid(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -240,11 +245,27 @@ public class AgentBasicInfo {
         this.linkingMetadata = linkingMetadata;
     }
 
-    public String getAccountId() {
-        return accountId;
+    public String getAppAccountId() {
+        return appAccountId;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
+    public void setAppAccountId(String appAccountId) {
+        this.appAccountId = appAccountId;
+    }
+
+    public String getAppEntityGuid() {
+        return appEntityGuid;
+    }
+
+    public void setAppEntityGuid(String appEntityGuid) {
+        this.appEntityGuid = appEntityGuid;
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 }

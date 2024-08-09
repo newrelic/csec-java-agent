@@ -221,6 +221,10 @@ public class Dispatcher implements Callable {
                         eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
                     }
                     break;
+                case SOLR_DB_REQUEST:
+                    SolrDbOperation solrDbOperation = (SolrDbOperation) operation;
+                    eventBean = prepareSolrDbRequestEvent(eventBean, solrDbOperation);
+                    break;
                 default:
 
             }
@@ -250,6 +254,20 @@ public class Dispatcher implements Callable {
                     this.getClass().getName());
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareSolrDbRequestEvent(JavaAgentEventBean eventBean, SolrDbOperation solrDbOperation) {
+        JSONArray params = new JSONArray();
+        JSONObject request = new JSONObject();
+        request.put("collection", solrDbOperation.getCollection());
+        request.put("method", solrDbOperation.getMethod());
+        request.put("connectionURL", solrDbOperation.getConnectionURL());
+        request.put("path", solrDbOperation.getPath());
+        request.put("params", solrDbOperation.getParams());
+        request.put("documents", solrDbOperation.getDocuments());
+        params.add(request);
+        eventBean.setParameters(params);
+        return eventBean;
     }
 
     private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
