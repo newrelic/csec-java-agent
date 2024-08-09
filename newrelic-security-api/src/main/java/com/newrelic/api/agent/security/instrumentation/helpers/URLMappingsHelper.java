@@ -27,6 +27,10 @@ public class URLMappingsHelper {
         add("org.apache.catalina.servlets.DefaultServlet");
         add("org.eclipse.jetty.servlet.DefaultServlet");
         add("grails.plugin.databasemigration.DbdocController");
+        add("org.springframework.web.servlet.DispatcherServlet");
+        add("org.eclipse.jetty.ee8.jsp.JettyJspServlet");
+        add("org.eclipse.jetty.ee8.servlet.DefaultServlet");
+        add("org.eclipse.jetty.servlet.NoJspServlet");
         add("org.apache.cxf.transport.servlet.CXFServlet");
         add("javax.faces.webapp.FacesServlet");
         add("jakarta.faces.webapp.FacesServlet");
