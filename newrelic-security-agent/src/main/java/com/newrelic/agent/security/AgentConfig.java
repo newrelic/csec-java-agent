@@ -45,6 +45,7 @@ public class AgentConfig {
     public static final String ACCOUNT_ID_LOCATION = "account_id_location";
     public static final String ACCOUNT_ID_KEY = "account_id_key";
     public static final String ROUTE = "route";
+    public static final String MAPPING_PARAMETERS_ARE_REQUIRED_FOR_IAST_RESTRICTED_MODE = "Mapping Parameters are required for IAST Restricted Mode";
     private String NR_CSEC_HOME;
 
     private String logLevel;
@@ -98,7 +99,7 @@ public class AgentConfig {
                 return date-currentTime;
             }
         } catch (Exception e){
-            //TODO send notice error
+            NewRelic.noticeError(new RestrictionModeException("Error while calculating next scan time for IAST Restricted Mode", e), Agent.getCustomNoticeErrorParameters(), true);
             System.err.println("[NR-CSEC-JA] Error while calculating next scan time for IAST Restricted Mode. IAST Restricted Mode will be disabled.");
             NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while calculating next scan time for IAST Restricted Mode. IAST Restricted Mode will be disabled.");
             return Long.MAX_VALUE;
@@ -118,11 +119,12 @@ public class AgentConfig {
             case IAST_RESTRICTED:
                 try {
                     readIastRestrictedConfig();
+                    updateSkipScanParameters();
                 } catch (RestrictionModeException e) {
                     System.err.println("[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
                     NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
                     NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
-                    this.agentMode.getIastScan().setEnabled(false);
+                    AgentInfo.getInstance().agentStatTrigger(false);
                 }
                 break;
             default:
@@ -130,6 +132,18 @@ public class AgentConfig {
                 break;
         }
 
+    }
+
+    private void updateSkipScanParameters() {
+        for (MappingParameters mappingParameter : this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters()) {
+            if(mappingParameter.getAccountIdLocation().equals(HttpParameterLocation.HEADER)){
+                this.agentMode.getIastScan().getRestrictionCriteria().getSkipScanParameters().getHeader().add(mappingParameter.getAccountIdKey());
+            } else if(mappingParameter.getAccountIdLocation().equals(HttpParameterLocation.QUERY)){
+                this.agentMode.getIastScan().getRestrictionCriteria().getSkipScanParameters().getQuery().add(mappingParameter.getAccountIdKey());
+            } else if(mappingParameter.getAccountIdLocation().equals(HttpParameterLocation.BODY)){
+                this.agentMode.getIastScan().getRestrictionCriteria().getSkipScanParameters().getBody().add(mappingParameter.getAccountIdKey());
+            }
+        }
     }
 
     private void readIastConfig() {
@@ -160,6 +174,9 @@ public class AgentConfig {
 
         //Mapping parameters
         List<Map<String, String>> mappingParameters = NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_MAPPING_PARAMETERS, Collections.emptyList());
+        if(mappingParameters.isEmpty()) {
+            throw new RestrictionModeException(MAPPING_PARAMETERS_ARE_REQUIRED_FOR_IAST_RESTRICTED_MODE);
+        }
         for (Map<String, String> mappingParameter : mappingParameters) {
             MappingParameters matchingCriteria = new MappingParameters(HttpParameterLocation.valueOf(mappingParameter.get(ACCOUNT_ID_LOCATION)), mappingParameter.get(ACCOUNT_ID_KEY));
 //            MappingParameters matchingCriteria = mapper.convertValue(mappingParameter, MappingParameters.class);
