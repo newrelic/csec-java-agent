@@ -7,6 +7,7 @@
 
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.agent.security.util.IUtilConstants;
@@ -100,6 +101,7 @@ public class LogFileHelper {
 
     public static void performDailyRollover(){
         try {
+            AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementDailyLogRollover();
             InitLogWriter.setWriter(dailyRollover(InitLogWriter.getFileName()));
         } catch (IOException e) {
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);

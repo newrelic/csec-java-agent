@@ -250,6 +250,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
         try {
@@ -300,6 +301,7 @@ public class Agent implements SecurityAgent {
                     logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                                     JsonConverter.toJSON(operation),
                             Agent.class.getName());
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementCsecInternalEvent();
                     return;
                 }
 
@@ -307,6 +309,7 @@ public class Agent implements SecurityAgent {
                     logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                                     JsonConverter.toJSON(operation),
                             Agent.class.getName());
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementNrInternalEvent();
                     return;
                 }
 
@@ -655,7 +658,6 @@ public class Agent implements SecurityAgent {
                         exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
                         logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
                         DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
-                        AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
                     }
                 }
             }
