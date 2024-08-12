@@ -5,6 +5,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfoBean;
@@ -56,7 +57,11 @@ public class AgentInfo {
         String runningVM = runtimeMXBean.getName();
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 //        osVariables = OsVariablesInstance.getInstance().getOsVariables();
-        applicationUUID = UUID.randomUUID().toString();
+        if (NewRelic.getAgent().getConfig().getValue("security.debug.application_uuid") != null){
+            applicationUUID = NewRelic.getAgent().getConfig().getValue("security.debug.application_uuid");
+        } else {
+            applicationUUID = UUID.randomUUID().toString();
+        }
     }
 
     private static final class InstanceHolder {
