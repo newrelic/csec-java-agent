@@ -138,7 +138,7 @@ public class Agent implements SecurityAgent {
         setInitialised(true);
         populateLinkingMetadata();
         populateApplicationTmpDir();
-        startK2Services();
+        startSecurityServices();
         info.agentStatTrigger(true);
     }
 
@@ -169,7 +169,7 @@ public class Agent implements SecurityAgent {
         info.setLinkingMetadata(linkingMetaData);
     }
 
-    private void startK2Services() {
+    private void startSecurityServices() {
         HealthCheckScheduleThread.getInstance().scheduleNewTask();
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
