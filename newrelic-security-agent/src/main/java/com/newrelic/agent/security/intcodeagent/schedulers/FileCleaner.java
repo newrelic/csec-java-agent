@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -32,6 +33,7 @@ public class FileCleaner {
 
         @Override
         public void run() {
+            AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementIastFileCleaner();
             long delay = Instant.now().toEpochMilli() - TimeUnit.MINUTES.toMillis(2);
             logger.log(LogLevel.INFO, FILE_CLEANER_INVOKED_INITIATING_TEMP_FILE_DIRECTORY_CLEANUP, FileCleaner.class.getName());
             if(StringUtils.isBlank(osVariables.getTmpDirectory())) {

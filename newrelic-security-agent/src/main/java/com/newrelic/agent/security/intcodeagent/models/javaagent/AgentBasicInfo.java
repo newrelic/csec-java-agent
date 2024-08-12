@@ -67,8 +67,6 @@ public class AgentBasicInfo {
     @JsonInclude
     private static String policyVersion;
 
-    private String accountId;
-
     private boolean isPolicyOverridden = AgentUtils.getInstance().isPolicyOverridden();
 
     /**

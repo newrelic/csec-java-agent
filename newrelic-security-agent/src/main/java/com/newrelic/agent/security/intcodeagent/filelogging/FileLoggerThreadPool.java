@@ -205,4 +205,8 @@ public class FileLoggerThreadPool {
     public boolean isLogLevelEnabled(LogLevel logLevel) {
         return (logLevel.getLevel() >= LogWriter.defaultLogLevel);
     }
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
 }

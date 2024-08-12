@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
@@ -168,6 +169,7 @@ public class ControlCommandProcessor implements Runnable {
                 }
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReceivedControlCommands();
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
@@ -216,6 +218,7 @@ public class ControlCommandProcessor implements Runnable {
                  * Post reconnect: reset 'reconnecting phase' in WSClient.
                  */
                 try {
+                    AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementReceivedReconnectAtWill();
                     //TODO no need for draining IAST since last leg has complete ledger.
                     logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
                     if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
