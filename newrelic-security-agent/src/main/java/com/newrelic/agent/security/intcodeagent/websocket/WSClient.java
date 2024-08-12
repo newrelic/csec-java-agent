@@ -8,6 +8,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
+import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -37,9 +38,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
@@ -48,7 +47,7 @@ public class WSClient extends WebSocketClient {
     public static final String SENDING_EVENT = "sending event: ";
     public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
     public static final String ERROR_IN_WSOCK_CONNECTION = "Error in WSock connection : ";
-    public static final String CONNECTION_CLOSED_BY = "Connection closed by ";
+    public static final String CONNECTION_CLOSED_BY = "WS Connection closed by ";
     public static final String REMOTE_PEER = "remote peer.";
     public static final String LOCAL = "local.";
     public static final String CODE = " Code: ";
@@ -69,6 +68,8 @@ public class WSClient extends WebSocketClient {
     private static WSClient instance;
 
     private WebSocketImpl connection = null;
+
+    private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
 
 
     private SSLContext createSSLContext() throws Exception {
@@ -95,6 +96,7 @@ public class WSClient extends WebSocketClient {
 
         logger.log(caCerts.size() > 0 ? LogLevel.INFO : LogLevel.SEVERE,
                 String.format("Found %s certificates.", caCerts.size()), WSClient.class.getName());
+        noticeErrorCustomParameters.put("ca_bundle_count", String.valueOf(caCerts.size()));
         // Initialize the keystore
         keystore.load(null, null);
 
@@ -122,8 +124,10 @@ public class WSClient extends WebSocketClient {
         InputStream inputStream;
         String caBundlePath = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH);
         if (StringUtils.isNotBlank(caBundlePath)) {
+            noticeErrorCustomParameters.put("ca_bundle_path", caBundlePath);
             inputStream = Files.newInputStream(Paths.get(caBundlePath));
         } else {
+            noticeErrorCustomParameters.put("ca_bundle_path", "internal-pem");
             inputStream = CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
         }
         return inputStream;
@@ -150,6 +154,7 @@ public class WSClient extends WebSocketClient {
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);
+            noticeErrorCustomParameters.put("proxy_host", proxy.address().toString());
         }
         if (StringUtils.startsWithIgnoreCase(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(), "wss:")) {
             try {
@@ -159,6 +164,7 @@ public class WSClient extends WebSocketClient {
                 logger.log(LogLevel.FINER, "Error creating socket factory", e, WSClient.class.getName());
             }
         }
+        noticeErrorCustomParameters.put("csec_ws_url", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL());
         logger.log(LogLevel.INFO, String.format("Connecting to WS client %s", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()), WSClient.class.getName());
     }
 
@@ -274,8 +280,10 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
-                + REASON + reason, WSClient.class.getName());
+        String message = CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+                + REASON + reason;
+        logger.log(LogLevel.WARNING, message, WSClient.class.getName());
+        NewRelic.noticeError(new SecurityNoticeError(message), noticeErrorCustomParameters, true);
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
@@ -289,6 +297,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
+        NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
