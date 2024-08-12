@@ -46,7 +46,7 @@ public class EventSendPool {
             protected void afterExecute(Runnable r, Throwable t) {
                 try {
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof EventSender) {
-                        EventSender task = (EventSender) ((CustomFutureTask<?>) r).get();
+                        EventSender task = (EventSender) ((CustomFutureTask<?>) r).getTask();
                         if(task.getEvent() instanceof JavaAgentEventBean){
                             if (t != null) {
                                 AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();

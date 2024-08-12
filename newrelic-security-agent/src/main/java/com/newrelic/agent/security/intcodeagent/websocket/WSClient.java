@@ -262,7 +262,7 @@ public class WSClient extends WebSocketClient {
     public void onMessage(String message) {
         // Receive communication from IC side.
         try {
-            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesSent();
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesReceived();
             if (logger.isLogLevelEnabled(LogLevel.FINEST)) {
                 logger.log(LogLevel.FINEST, String.format(INCOMING_CONTROL_COMMAND_S, message),
                         this.getClass().getName());

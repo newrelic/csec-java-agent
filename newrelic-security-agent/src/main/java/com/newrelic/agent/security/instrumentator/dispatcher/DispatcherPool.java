@@ -239,6 +239,7 @@ public class DispatcherPool {
         securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
         securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(exitEventBean));
+        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementSubmitted();
         AgentInfo.getInstance().getJaHealthCheck().getEventStats().getExitEvents().incrementSubmitted();
     }
 
