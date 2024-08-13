@@ -177,6 +177,9 @@ public class AgentConfig {
     }
 
     public void createSnapshotDirectory() throws IOException {
+        if (osVariables.getSnapshotDir() == null){
+            return;
+        }
         Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
         // Remove any file with this name from target.
         if (!snapshotDir.toFile().isDirectory()) {

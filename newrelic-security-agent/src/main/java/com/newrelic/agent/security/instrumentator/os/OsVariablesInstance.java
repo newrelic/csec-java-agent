@@ -29,8 +29,8 @@ public class OsVariablesInstance {
         if(StringUtils.isNotBlank(AgentConfig.getInstance().getSecurityHome())) {
             osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getSecurityHome(), LOGS).toString());
             osVariables.setTmpDirectory(Paths.get(AgentConfig.getInstance().getSecurityHome(), TMP, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
+            osVariables.setSnapshotDir(Paths.get(osVariables.getLogDirectory(), SNAPSHOTS).toString());
         }
-        osVariables.setSnapshotDir(Paths.get(osVariables.getLogDirectory(), SNAPSHOTS).toString());
 //        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
 
         if (SystemUtils.IS_OS_LINUX) {
