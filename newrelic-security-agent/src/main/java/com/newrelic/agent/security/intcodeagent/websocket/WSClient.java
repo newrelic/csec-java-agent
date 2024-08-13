@@ -89,6 +89,7 @@ public class WSClient extends WebSocketClient {
                 } catch (Exception e) {
                     logger.log(LogLevel.SEVERE,
                             "Unable to generate ca certificate. Verify the certificate format. Will not process further certs.", e, WSClient.class.getName());
+                    NewRelic.noticeError("New Relic Security Agent is unable to generate CA Certificate. Verify the certificate format. Will not process further certs.", true);
                     break;
                 }
             }

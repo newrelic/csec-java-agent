@@ -115,7 +115,7 @@ public class ControlCommandProcessor implements Runnable {
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
-                NewRelic.noticeError("Incompatible Agent : " + controlCommand.getArguments().get(0), true);
+                NewRelic.noticeError("Incompatible New Relic Security Agent: " + controlCommand.getArguments().get(0), true);
                 System.err.println(controlCommand.getArguments().get(0));
                 NewRelic.getAgent().getLogger().log(Level.SEVERE, controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic(true);
