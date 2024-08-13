@@ -44,7 +44,7 @@ public class AgentConfig {
 
     private boolean isNRSecurityEnabled;
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static FileLoggerThreadPool logger;
 
     private OSVariables osVariables;
 
@@ -64,6 +64,8 @@ public class AgentConfig {
         groupName = applyRequiredGroup();
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
+
+        logger = FileLoggerThreadPool.getInstance();
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
     }
