@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.instrumentation.play2_13
 
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping
+import com.newrelic.api.agent.security.schema.{ApplicationURLMapping, StringUtils}
 import com.newrelic.api.agent.weaver.{MatchType, Weave, Weaver}
 import play.api.routing.HandlerDef
 import play.core.routing.{HandlerInvoker, HandlerInvokerFactory}
@@ -24,7 +24,8 @@ abstract class GeneratedRouter_Instrumentation {
     val iterator = documentation.iterator
     while (iterator.hasNext) {
       val doc = iterator.next
-      URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(doc._1, doc._2, doc._3))
+      val handler = StringUtils.substringBeforeLast(doc._3, StringUtils.DOT_DELIMITER)
+      URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(doc._1, doc._2, handler))
     }
   }
 }
