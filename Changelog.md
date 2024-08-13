@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 - [PR-292](https://github.com/newrelic/csec-java-agent/pull/292) Fix for ClassNotFoundException observed in glassfish server [NR-262453](https://new-relic.atlassian.net/browse/NR-262453)
 - [PR-286](https://github.com/newrelic/csec-java-agent/pull/286) Detect correct user class in Netty Reactor Server [NR-253551](https://new-relic.atlassian.net/browse/NR-253551)
+- [PR-317](https://github.com/newrelic/csec-java-agent/pull/317) Add a workaround for an issue where New Relic Security Agent breaks the gRPC endpoints [#130](https://github.com/newrelic/csec-java-agent/issues/310). [NR-299709](https://new-relic.atlassian.net/browse/NR-299709)
 
 ### Deprecations
 - Status File Used for Debugging: This feature has been deprecated. All debugging capabilities have been moved to either Init Logging or [Error Inbox](https://docs.newrelic.com/docs/errors-inbox/errors-inbox/) and will be removed in a future agent release. [NR-293966](https://new-relic.atlassian.net/browse/NR-293966)
@@ -42,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-256](https://github.com/newrelic/csec-java-agent/pull/256), [PR-259](https://github.com/newrelic/csec-java-agent/pull/259), [PR-258](https://github.com/newrelic/csec-java-agent/pull/258) Feature to detect route of an incoming request for Jax-RS and Spring Framework. [NR-265913](https://new-relic.atlassian.net/browse/NR-265913), [NR-261653](https://new-relic.atlassian.net/browse/NR-261653), [NR-273605](https://new-relic.atlassian.net/browse/NR-273605)
 - [PR-126](https://github.com/newrelic/csec-java-agent/pull/126), [PR-127](https://github.com/newrelic/csec-java-agent/pull/127), [PR-128](https://github.com/newrelic/csec-java-agent/pull/128), [PR-129](https://github.com/newrelic/csec-java-agent/pull/129) Jedis Support : The security agent now also supports Jedis Version 1.4.0 and above. [NR-174176](https://new-relic.atlassian.net/browse/NR-174176)
 - [PR-287](https://github.com/newrelic/csec-java-agent/pull/287) Support for Proxy Settings for Connecting to the Security Engine, with known limitation of missing Authentication capabilities.
+
 ### Fixes
 - [PR-255](https://github.com/newrelic/csec-java-agent/pull/255) Handle InvalidPathException thrown by Paths.get method [NR-262452](https://new-relic.atlassian.net/browse/NR-262452)
 - [PR-216](https://github.com/newrelic/csec-java-agent/pull/216) Extract Server Configuration to resolve IAST localhost connection with application for Glassfish Server. [NR-223808](https://new-relic.atlassian.net/browse/NR-223808)
