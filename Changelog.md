@@ -4,7 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.1] - TBD
+## [1.4.1] - 2024-8-14
 ### Adds
 - [PR-296](https://github.com/newrelic/csec-java-agent/pull/296) Apache Solr Support: The security agent now also supports Apache Solr Version 4.0.0 and above. [NR-288599](https://new-relic.atlassian.net/browse/NR-288599)
 - [PR-275](https://github.com/newrelic/csec-java-agent/pull/275) The maximum permissible size for a request body for scan will be set at 500KB. [NR-174195](https://new-relic.atlassian.net/browse/NR-174195)
