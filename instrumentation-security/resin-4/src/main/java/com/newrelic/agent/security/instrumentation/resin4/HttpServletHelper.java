@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentation.resin4;
 
 
+import com.caucho.server.webapp.WebAppController;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
@@ -15,7 +16,7 @@ import java.util.Map;
 public class HttpServletHelper {
     public static final String RESIN_40 = "RESIN-4.0";
 
-    public static void gatherURLMappings(ServletContext servletContext) {
+    private static void gatherURLMappings(ServletContext servletContext) {
         try {
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, URLMappingsHelper.SEPARATOR);
@@ -30,7 +31,7 @@ public class HttpServletHelper {
         }
     }
 
-    public static void getJSPMappings(ServletContext servletContext, String dir) {
+    private static void getJSPMappings(ServletContext servletContext, String dir) {
         try {
             if(dir.endsWith(URLMappingsHelper.SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
@@ -45,6 +46,18 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, RESIN_40, e.getMessage()), e, HttpServletHelper.class.getName());
+        }
+    }
+
+    public static void gatherURLMappings(WebAppController[] webAppList) {
+        if (webAppList == null){
+            return;
+        }
+        for (WebAppController webAppController : webAppList) {
+            if (webAppController.getWebApp() == null){
+                continue;
+            }
+            gatherURLMappings(webAppController.getWebApp());
         }
     }
 }
