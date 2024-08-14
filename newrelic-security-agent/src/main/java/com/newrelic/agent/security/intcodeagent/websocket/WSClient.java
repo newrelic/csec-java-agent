@@ -147,6 +147,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
+        this.addHeader("NR-CSEC-IGNORED-VUL-CATEGORIES", AgentConfig.getInstance().getAgentMode().getSkipScan().getIastDetectionCategory().getDisabledCategoriesCSV());
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);

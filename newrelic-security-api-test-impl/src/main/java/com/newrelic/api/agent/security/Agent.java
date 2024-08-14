@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
@@ -24,6 +25,7 @@ public class Agent implements SecurityAgent {
     public static final String OPERATIONS = "operations";
     public static final String EXIT_OPERATIONS = "exit-operations";
     private static Agent instance;
+    private final IastDetectionCategory defaultIastDetectionCategory = new IastDetectionCategory();
 
     private AgentPolicy policy = new AgentPolicy();
 
@@ -48,6 +50,11 @@ public class Agent implements SecurityAgent {
     }
 
     private void initialise() {
+    }
+
+    @Override
+    public IastDetectionCategory getIastDetectionCategory() {
+        return defaultIastDetectionCategory;
     }
 
     @Override

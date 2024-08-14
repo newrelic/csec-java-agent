@@ -69,6 +69,8 @@ public class ControlCommandProcessor implements Runnable {
 
     private long receiveTimestamp;
 
+    private static Instant iastReplayRequestMsgReceiveTime;
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public ControlCommandProcessor(String controlCommandMessage, long receiveTimestamp) {
@@ -166,6 +168,7 @@ public class ControlCommandProcessor implements Runnable {
             case IntCodeControlCommand.FUZZ_REQUEST:
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
+                iastReplayRequestMsgReceiveTime = Instant.now();
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
                 RestRequestProcessor.processControlCommand(controlCommand);
                 break;
@@ -270,5 +273,9 @@ public class ControlCommandProcessor implements Runnable {
     public static void processControlCommand(String controlCommandMessage, long receiveTimestamp) {
         ControlCommandProcessorThreadPool.getInstance().executor
                 .submit(new ControlCommandProcessor(controlCommandMessage, receiveTimestamp));
+    }
+
+    public static Instant getIastReplayRequestMsgReceiveTime() {
+        return iastReplayRequestMsgReceiveTime;
     }
 }

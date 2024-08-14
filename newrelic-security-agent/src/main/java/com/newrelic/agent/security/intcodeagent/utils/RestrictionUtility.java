@@ -10,6 +10,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.MappingParameters;
 import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
+import com.newrelic.api.agent.security.schema.policy.SkipScan;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class RestrictionUtility {
 
@@ -39,6 +41,27 @@ public class RestrictionUtility {
     public static final String CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
+    public static boolean skippedApiDetected(SkipScan skipScan, HttpRequest httpRequest) {
+        if (skipScan == null) {
+            return false;
+        }
+        if (httpRequest == null) {
+            return false;
+        }
+
+        if(skipScan.getApiRoutes().isEmpty()) {
+            return false;
+        }
+
+        for (Pattern pattern : skipScan.getApiRoutes()) {
+            if (pattern.matcher(httpRequest.getUrl()).matches()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static boolean hasValidAccountId(RestrictionCriteria restrictionCriteria, HttpRequest request) {
         List<String> accountIds = restrictionCriteria.getAccountInfo().getAccountIds();

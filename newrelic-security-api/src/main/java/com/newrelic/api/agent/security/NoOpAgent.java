@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
@@ -25,9 +26,15 @@ import java.util.Map;
 class NoOpAgent implements SecurityAgent {
     private static final SecurityAgent INSTANCE = new NoOpAgent();
     public static final String EMPTY = "";
+    private final IastDetectionCategory defaultIastDetectionCategory = new IastDetectionCategory();
 
     public static SecurityAgent getInstance() {
         return INSTANCE;
+    }
+
+    @Override
+    public IastDetectionCategory getIastDetectionCategory() {
+        return defaultIastDetectionCategory;
     }
 
     @Override

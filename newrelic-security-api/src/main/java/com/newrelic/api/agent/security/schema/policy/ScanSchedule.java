@@ -2,15 +2,17 @@ package com.newrelic.api.agent.security.schema.policy;
 
 import java.util.Date;
 
-public class ScanTime {
+public class ScanSchedule {
 
-    private int duration;
+    private int duration = -1;
 
     private String schedule;
 
     private Date nextScanTime;
 
-    public ScanTime() {
+    private int delay = 0;
+
+    public ScanSchedule() {
     }
 
     public int getDuration() {
@@ -35,5 +37,13 @@ public class ScanTime {
 
     public void setNextScanTime(Date nextScanTime) {
         this.nextScanTime = nextScanTime;
+    }
+
+    public int getDelay() {
+        return delay;
+    }
+
+    public void setDelay(int delay) {
+        this.delay = delay;
     }
 }
