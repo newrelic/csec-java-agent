@@ -8,6 +8,7 @@
 package software.amazon.awssdk.core.client.handler;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -22,7 +23,7 @@ public class SyncClientHandler_Instrumentation {
     public <InputT extends SdkRequest, OutputT extends SdkResponse> OutputT execute(
             ClientExecutionParams<InputT, OutputT> executionParams) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = DynamoDBUtil.acquireLockIfPossible(this.hashCode());
+        boolean isLockAcquired = DynamoDBUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
         if (isLockAcquired) {
             noSQLOperation = DynamoDBUtil.processDynamoDBRequest(executionParams, this.getClass().getName());
         }
@@ -42,7 +43,7 @@ public class SyncClientHandler_Instrumentation {
             ClientExecutionParams<InputT, OutputT> executionParams,
             ResponseTransformer<OutputT, ReturnT> responseTransformer) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = DynamoDBUtil.acquireLockIfPossible(this.hashCode());
+        boolean isLockAcquired = DynamoDBUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
         if (isLockAcquired) {
             noSQLOperation = DynamoDBUtil.processDynamoDBRequest(executionParams, this.getClass().getName());
         }

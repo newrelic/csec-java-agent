@@ -11,6 +11,7 @@ import com.newrelic.api.agent.DatastoreParameters;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
@@ -96,7 +97,7 @@ public abstract class DynamoDBUtil {
         }
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
         try {
             return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {

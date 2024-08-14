@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentation.ning.http_1_6_1.NingHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -15,7 +16,7 @@ import java.net.URISyntaxException;
 public class AsyncHttpProvider_Instrumentation {
 
     public <T> ListenableFuture<T> execute(Request request, AsyncHandler<T> handler) {
-        boolean isLockAcquired = NingHelper.acquireLockIfPossible(this.hashCode());
+        boolean isLockAcquired = NingHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, this.hashCode());
         AbstractOperation operation = null;
         URI uri = null;
         ListenableFuture<T> returnObj = null;
