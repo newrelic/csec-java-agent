@@ -323,16 +323,18 @@ public class Agent implements SecurityAgent {
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
                 HttpRequest request = securityMetaData.getRequest();
-//                if (StringUtils.isEmpty(request.getRoute())){
                 Framework frameWork = Framework.UNKNOWN;
                 if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
                     frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
                 }
                 if (!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isEmpty(request.getRoute())){
-                    request.setRoute(getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork), true);
-                    logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
+                    String route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork);
+                    if (route != null) {
+                        request.setRoute(route);
+                        logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
+                    }
                 }
-//                }
+
                 if (needToGenerateEvent(operation.getApiID())) {
                     DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
                     if (!firstEventProcessed.get()) {
@@ -358,7 +360,7 @@ public class Agent implements SecurityAgent {
     private String getEndpointRoute(String uri) {
         List<String> uriSegments = URLMappingsHelper.getSegments(uri);
         if (uriSegments.isEmpty()){
-            return StringUtils.EMPTY;
+            return null;
         }
         for (RouteSegments routeSegments : URLMappingsHelper.getRouteSegments()) {
             int uriSegIdx = 0;
@@ -384,7 +386,7 @@ public class Agent implements SecurityAgent {
                 }
             }
         }
-        return StringUtils.EMPTY;
+        return null;
     }
 
     private int jumpRoute(List<RouteSegment> value, int i1, List<String> uriSegments, int i) {
@@ -881,13 +883,21 @@ public class Agent implements SecurityAgent {
 
     @Override
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
-        String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
-        if(EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
-            return decryptedData;
-        } else {
-            NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
-            return null;
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
+                if (EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
+                    return decryptedData;
+                } else {
+                    NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
+                    return null;
+                }
+            }
+        } finally {
+            ThreadLocalLockHelper.releaseLock();
         }
+        return null;
     }
 
     @Override

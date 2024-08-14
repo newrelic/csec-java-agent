@@ -142,6 +142,9 @@ public class HealthCheckScheduleThread {
         if(writerHealthCheck == null){
             writerHealthCheck = AgentInfo.getInstance().getJaHealthCheck();
         }
+        if (osVariables.getSnapshotDir() == null){
+            return;
+        }
         File statusLog = new File(osVariables.getSnapshotDir(), String.format(K_2_AGENT_STATUS_LOG, AgentInfo.getInstance().getApplicationUUID()));
         try {
             FileUtils.deleteQuietly(statusLog);
