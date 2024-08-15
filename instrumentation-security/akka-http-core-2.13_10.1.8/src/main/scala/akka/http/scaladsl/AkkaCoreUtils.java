@@ -61,7 +61,7 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, String className, String methodName, Token token) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, int responseCode, String className, String methodName, Token token) {
         try {
             if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
@@ -72,6 +72,7 @@ public class AkkaCoreUtils {
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(responseBody);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

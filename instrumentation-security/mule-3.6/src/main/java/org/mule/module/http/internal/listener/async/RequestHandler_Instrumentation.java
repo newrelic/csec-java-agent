@@ -9,11 +9,13 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.mule.module.http.internal.domain.request.HttpRequest;
 import org.mule.module.http.internal.domain.request.HttpRequestContext;
+import org.mule.module.http.internal.listener.HttpRequestToMuleEvent_Instrumentation;
 
 @Weave(type = MatchType.Interface, originalName = "org.mule.module.http.internal.listener.async.RequestHandler")
 public class RequestHandler_Instrumentation {
@@ -76,7 +78,9 @@ public class RequestHandler_Instrumentation {
             // TODO: need to update UserClassEntity
             ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_3_6, ignored.getMessage()), ignored, HttpRequestToMuleEvent_Instrumentation.class.getName());
+        }
     }
 
     private void postProcessSecurityHook() {
@@ -103,9 +107,11 @@ public class RequestHandler_Instrumentation {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MuleHelper.MULE_3_6, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_3_6, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_3_6, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
         }
     }
 

@@ -79,14 +79,7 @@ public class InitLogWriter implements Runnable {
             fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
             currentLogFile = new File(fileName);
             currentLogFileName = fileName;
-            if(!createLogFile()) {
-                osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
-                fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
-                currentLogFile = new File(fileName);
-                currentLogFileName = fileName;
-                createLogFile();
-            }
-
+            createLogFile();
         }
     }
 
@@ -178,7 +171,9 @@ public class InitLogWriter implements Runnable {
             FileLoggerThreadPool.getInstance().setInitLoggingActive(true);
 
 //			writer.newLine();
-            rollover(currentLogFileName);
+            if(maxFileSize > 0) {
+                rollover(currentLogFileName);
+            }
         } catch (IOException e) {
             //TODO report to cloud
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);

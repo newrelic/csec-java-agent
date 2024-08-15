@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HttpRequest {
     public static final String HTTP = "http";
 
+    @JsonIgnore
+    public static final int MAX_ALLOWED_REQUEST_BODY_LENGTH = 500000;
+
     private StringBuilder body;
 
     private boolean dataTruncated;

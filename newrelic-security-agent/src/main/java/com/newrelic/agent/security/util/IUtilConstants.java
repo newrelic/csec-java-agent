@@ -44,6 +44,7 @@ public interface IUtilConstants {
 
     String GROUP_NAME = "group-name";
     String INFO = "INFO";
+    String OFF = "OFF";
     String K_2_LOG_LEVEL = "K2_LOG_LEVEL";
     String NR_LOG_LEVEL = "log_level";
     String LOG_LEVEL = "log-level";
@@ -60,9 +61,10 @@ public interface IUtilConstants {
 
     String NR_SECURITY_HOME_APP = "security.is_home_app";
 
-    String NR_SECURITY_CA_BUNDLE_PATH = "security.ca_bundle_path";
+    String NR_SECURITY_CA_BUNDLE_PATH = "ca_bundle_path";
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";
     String NR_CSEC_DEBUG_LOGFILE_MAX_COUNT = "NR_CSEC_DEBUG_LOGFILE_MAX_COUNT";
+    String LOG_FILE_PATH = "log_file_path";
     String NR_SECURITY_HOME = "nr-security-home";
     String PROCESSED = "PROCESSED";
     String ERROR = "ERROR";
@@ -76,4 +78,5 @@ public interface IUtilConstants {
 
     String APPLICATION_TMP_DIRECTORY = "APPLICATION_TMP_DIRECTORY";
     String JAVA_IO_TMPDIR = "java.io.tmpdir";
+
 }
