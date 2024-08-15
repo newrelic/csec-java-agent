@@ -10,6 +10,7 @@ import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.constants.HttpStatusCodes;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
@@ -145,7 +146,7 @@ public class Agent implements SecurityAgent {
                 LogLevel.INFO,
                 "[STEP-3] => Gathering information about the application",
                 this.getClass().getName());
-        logger.logInit(LogLevel.INFO, NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
+        logger.logInit(LogLevel.INFO, !config.getAgentMode().getSkipScan().getIastDetectionCategory().getInsecureSettingsEnabled()?
                 "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
         if( NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) ) {
             logger.logInit(LogLevel.INFO, "App being scanned is a Newrelic's Home Grown application", this.getClass().getName());
@@ -256,6 +257,7 @@ public class Agent implements SecurityAgent {
         this.instrumentation = instrumentation;
         if (isInitialised()) {
             config.setNRSecurityEnabled(false);
+            AgentInfo.getInstance().setAgentActive(false);
             cancelActiveServiceTasks();
         }
         initialise();
@@ -266,14 +268,15 @@ public class Agent implements SecurityAgent {
     private void cancelActiveServiceTasks() {
 
         /**
-         * Drain the pools (RestClient, EventSend, Dispatcher) before websocket close
          * Websocket
          * policy
          * HealthCheck
          */
         WSClient.shutDownWSClientAbnormal(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
+        WSReconnectionST.cancelTask(true);
         FileCleaner.cancelTask();
+        ControlCommandProcessorThreadPool.shutDownPool();
 
     }
 
@@ -776,7 +779,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
-        return NewRelicSecurity.isHookProcessingActive() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+        return NewRelicSecurity.isHookProcessingActive() && !config.getAgentMode().getSkipScan().getIastDetectionCategory().getInsecureSettingsEnabled();
     }
 
     public void setApplicationConnectionConfig(int port, String scheme) {

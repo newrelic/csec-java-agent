@@ -5,16 +5,16 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 public class IastDetectionCategory {
 
     public static final String STR_COMMA = ",";
-    Boolean sqlInjectionEnabled = true;
-    Boolean insecureSettingsEnabled = true;
-    Boolean invalidFileAccessEnabled = true;
-    Boolean noSqlInjectionEnabled = true;
-    Boolean rxssEnabled = true;
-    Boolean commandInjectionEnabled = true;
-    Boolean ldapInjectionEnabled = true;
-    Boolean javascriptInjectionEnabled = true;
-    Boolean xpathInjectionEnabled = true;
-    Boolean ssrfEnabled = true;
+    Boolean sqlInjectionEnabled = false;
+    Boolean insecureSettingsEnabled = false;
+    Boolean invalidFileAccessEnabled = false;
+    Boolean noSqlInjectionEnabled = false;
+    Boolean rxssEnabled = false;
+    Boolean commandInjectionEnabled = false;
+    Boolean ldapInjectionEnabled = false;
+    Boolean javascriptInjectionEnabled = false;
+    Boolean xpathInjectionEnabled = false;
+    Boolean ssrfEnabled = false;
 
     private String disabledCategoriesCSV;
 
