@@ -134,50 +134,58 @@ public class AgentConfig {
 
         try {
             readScanSchedule();
+            readSkipScan();
         } catch (RestrictionModeException e){
-            System.err.println("[NR-CSEC-JA] Error while reading Scan Schedule Configuration. Security will be disabled.");
-            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading Scan Schedule Configuration. Security will be disabled.");
+            System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
+            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{}", e.getMessage());
             NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
             AgentInfo.getInstance().agentStatTrigger(false);
         }
-        readSkipScan();
 
     }
 
-    private void readSkipScan() {
-        agentMode.getSkipScan().setApis(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_API, Collections.emptyList()));
-        agentMode.getSkipScan().getParameters().setQuery(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_QUERY, Collections.emptyList()));
-        agentMode.getSkipScan().getParameters().setHeader(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_HEADER, Collections.emptyList()));
-        agentMode.getSkipScan().getParameters().setBody(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_BODY, Collections.emptyList()));
-        agentMode.getSkipScan().getIastDetectionCategory().setInsecureSettingsEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_INSECURE_SETTINGS, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setInvalidFileAccessEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_INVALID_FILE_ACCESS, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setSqlInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_SQL_INJECTION, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setNoSqlInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_NOSQL_INJECTION, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setLdapInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_LDAP_INJECTION, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setJavascriptInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_JAVASCRIPT_INJECTION, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setCommandInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_COMMAND_INJECTION, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setXpathInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_XPATH_INJECTION, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setSsrfEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_SSRF, true));
-        agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_RXSS, true));
-        agentMode.getSkipScan().getIastDetectionCategory().generateDisabledCategoriesCSV();
+    private void readSkipScan() throws RestrictionModeException {
+        try {
+            agentMode.getSkipScan().setApis(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_API, Collections.emptyList()));
+            agentMode.getSkipScan().getParameters().setQuery(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_QUERY, Collections.emptyList()));
+            agentMode.getSkipScan().getParameters().setHeader(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_HEADER, Collections.emptyList()));
+            agentMode.getSkipScan().getParameters().setBody(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_BODY, Collections.emptyList()));
+            agentMode.getSkipScan().getIastDetectionCategory().setInsecureSettingsEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_INSECURE_SETTINGS, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setInvalidFileAccessEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_INVALID_FILE_ACCESS, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setSqlInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_SQL_INJECTION, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setNoSqlInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_NOSQL_INJECTION, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setLdapInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_LDAP_INJECTION, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setJavascriptInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_JAVASCRIPT_INJECTION, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setCommandInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_COMMAND_INJECTION, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setXpathInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_XPATH_INJECTION, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setSsrfEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_SSRF, true));
+            agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_RXSS, true));
+            agentMode.getSkipScan().getIastDetectionCategory().generateDisabledCategoriesCSV();
+        } catch (ClassCastException | NumberFormatException e){
+            throw new RestrictionModeException("Invalid Security Configuration " + e.getMessage(), e);
+        }
     }
 
     private void readScanSchedule() throws RestrictionModeException {
-        agentMode.getScanSchedule().setDelay(NewRelic.getAgent().getConfig().getValue(SCAN_TIME_DELAY, 0));
-        agentMode.getScanSchedule().setDuration(NewRelic.getAgent().getConfig().getValue(SCAN_TIME_DURATION, 0));
-        agentMode.getScanSchedule().setSchedule(NewRelic.getAgent().getConfig().getValue(SCAN_TIME_SCHEDULE, StringUtils.EMPTY));
-        if(agentMode.getScanSchedule().getDelay() > 0) {
-            agentMode.getScanSchedule().setNextScanTime(new Date(Instant.now().toEpochMilli() + TimeUnit.MINUTES.toMillis(agentMode.getScanSchedule().getDelay())));
-        } else if(StringUtils.isNotBlank(agentMode.getScanSchedule().getSchedule())) {
-            if(CronExpression.isValidExpression(agentMode.getScanSchedule().getSchedule())){
-                try {
-                    agentMode.getScanSchedule().setNextScanTime(new CronExpression(agentMode.getScanSchedule().getSchedule()).getTimeAfter(new Date()));
-                } catch (ParseException e) {
-                    throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE, e);
+        try {
+            agentMode.getScanSchedule().setDelay(NewRelic.getAgent().getConfig().getValue(SCAN_TIME_DELAY, 0));
+            agentMode.getScanSchedule().setDuration(NewRelic.getAgent().getConfig().getValue(SCAN_TIME_DURATION, 0));
+            agentMode.getScanSchedule().setSchedule(NewRelic.getAgent().getConfig().getValue(SCAN_TIME_SCHEDULE, StringUtils.EMPTY));
+            if (agentMode.getScanSchedule().getDelay() > 0) {
+                agentMode.getScanSchedule().setNextScanTime(new Date(Instant.now().toEpochMilli() + TimeUnit.MINUTES.toMillis(agentMode.getScanSchedule().getDelay())));
+            } else if (StringUtils.isNotBlank(agentMode.getScanSchedule().getSchedule())) {
+                if (CronExpression.isValidExpression(agentMode.getScanSchedule().getSchedule())) {
+                    try {
+                        agentMode.getScanSchedule().setNextScanTime(new CronExpression(agentMode.getScanSchedule().getSchedule()).getTimeAfter(new Date()));
+                    } catch (ParseException e) {
+                        throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE, e);
+                    }
+                } else {
+                    throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE);
                 }
-            } else {
-                throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE);
             }
+        } catch (ClassCastException | NumberFormatException e){
+            throw new RestrictionModeException("Invalid Security Configuration " + e.getMessage(), e);
         }
     }
 

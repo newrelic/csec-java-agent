@@ -251,15 +251,20 @@ public class Agent implements SecurityAgent {
         /**
          * restart k2 services
          **/
-        this.agentJarURL = agentJarURL;
-        this.instrumentation = instrumentation;
-        if (isInitialised()) {
-            config.setNRSecurityEnabled(false);
-            AgentInfo.getInstance().setAgentActive(false);
-            cancelActiveServiceTasks();
+        try {
+            this.agentJarURL = agentJarURL;
+            this.instrumentation = instrumentation;
+            if (isInitialised()) {
+                config.setNRSecurityEnabled(false);
+                AgentInfo.getInstance().setAgentActive(false);
+                cancelActiveServiceTasks();
+            }
+            initialise();
+            NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
+        } catch (Exception e){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "Newrelic Security Startup failed!!!", e);
+            NewRelic.noticeError(e, customNoticeErrorParameters, true);
         }
-        initialise();
-        NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
         return true;
     }
 
