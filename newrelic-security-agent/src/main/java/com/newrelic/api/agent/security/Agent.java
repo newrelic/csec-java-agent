@@ -182,7 +182,7 @@ public class Agent implements SecurityAgent {
         if(ControlCommandProcessor.getIastReplayRequestMsgReceiveTime().isBefore(Instant.now().minus(5, ChronoUnit.MINUTES))){
             logger.log(LogLevel.WARNING, "IAST scan is still in progress, may have undetected vulnerabilities. Please increase scan duration and restart application.", Agent.class.getName());
         }
-        logger.log(LogLevel.FINER, "Scan duration completed, IAST Scan shutting down.", Agent.class.getName());
+        logger.log(LogLevel.INFO, "Scan duration completed, IAST Scan shutting down.", Agent.class.getName());
         InstrumentationUtils.shutdownLogic();
     }
 

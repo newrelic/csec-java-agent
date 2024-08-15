@@ -69,7 +69,7 @@ public class ControlCommandProcessor implements Runnable {
 
     private long receiveTimestamp;
 
-    private static Instant iastReplayRequestMsgReceiveTime;
+    private static Instant iastReplayRequestMsgReceiveTime = Instant.now();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
