@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema.policy;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+
 import java.util.Date;
 
 public class ScanSchedule {
@@ -11,6 +13,14 @@ public class ScanSchedule {
     private Date nextScanTime;
 
     private int delay = 0;
+
+    private boolean collectSamples = false;
+
+    @JsonIgnore
+    private Date dataCollectionTime;
+
+    @JsonIgnore
+    private boolean scheduleOnce = true;
 
     public ScanSchedule() {
     }
@@ -45,5 +55,29 @@ public class ScanSchedule {
 
     public void setDelay(int delay) {
         this.delay = delay;
+    }
+
+    public boolean isCollectSamples() {
+        return collectSamples;
+    }
+
+    public void setCollectSamples(boolean collectSamples) {
+        this.collectSamples = collectSamples;
+    }
+
+    public Date getDataCollectionTime() {
+        return dataCollectionTime;
+    }
+
+    public void setDataCollectionTime(Date dataCollectionTime) {
+        this.dataCollectionTime = dataCollectionTime;
+    }
+
+    public boolean isScheduleOnce() {
+        return scheduleOnce;
+    }
+
+    public void setScheduleOnce(boolean scheduleOnce) {
+        this.scheduleOnce = scheduleOnce;
     }
 }

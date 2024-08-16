@@ -11,6 +11,7 @@ public interface IUtilConstants {
     String SCAN_TIME_DELAY = "security.scan_schedule.delay";
     String SCAN_TIME_SCHEDULE = "security.scan_schedule.schedule";
     String SCAN_TIME_DURATION = "security.scan_schedule.duration";
+    String SCAN_TIME_COLLECT_SAMPLES = "security.scan_schedule.allow_iast_sample_collection";
 
     String SKIP_IAST_SCAN = "security.skip_iast_scan";
     String SKIP_IAST_SCAN_API = SKIP_IAST_SCAN + ".api";

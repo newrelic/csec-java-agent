@@ -156,7 +156,12 @@ public class IASTDataTransferRequestProcessor {
     public void startDataRequestSchedule(long delay, TimeUnit timeUnit){
         try {
             stopDataRequestSchedule(true);
-            future = executorService.scheduleWithFixedDelay(this::task, 0, delay, timeUnit);
+            long initialDelay = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().toInstant().getEpochSecond() - Instant.now().getEpochSecond();
+            if(initialDelay < 0){
+                initialDelay = 0;
+            }
+            logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime()), IASTDataTransferRequestProcessor.class.getName());
+            future = executorService.scheduleWithFixedDelay(this::task, initialDelay, delay, timeUnit);
         } catch (Throwable ignored){}
     }
 

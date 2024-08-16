@@ -427,22 +427,6 @@ public class AgentUtils {
             AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
             EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
 
-            // Start IAST data pull if policy allows
-            if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                    NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
-            ) {
-                IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
-                        NewRelicSecurity.getAgent().getCurrentPolicy()
-                                .getVulnerabilityScan().getIastScan().getProbing().getInterval(), TimeUnit.SECONDS);
-                logger.logInit(
-                        LogLevel.INFO,
-                        String.format(STARTED_MODULE_LOG, AgentServices.IASTDataPullService.name()),
-                        Agent.class.getName()
-                );
-            } else {
-                IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
-            }
-
             return true;
         } catch (Throwable e) {
             logger.logInit(LogLevel.SEVERE, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,

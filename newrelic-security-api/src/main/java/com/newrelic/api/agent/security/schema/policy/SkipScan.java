@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema.policy;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -7,6 +9,7 @@ import java.util.regex.Pattern;
 public class SkipScan {
     private List<String> apis = new ArrayList<>();
 
+    @JsonIgnore
     private List<Pattern> apiRoutes = new ArrayList<>();
 
     private SkipScanParameters parameters = new SkipScanParameters();

@@ -4,20 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
-import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
+import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.constants.HttpStatusCodes;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
+import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
-import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
-import com.newrelic.agent.security.intcodeagent.utils.RestrictionUtility;
-import com.newrelic.agent.security.intcodeagent.utils.RuntimeErrorReporter;
+import com.newrelic.agent.security.intcodeagent.utils.*;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
@@ -27,7 +26,6 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -36,6 +34,7 @@ import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
+import org.java_websocket.framing.CloseFrame;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,13 +42,10 @@ import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,6 +63,7 @@ public class Agent implements SecurityAgent {
     private static final AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
     public static final String ERROR_WHILE_GENERATING_TRACE_ID_FOR_CATEGORY_S = "Error while generating trace id for category : %s";
     public static final String SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST = "Skipping the API %s as it is part of the skip scan list";
+    public static final String INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE = "Invalid cron expression provided for IAST Mode";
 
     private AgentInfo info;
 
@@ -127,61 +124,84 @@ public class Agent implements SecurityAgent {
          * */
 
         //NOTE: The bellow call sequence is critical and dependent on each other
-        logger = FileLoggerThreadPool.getInstance();
-        logger.logInit(
-                LogLevel.INFO,
-                "[STEP-1] => Security agent is starting",
-                Agent.class.getName());
-        logger.logInit(
-                LogLevel.INFO,
-                String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
-        config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
+        try {
+            logger = FileLoggerThreadPool.getInstance();
+            logger.logInit(
+                    LogLevel.INFO,
+                    "[STEP-1] => Security agent is starting",
+                    Agent.class.getName());
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
+            config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
-        info.setBuildInfo(readCollectorBuildInfo());
-        logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", info.getBuildInfo()), this.getClass().getName());
+            info.setBuildInfo(readCollectorBuildInfo());
+            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", info.getBuildInfo()), this.getClass().getName());
 
-        logger.logInit(
-                LogLevel.INFO,
-                "[STEP-3] => Gathering information about the application",
-                this.getClass().getName());
-        logger.logInit(LogLevel.INFO, !config.getAgentMode().getSkipScan().getIastDetectionCategory().getInsecureSettingsEnabled()?
-                "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
-        if( NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) ) {
-            logger.logInit(LogLevel.INFO, "App being scanned is a Newrelic's Home Grown application", this.getClass().getName());
+            logger.logInit(
+                    LogLevel.INFO,
+                    "[STEP-3] => Gathering information about the application",
+                    this.getClass().getName());
+            logger.logInit(LogLevel.INFO, !config.getAgentMode().getSkipScan().getIastDetectionCategory().getInsecureSettingsEnabled() ?
+                    "Low priority instrumentations are enabled." : "Low priority instrumentations are disabled!", this.getClass().getName());
+            if (NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false)) {
+                logger.logInit(LogLevel.INFO, "App being scanned is a Newrelic's Home Grown application", this.getClass().getName());
+            }
+            info.setIdentifier(ApplicationInfoUtils.envDetection());
+            ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
+            info.generateAppInfo(config.getConfig());
+            info.initialiseHC();
+            config.populateAgentPolicy();
+            config.populateAgentPolicyParameters();
+            config.setupSnapshotDir();
+            info.initStatusLogValues();
+            setInitialised(true);
+            populateLinkingMetadata();
+            populateApplicationTmpDir();
+            startSecurityServices();
+            info.agentStatTrigger(true);
+            //Schedule NR csec shutdown if required
+            scheduleShutdownTrigger();
+        } catch (Exception e){
+            e.printStackTrace();
         }
-        info.setIdentifier(ApplicationInfoUtils.envDetection());
-        ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
-        info.generateAppInfo(config.getConfig());
-        info.initialiseHC();
-        config.populateAgentPolicy();
-        config.populateAgentPolicyParameters();
-        config.setupSnapshotDir();
-        info.initStatusLogValues();
-        setInitialised(true);
-        populateLinkingMetadata();
-        populateApplicationTmpDir();
-        startSecurityServices();
-        info.agentStatTrigger(true);
-        //Schedule NR csec shutdown if required
-        scheduleShutdownTrigger();
     }
 
     private void scheduleShutdownTrigger() {
         if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDuration() > 0) {
             int duration = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDuration();
             Instant now = Instant.now();
+            if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime() != null){
+                now = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().toInstant();
+            }
             Instant shutdownInstant = now.plus(duration, ChronoUnit.MINUTES);
-            long shutdownTime = shutdownInstant.getEpochSecond() - now.getEpochSecond();
-            SchedulerHelper.getInstance().scheduleIastTrigger(this::IastShutdown, shutdownTime, TimeUnit.SECONDS);
+            long shutdownTime = shutdownInstant.getEpochSecond() - Instant.now().getEpochSecond();
+            SchedulerHelper.getInstance().scheduleIastTrigger(this::IastDeactivate, shutdownTime, TimeUnit.SECONDS);
         }
     }
 
-    private void IastShutdown() {
-        if(ControlCommandProcessor.getIastReplayRequestMsgReceiveTime().isBefore(Instant.now().minus(5, ChronoUnit.MINUTES))){
+    private void IastDeactivate() {
+        if(ControlCommandProcessor.getIastReplayRequestMsgReceiveTime().isAfter(Instant.now().minus(5, ChronoUnit.MINUTES))){
             logger.log(LogLevel.WARNING, "IAST scan is still in progress, may have undetected vulnerabilities. Please increase scan duration and restart application.", Agent.class.getName());
         }
-        logger.log(LogLevel.INFO, "Scan duration completed, IAST Scan shutting down.", Agent.class.getName());
-        InstrumentationUtils.shutdownLogic();
+        logger.log(LogLevel.INFO, "Scan duration completed, IAST going under hibernate mode.", Agent.class.getName());
+        deactivateSecurity();
+        if(!config.getAgentMode().getScanSchedule().isScheduleOnce()){
+            try {
+                config.getAgentMode().getScanSchedule().setNextScanTime(new CronExpression(config.getAgentMode().getScanSchedule().getSchedule()).getTimeAfter(new Date()));
+                config.getAgentMode().getScanSchedule().setDataCollectionTime(config.getAgentMode().getScanSchedule().getNextScanTime());
+                if(config.getAgentMode().getScanSchedule().isCollectSamples()){
+                    config.getAgentMode().getScanSchedule().setNextScanTime(new Date(Instant.now().toEpochMilli()));
+                }
+                long delay = config.triggerIAST();
+                SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+            } catch (ParseException e) {
+                System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
+                NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{}", e.getMessage());
+                NewRelic.noticeError(new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE, e), Agent.getCustomNoticeErrorParameters(), true);
+                AgentInfo.getInstance().agentStatTrigger(false);
+            }
+        }
     }
 
     private void IastRestrictedShutdown() {
@@ -238,6 +258,18 @@ public class Agent implements SecurityAgent {
                 Agent.class.getName()
         );
         logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, Agent.class.getName());
+        // Start IAST data pull if policy allows
+        if (config.getAgentMode().getIastScan().getEnabled()) {
+            IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
+                    config.getAgentMode().getIastScan().getProbing().getInterval(), TimeUnit.SECONDS);
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTED_MODULE_LOG, AgentServices.IASTDataPullService.name()),
+                    Agent.class.getName()
+            );
+        } else {
+            IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
+        }
 
     }
 
@@ -255,7 +287,6 @@ public class Agent implements SecurityAgent {
             this.agentJarURL = agentJarURL;
             this.instrumentation = instrumentation;
             if (isInitialised()) {
-                config.setNRSecurityEnabled(false);
                 AgentInfo.getInstance().setAgentActive(false);
                 cancelActiveServiceTasks();
             }
@@ -286,7 +317,6 @@ public class Agent implements SecurityAgent {
     @Override
     public boolean deactivateSecurity() {
         if(isInitialised()) {
-            config.setNRSecurityEnabled(false);
             deactivateSecurityServices();
         }
         return true;
@@ -300,12 +330,17 @@ public class Agent implements SecurityAgent {
          * 3. event pool
          * 4. HealthCheck
          **/
-        InstrumentationUtils.shutdownLogic();
-        HealthCheckScheduleThread.getInstance().cancelTask(true);
-        FileCleaner.cancelTask();
-        WSClient.shutDownWSClientAbnormal(true);
-        WSReconnectionST.shutDownPool();
-        EventSendPool.shutDownPool();
+//        InstrumentationUtils.shutdownLogic();
+        IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
+        if(!config.getAgentMode().getScanSchedule().isCollectSamples()) {
+            AgentInfo.getInstance().setAgentActive(false);
+            HealthCheckScheduleThread.getInstance().cancelTask(true);
+            FileCleaner.cancelTask();
+            WSReconnectionST.cancelTask(true);
+            WSClient.shutDownWSClient(true, CloseFrame.NORMAL, "Deactivating Security Agent");
+        }
+
+
     }
 
     @Override

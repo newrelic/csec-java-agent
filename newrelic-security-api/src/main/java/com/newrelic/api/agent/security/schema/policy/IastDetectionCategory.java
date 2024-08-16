@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.policy;
 
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 
 public class IastDetectionCategory {
 
@@ -16,6 +17,7 @@ public class IastDetectionCategory {
     Boolean xpathInjectionEnabled = false;
     Boolean ssrfEnabled = false;
 
+    @JsonIgnore
     private String disabledCategoriesCSV;
 
     public IastDetectionCategory() {
