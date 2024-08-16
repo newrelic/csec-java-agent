@@ -197,7 +197,7 @@ public class Agent implements SecurityAgent {
                 SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
             } catch (ParseException e) {
                 System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
-                NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{}", e.getMessage());
+                NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{0}", e.getMessage());
                 NewRelic.noticeError(new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE, e), Agent.getCustomNoticeErrorParameters(), true);
                 AgentInfo.getInstance().agentStatTrigger(false);
             }

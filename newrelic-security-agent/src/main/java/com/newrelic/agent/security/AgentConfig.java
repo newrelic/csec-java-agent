@@ -138,7 +138,7 @@ public class AgentConfig {
             readSkipScan();
         } catch (RestrictionModeException e){
             System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
-            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{}", e.getMessage());
+            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message : {0}", e.getMessage());
             NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
             AgentInfo.getInstance().agentStatTrigger(false);
         }

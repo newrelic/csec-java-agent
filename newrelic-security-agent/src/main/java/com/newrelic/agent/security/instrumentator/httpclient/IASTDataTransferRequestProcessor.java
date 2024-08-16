@@ -156,17 +156,21 @@ public class IASTDataTransferRequestProcessor {
     public void startDataRequestSchedule(long delay, TimeUnit timeUnit){
         try {
             stopDataRequestSchedule(true);
-            long initialDelay = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().toInstant().getEpochSecond() - Instant.now().getEpochSecond();
+            long initialDelay = 0;
+            if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime() != null) {
+                initialDelay = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().toInstant().getEpochSecond() - Instant.now().getEpochSecond();
+            }
             if(initialDelay < 0){
                 initialDelay = 0;
             }
-            logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime()), IASTDataTransferRequestProcessor.class.getName());
+            logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s, after delay of %s seconds", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime(), initialDelay), IASTDataTransferRequestProcessor.class.getName());
             future = executorService.scheduleWithFixedDelay(this::task, initialDelay, delay, timeUnit);
         } catch (Throwable ignored){}
     }
 
     public void stopDataRequestSchedule(boolean force){
         try {
+            logger.log(LogLevel.FINER, "deactivating data pull request until reschedule.", IASTDataTransferRequestProcessor.class.getName());
             if (this.future != null) {
                 future.cancel(force);
                 future = null;
