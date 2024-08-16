@@ -68,7 +68,7 @@ public class AgentConfig {
     private AgentConfig(){
     }
 
-    public long instantiate(){
+    public long instantiate() throws RestrictionModeException {
         //Set k2 home path
         boolean validHomePath = setSecurityHomePath();
         if(validHomePath) {
@@ -92,7 +92,7 @@ public class AgentConfig {
         return triggerIAST();
     }
 
-    public long triggerIAST() {
+    public long triggerIAST() throws RestrictionModeException {
         try {
             if(agentMode.getScanSchedule().getNextScanTime() != null) {
                 logger.log(LogLevel.FINER, "Security Agent scan time is set to : " + agentMode.getScanSchedule().getNextScanTime(), AgentConfig.class.getName());
@@ -100,15 +100,16 @@ public class AgentConfig {
                 return (delay > 0)? delay : 0;
             }
         } catch (Exception e){
-            NewRelic.noticeError(new RestrictionModeException("Error while calculating next scan time for IAST Restricted Mode", e), Agent.getCustomNoticeErrorParameters(), true);
+            RestrictionModeException restrictionModeException = new RestrictionModeException("Error while calculating next scan time for IAST Restricted Mode", e);
+            NewRelic.noticeError(restrictionModeException, Agent.getCustomNoticeErrorParameters(), true);
             System.err.println("[NR-CSEC-JA] Error while calculating next scan time for IAST Restricted Mode. IAST Restricted Mode will be disabled.");
             NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while calculating next scan time for IAST Restricted Mode. IAST Restricted Mode will be disabled.");
-            return Long.MAX_VALUE;
+            throw restrictionModeException;
         }
         return 0;
     }
 
-    private void instantiateAgentMode(String groupName) {
+    private void instantiateAgentMode(String groupName) throws RestrictionModeException {
         this.agentMode = new AgentMode(groupName);
         switch (groupName){
             case IAST:
@@ -126,6 +127,7 @@ public class AgentConfig {
                     NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Restricted Mode Configuration. IAST Restricted Mode will be disabled.");
                     NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
                     AgentInfo.getInstance().agentStatTrigger(false);
+                    throw e;
                 }
                 break;
             default:
@@ -141,6 +143,7 @@ public class AgentConfig {
             NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message : {0}", e.getMessage());
             NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
             AgentInfo.getInstance().agentStatTrigger(false);
+            throw e;
         }
         logger.log(LogLevel.INFO, String.format("Security Agent Modes and Config :  %s", agentMode), AgentConfig.class.getName());
     }

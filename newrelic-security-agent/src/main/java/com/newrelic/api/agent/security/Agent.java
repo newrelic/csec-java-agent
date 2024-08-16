@@ -103,8 +103,7 @@ public class Agent implements SecurityAgent {
         return customNoticeErrorParameters;
     }
 
-    private void initialise() {
-
+    private void initialise() throws RestrictionModeException {
         if (!isInitialised()) {
             config = AgentConfig.getInstance();
             info = AgentInfo.getInstance();
@@ -163,7 +162,8 @@ public class Agent implements SecurityAgent {
             //Schedule NR csec shutdown if required
             scheduleShutdownTrigger();
         } catch (Exception e){
-            e.printStackTrace();
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", e.getMessage());
+            NewRelic.noticeError(e, customNoticeErrorParameters, true);
         }
     }
 
@@ -195,6 +195,9 @@ public class Agent implements SecurityAgent {
                 }
                 long delay = config.triggerIAST();
                 SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+            } catch (RestrictionModeException | SecurityException exception){
+                NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", exception.getMessage());
+                NewRelic.noticeError(exception, customNoticeErrorParameters, true);
             } catch (ParseException e) {
                 System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
                 NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{0}", e.getMessage());
@@ -205,9 +208,14 @@ public class Agent implements SecurityAgent {
     }
 
     private void IastRestrictedShutdown() {
-        InstrumentationUtils.shutdownLogic();
-        long delay = config.triggerIAST();
-        SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+        try {
+            InstrumentationUtils.shutdownLogic();
+            long delay = config.triggerIAST();
+            SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+        } catch (RestrictionModeException | SecurityException exception){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", exception.getMessage());
+            NewRelic.noticeError(exception, customNoticeErrorParameters, true);
+        }
     }
 
     private void populateApplicationTmpDir() {
@@ -292,6 +300,9 @@ public class Agent implements SecurityAgent {
             }
             initialise();
             NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
+        } catch (RestrictionModeException | SecurityException exception){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", exception.getMessage());
+            NewRelic.noticeError(exception, customNoticeErrorParameters, true);
         } catch (Exception e){
             NewRelic.getAgent().getLogger().log(Level.SEVERE, "Newrelic Security Startup failed!!!", e);
             NewRelic.noticeError(e, customNoticeErrorParameters, true);
