@@ -84,12 +84,12 @@ public abstract class PgStatement_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
-        return GenericHelper.acquireLockIfPossible(httpRequest, JdbcHelper.getNrSecCustomAttribName());
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public ResultSet executeQuery() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(sqlQuery == null){
@@ -110,7 +110,7 @@ public abstract class PgStatement_Instrumentation {
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE_QUERY);
@@ -128,7 +128,7 @@ public abstract class PgStatement_Instrumentation {
     }
 
     public int executeUpdate() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(sqlQuery == null){
@@ -149,7 +149,7 @@ public abstract class PgStatement_Instrumentation {
     }
 
     public int executeUpdate(String sql) throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE_UPDATE);
@@ -167,7 +167,7 @@ public abstract class PgStatement_Instrumentation {
     }
 
     public boolean execute() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(sqlQuery == null){
@@ -189,7 +189,7 @@ public abstract class PgStatement_Instrumentation {
 
     @Trace(leaf = true)
     public boolean execute(String sql) throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE);

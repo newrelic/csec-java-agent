@@ -5,6 +5,7 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
@@ -321,7 +322,7 @@ public class Agent implements SecurityAgent {
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         WSReconnectionST.cancelTask(true);
         FileCleaner.cancelTask();
-        ControlCommandProcessorThreadPool.shutDownPool();
+        ControlCommandProcessorThreadPool.clearAllTasks();
 
     }
 
@@ -334,18 +335,25 @@ public class Agent implements SecurityAgent {
     }
 
     private void deactivateSecurityServices(){
-        /**
-         * ShutDown following
-         * 1. policy + policy parameter
-         * 2. websocket
-         * 3. event pool
-         * 4. HealthCheck
-         **/
+        /*
+          ShutDown following
+          1. policy + policy parameter
+          2. websocket
+          3. event pool
+          4. HealthCheck
+         */
 //        InstrumentationUtils.shutdownLogic();
         IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
         if(!config.getAgentMode().getScanSchedule().isCollectSamples()) {
             AgentInfo.getInstance().setAgentActive(false);
             HealthCheckScheduleThread.getInstance().cancelTask(true);
+            ControlCommandProcessorThreadPool.clearAllTasks();
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+            RestRequestThreadPool.getInstance().getRejectedIds().clear();
+            GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
+            DispatcherPool.getInstance().reset();
+            EventSendPool.getInstance().reset();
             FileCleaner.cancelTask();
             WSReconnectionST.cancelTask(true);
             WSClient.shutDownWSClient(true, CloseFrame.NORMAL, "Deactivating Security Agent");
