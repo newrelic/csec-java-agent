@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
@@ -78,6 +79,9 @@ public class IASTDataTransferRequestProcessor {
             int currentFetchThreshold = NewRelic.getAgent().getConfig()
                     .getValue(SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD, 300);
 
+            int iastFetchInterval = Math.min(Math.max(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_LOAD_INTERVAL, 5), 5), 500);
+            int fetchRatio = iastFetchInterval/5;
+
             int remainingRecordCapacityRest = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
             int currentRecordBacklogRest = RestRequestThreadPool.getInstance().getQueue().size();
             int remainingRecordCapacityGrpc = GrpcClientRequestReplayHelper.getInstance().getRequestQueue().remainingCapacity();
@@ -90,8 +94,9 @@ public class IASTDataTransferRequestProcessor {
             if(!AgentUsageMetric.isRASPProcessingActive()){
                 batchSize /= 2;
             }
+            batchSize /= fetchRatio;
 
-            if (batchSize > 100 && remainingRecordCapacity > batchSize) {
+            if (batchSize > 100/fetchRatio && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
                 if (AgentConfig.getInstance().getConfig().getCustomerInfo() != null) {
                     request.setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
