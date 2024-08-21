@@ -31,6 +31,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static com.newrelic.agent.security.util.IUtilConstants.*;
 
@@ -151,9 +152,15 @@ public class AgentConfig {
     private void readSkipScan() throws RestrictionModeException {
         try {
             agentMode.getSkipScan().setApis(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_API, Collections.emptyList()));
-            agentMode.getSkipScan().getParameters().setQuery(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_QUERY, Collections.emptyList()));
-            agentMode.getSkipScan().getParameters().setHeader(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_HEADER, Collections.emptyList()));
-            agentMode.getSkipScan().getParameters().setBody(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_BODY, Collections.emptyList()));
+            agentMode.getSkipScan().getParameters().setQuery(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_QUERY, Collections.emptyList()).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList()));
+            agentMode.getSkipScan().getParameters().setHeader(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_HEADER, Collections.emptyList()).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList()));
+            agentMode.getSkipScan().getParameters().setBody(NewRelic.getAgent().getConfig().getValue(SKIP_IAST_SCAN_PARAMETERS_BODY, Collections.emptyList()).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList()));
             agentMode.getSkipScan().getIastDetectionCategory().setInsecureSettingsEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_INSECURE_SETTINGS, false));
             agentMode.getSkipScan().getIastDetectionCategory().setInvalidFileAccessEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_INVALID_FILE_ACCESS, false));
             agentMode.getSkipScan().getIastDetectionCategory().setSqlInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_SQL_INJECTION, false));
