@@ -1,0 +1,29 @@
+dependencies {
+
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.apache.lucene:lucene-core:4.0.0")
+
+    implementation("org.apache.solr:solr-core:7.0.0") {
+        transitive = false
+    }
+    implementation("org.apache.solr:solr-solrj:7.0.0") {
+        transitive = false
+    }
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.security.instrumentation.solr-7.0.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.apache.solr:solr-core:[7.0.0,8.0.0)'
+
+    excludeRegex 'org.apache.solr:solr-core:.*(ALPHA|BETA)+$'
+}
+
+site {
+    title 'Solr'
+    type 'Datastore'
+}
