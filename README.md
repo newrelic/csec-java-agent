@@ -1,13 +1,13 @@
 #
-# **The New Relic Security Agent for Java is in preview and licensed under the New Relic Pre-Release Software Notice.**
+# **New Relic Security Agent for Java**
 
 **Repo:** [https://github.com/newrelic/csec-java-agent](https://github.com/newrelic/csec-java-agent)
 
 **Artifact Name:** newrelic-security-agent.jar
 
-The New Relic Security Agent for Java is in preview and is not generally available. This enables instrumentation of Java applications for security analysis and runtime application protection. This project is built as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Other use cases are not supported.
-
 The IAST capability should only be used in pre-production environments and never in production.
+
+The New Relic Security Agent enables instrumentation of a Java application for Interactive Application Security Testing(IAST) and exposes exploitable vulnerabilities.
 
 ## **Installation**
 
@@ -35,6 +35,13 @@ The agent automatically instruments the following frameworks.
 - Mule ESB 3.6 to 3.9.x
 - gRPC 1.4.0 to latest**
 - Jersey 2.0 to latest
+- Akka Server 10.0 to latest (with scala 2.11 and above)
+- Spray Can 1.3.1 to latest (with scala 2.11 and above)
+- Akka HTTP Server 10.0 to latest (with scala 2.11 and above)
+- Spray HTTP 1.3.1 to latest (with scala 2.11 and above)
+- Netty Server 4.0.0.Final to latest
+- Netty Reactor Server 0.7.0.RELEASE to latest
+- Vertx web 3.2.0 to latest
 
 ** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
@@ -66,6 +73,10 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - Xalan XPATH 2.1.0 to latest
 - Async Http Client from 2.0 to latest
 - Ning Async HTTP Client 1.0.0 to latest
+- Akka Client 10.0 to latest (with scala 2.11 and above)
+- Spray Can Client 1.3.1 to latest (with scala 2.11 and above)
+- Spring WebClient 5.0.0.RELEASE to latest
+- Vertx Core 3.3.0 to latest
 
 ### Datastores
 
@@ -156,7 +167,7 @@ To publish csec agent on maven local use below command :
 
 ## **Contributing Feedback**
 
-Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of the preview license.
+Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the New Relic Software License version, 1.0. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the New Relic Software License with respect to New Relic. The license grant regarding any feedback is irrevocable.
 
 Keep in mind that when you submit a pull request or other feedback, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 If you have any questions drop us an email at opensource@newrelic.com.
@@ -171,6 +182,6 @@ If you would like to contribute to this project, review [these guidelines](https
 
 ## **License**
 
-New Relic Security Agent for Java is licensed under the New Relic Pre-Release Software Notice.
+New Relic Security Agent for Java is licensed under the New Relic Software License v. 1.0
 
 The New Relic Security Agent for Java also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.

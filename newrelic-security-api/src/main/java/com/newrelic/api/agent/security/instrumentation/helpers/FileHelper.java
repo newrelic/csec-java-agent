@@ -7,6 +7,7 @@ import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -113,7 +114,7 @@ public class FileHelper {
                             Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
                             permissions = permissionSet.toString();
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | InvalidPathException e) {
                     }
                     long fileLength = file.length();
                     FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
@@ -123,7 +124,8 @@ public class FileHelper {
                     return fbean;
                 }
             }
-        } finally {
+        } catch (InvalidPathException ignored){}
+        finally {
             if(lockAcquired){
                 ThreadLocalLockHelper.releaseLock();
             }
@@ -137,13 +139,17 @@ public class FileHelper {
         try {
             if(lockAcquired) {
                 for (String fileName : fileNames) {
-                    File file = Paths.get(fileName).toFile();
-                    if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
-                        FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
-                        if(fbean.isIntegrityBreached(file)){
-                            NewRelicSecurity.getAgent().registerOperation(fbean);
+                    try {
+                        File file = Paths.get(fileName).toFile();
+                        if (NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
+                            FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
+                            if (fbean.isIntegrityBreached(file)) {
+                                //Lock release is required here, as this register operation inside lock is intentional
+                                ThreadLocalLockHelper.releaseLock();
+                                NewRelicSecurity.getAgent().registerOperation(fbean);
+                            }
                         }
-                    }
+                    } catch (InvalidPathException ignored) {}
                 }
             }
         } finally {

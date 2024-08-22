@@ -7,6 +7,7 @@
 
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.agent.security.util.IUtilConstants;
@@ -37,12 +38,13 @@ public class LogFileHelper {
 
     public static final String LOG_LIMIT = "log_limit_in_kbytes";
     public static final boolean DEFAULT_LOG_DAILY = false;
-    public static final int DEFAULT_LOG_FILE_COUNT = 1;
+    public static final Integer DEFAULT_LOG_FILE_COUNT = 1;
     public static final String DEFAULT_LOG_FILE_NAME = "java-security-collector.log";
 
     public static final String STDOUT = "STDOUT";
 
     private static final String STRING_DOT = ".";
+    private static final Integer DEFAULT_LOG_FILE_LIMIT = 0;
 
     public static boolean isLoggingToStdOut() {
         String logFileName = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_NAME, LogFileHelper.DEFAULT_LOG_FILE_NAME);
@@ -50,19 +52,26 @@ public class LogFileHelper {
     }
 
     public static int logFileCount() {
-        return Math.max(1, NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_COUNT, LogFileHelper.DEFAULT_LOG_FILE_COUNT));
+        try {
+            return NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_COUNT, LogFileHelper.DEFAULT_LOG_FILE_COUNT);
+        } catch (Exception e) {
+            return LogFileHelper.DEFAULT_LOG_FILE_COUNT;
+        }
     }
 
     public static int logFileLimit() {
-        int size = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_LIMIT, 1);
-        return size>1?size: K2JALogProperties.maxfilesize;
+        try {
+            return NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_LIMIT, DEFAULT_LOG_FILE_LIMIT);
+        } catch (Exception e) {
+            return DEFAULT_LOG_FILE_LIMIT;
+        }
     }
 
     public static boolean isDailyRollover() {
         return NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_DAILY, LogFileHelper.DEFAULT_LOG_DAILY);
     }
 
-    public static void deleteRolloverLogFiles(String fileName, int max) {
+    public static void deleteRolloverLogFiles(String fileName, long max) {
         Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.prefixFileFilter(fileName + "."), null);
 
         if (rolloverLogFiles.size() > max) {
@@ -92,6 +101,7 @@ public class LogFileHelper {
 
     public static void performDailyRollover(){
         try {
+            AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementDailyLogRollover();
             InitLogWriter.setWriter(dailyRollover(InitLogWriter.getFileName()));
         } catch (IOException e) {
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);

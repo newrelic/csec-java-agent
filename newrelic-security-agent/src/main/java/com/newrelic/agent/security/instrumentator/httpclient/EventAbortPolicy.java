@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
@@ -11,6 +12,7 @@ public class EventAbortPolicy implements RejectedExecutionHandler {
 
 
     public EventAbortPolicy() {
+        AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReplayRequestRejected();
     }
 
     public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {

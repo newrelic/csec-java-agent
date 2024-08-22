@@ -5,6 +5,7 @@ import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -161,12 +162,12 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public String getApplicationConnectionConfig(int port) {
+    public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
         return null;
     }
 
     @Override
-    public Map<Integer, String> getApplicationConnectionConfig() {
+    public Map<Integer, ServerConnectionConfiguration> getApplicationConnectionConfig() {
         //TODO Ishika please fill this as per your needs
         return null;
     }
@@ -187,6 +188,11 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
+    public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception, String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
+
+    }
+
+    @Override
     public void retransformUninstrumentedClass(Class<?> classToRetransform) {
 
     }
@@ -194,5 +200,15 @@ public class Agent implements SecurityAgent {
     @Override
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
         return null;
+    }
+
+    @Override
+    public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
+
+    }
+
+    @Override
+    public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
+        return false;
     }
 }

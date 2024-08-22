@@ -25,6 +25,10 @@ public class AgentBasicInfo {
     public static final String NR_ENTITY_GUID = "entityGuid";
     public static final String EXCEPTION_INCIDENT = "exception-incident";
 
+    public static final String IAST_SCAN_FAILURE = "iast-scan-failure";
+
+    public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
+
     /**
      * Tool id for Language Agent.
      */
@@ -56,6 +60,9 @@ public class AgentBasicInfo {
     private String eventType;
 
     private Map<String, String> linkingMetadata;
+    private String appAccountId;
+    private String appEntityGuid;
+    private String applicationUUID;
 
     @JsonInclude
     private static String policyVersion;
@@ -73,6 +80,9 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
+        setAppEntityGuid(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -99,6 +109,12 @@ public class AgentBasicInfo {
         } else if (this instanceof ErrorIncident) {
             setJsonName(EXCEPTION_INCIDENT);
             setEventType(EXCEPTION_INCIDENT);
+        } else if (this instanceof IASTScanFailure) {
+            setJsonName(IAST_SCAN_FAILURE);
+            setEventType(IAST_SCAN_FAILURE);
+        } else if (this instanceof ApplicationRuntimeError) {
+            setJsonName(APPLICATION_RUNTIME_ERROR);
+            setEventType(APPLICATION_RUNTIME_ERROR);
         }
     }
 
@@ -225,5 +241,29 @@ public class AgentBasicInfo {
 
     public void setLinkingMetadata(Map<String, String> linkingMetadata) {
         this.linkingMetadata = linkingMetadata;
+    }
+
+    public String getAppAccountId() {
+        return appAccountId;
+    }
+
+    public void setAppAccountId(String appAccountId) {
+        this.appAccountId = appAccountId;
+    }
+
+    public String getAppEntityGuid() {
+        return appEntityGuid;
+    }
+
+    public void setAppEntityGuid(String appEntityGuid) {
+        this.appEntityGuid = appEntityGuid;
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 }

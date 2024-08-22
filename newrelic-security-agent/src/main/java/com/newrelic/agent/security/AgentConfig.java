@@ -3,6 +3,7 @@ package com.newrelic.agent.security;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
@@ -10,18 +11,20 @@ import com.newrelic.agent.security.intcodeagent.models.collectorconfig.Collector
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.newrelic.agent.security.util.IUtilConstants.DIRECTORY_PERMISSION;
 
@@ -29,7 +32,8 @@ public class AgentConfig {
 
     public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from snapshots directory, max %s file count reached removed : %s";
 
-    private static final Object lock = new Object();
+    public static final String AGENT_JAR_LOCATION = "agent_jar_location";
+    public static final String AGENT_HOME = "agent_home";
     private String NR_CSEC_HOME;
 
     private String logLevel;
@@ -40,25 +44,30 @@ public class AgentConfig {
 
     private boolean isNRSecurityEnabled;
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static FileLoggerThreadPool logger;
 
     private OSVariables osVariables;
+
+    private Map<String, String> noticeErrorCustomParams = new HashMap<>();
 
     private AgentConfig(){
     }
 
     public void instantiate(){
         //Set k2 home path
-        boolean validHomePath = setK2HomePath();
+        boolean validHomePath = setSecurityHomePath();
+        if(validHomePath) {
+            System.out.println("New Relic Security Agent: Setting csec home path to directory: " + NR_CSEC_HOME);
+        }
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLED, false);
         // Set required Group
         groupName = applyRequiredGroup();
-        // Enable low severity hooks
-        // Set required LogLevel
-        logLevel = applyRequiredLogLevel();
-
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
+
+        logger = FileLoggerThreadPool.getInstance();
+        // Set required LogLevel
+        logLevel = applyRequiredLogLevel();
     }
 
     private static final class InstanceHolder {
@@ -79,9 +88,12 @@ public class AgentConfig {
     }
 
     private String applyRequiredLogLevel() {
-        String logLevel = IUtilConstants.INFO;
-        if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL))) {
-            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL);
+        String logLevel;
+        Object value = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL);
+        if(value instanceof Boolean) {
+            logLevel = IUtilConstants.OFF;
+        } else {
+            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL, IUtilConstants.INFO);
         }
 
         try {
@@ -94,31 +106,46 @@ public class AgentConfig {
         return logLevel;
     }
 
-    public boolean setK2HomePath() {
-        if (NewRelic.getAgent().getConfig().getValue("agent_home") != null) {
-            NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue("agent_home");
+    public boolean setSecurityHomePath(){
+        noticeErrorCustomParams.put(IUtilConstants.LOG_FILE_PATH, NewRelic.getAgent().getConfig().getValue(IUtilConstants.LOG_FILE_PATH));
+        noticeErrorCustomParams.put(AGENT_JAR_LOCATION, NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION));
+        noticeErrorCustomParams.put(AGENT_HOME, NewRelic.getAgent().getConfig().getValue(AGENT_HOME));
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.LOG_FILE_PATH) != null) {
+            NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue(IUtilConstants.LOG_FILE_PATH);
+        } else if (NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION) != null) {
+            NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION);
+        } else if (NewRelic.getAgent().getConfig().getValue(AGENT_HOME) != null) {
+            //system property `newrelic.home` or environment variable `NEWRELIC_HOME`
+            NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue(AGENT_HOME);
         } else {
-            NR_CSEC_HOME = ".";
-        }
-        Path k2homePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
-        CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION);
-        NR_CSEC_HOME = k2homePath.toString();
-        AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
-        AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
-        AgentUtils.getInstance().getStatusLogValues().put("agent-location",
-                NewRelic.getAgent().getConfig().getValue("agent_jar_location"));
-        if (!isValidK2HomePath(NR_CSEC_HOME)) {
-            System.err.println("[NR-CSEC-JA] Incomplete startup env parameters provided : Missing or Incorrect NR_CSEC_HOME. Collector exiting.");
+            NewRelic.noticeError(new SecurityNoticeError("CSEC home directory creation failed, reason directory not found. Please check the agent configs"), noticeErrorCustomParams, true);
+            System.err.println("[NR-CSEC-JA] CSEC home directory not found. Please check the agent configs or system property `newrelic.home` or environment variable `NEWRELIC_HOME`.");
             return false;
         }
-        return true;
+        Path SecurityhomePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
+        NR_CSEC_HOME = SecurityhomePath.toString();
+        try {
+            noticeErrorCustomParams.put("CSEC_HOME", SecurityhomePath.toString());
+            if(!CommonUtils.forceMkdirs(SecurityhomePath, DIRECTORY_PERMISSION)){
+                NewRelic.noticeError(String.format("CSEC home directory creation failed, reason : %s", NR_CSEC_HOME), noticeErrorCustomParams, true);
+                System.err.printf("[NR-CSEC-JA] CSEC home directory creation failed at %s%n", NR_CSEC_HOME);
+                return false;
+            }
+        } catch (IOException e) {
+            NewRelic.noticeError(new SecurityNoticeError(String.format("CSEC home directory creation failed, reason %s. Please check the agent configs", e.getMessage()), e), noticeErrorCustomParams, true);
+            return false;
+        }
+        AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
+        AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(SecurityhomePath.toFile().canWrite() && SecurityhomePath.toFile().canRead()));
+        AgentUtils.getInstance().getStatusLogValues().put("agent-location", NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION));
+        return isValidSecurityHomePath(NR_CSEC_HOME);
     }
 
-    private static boolean isValidK2HomePath(String k2Home) {
-        if (StringUtils.isNotBlank(k2Home) && Paths.get(k2Home).toFile().isDirectory()) {
+    private boolean isValidSecurityHomePath(String securityHome) {
+        if (StringUtils.isNotBlank(securityHome) && Paths.get(securityHome).toFile().isDirectory()) {
             long avail = 0;
             try {
-                avail = Files.getFileStore(Paths.get(k2Home)).getUsableSpace();
+                avail = Files.getFileStore(Paths.get(securityHome)).getUsableSpace();
             } catch (Exception e) {
                 return true;
             }
@@ -126,9 +153,12 @@ public class AgentConfig {
             if (avail > FileUtils.ONE_GB) {
                 return true;
             }
-            System.err.println(String.format("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)));
+            noticeErrorCustomParams.put("CSEC_HOME_DISK_AVL_BYTES", String.valueOf(avail));
+            NewRelic.noticeError("CSEC home directory creation failed, reason : Insufficient disk space available to the location " + securityHome + " is : " + FileUtils.byteCountToDisplaySize(avail), noticeErrorCustomParams, true);
+            System.err.println(String.format("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s", securityHome, FileUtils.byteCountToDisplaySize(avail)));
             return false;
         }
+        NewRelic.noticeError("CSEC home directory creation failed, reason : CSEC home directory not found :"+securityHome, noticeErrorCustomParams, true);
         return false;
     }
 
@@ -148,7 +178,10 @@ public class AgentConfig {
         this.config = config;
     }
 
-    public void createSnapshotDirectory() {
+    public void createSnapshotDirectory() throws IOException {
+        if (osVariables.getSnapshotDir() == null){
+            return;
+        }
         Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
         // Remove any file with this name from target.
         if (!snapshotDir.toFile().isDirectory()) {
@@ -163,13 +196,17 @@ public class AgentConfig {
             File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
             Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
             FileUtils.deleteQuietly(sortedStatusFiles[0]);
-            logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), FileLoggerThreadPool.class.getName());
+            logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), AgentConfig.class.getName());
         }
     }
 
     public void setupSnapshotDir() {
-        createSnapshotDirectory();
-        keepMaxStatusLogFiles(100);
+        try {
+            createSnapshotDirectory();
+            keepMaxStatusLogFiles(100);
+        } catch (Exception e) {
+            logger.log(LogLevel.WARNING, String.format("Snapshot directory creation failed !!! Please check file permissions. error:%s ", e.getMessage()), e, AgentConfig.class.getName());
+        }
     }
 
     public String getGroupName() {
@@ -184,7 +221,7 @@ public class AgentConfig {
         isNRSecurityEnabled = NRSecurityEnabled;
     }
 
-    public String getK2Home() {
+    public String getSecurityHome() {
         return NR_CSEC_HOME;
     }
 }

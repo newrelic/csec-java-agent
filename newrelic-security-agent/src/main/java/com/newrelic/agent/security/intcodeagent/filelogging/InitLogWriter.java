@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
@@ -13,6 +14,7 @@ import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -29,6 +31,8 @@ public class InitLogWriter implements Runnable {
     private static final String STR_HYPHEN = " - ";
 
     private static final String STR_COLON = " : ";
+
+    public static final String LOGS = "logs";
 
     public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
 
@@ -74,14 +78,15 @@ public class InitLogWriter implements Runnable {
         } else {
             fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
             currentLogFile = new File(fileName);
-            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), DIRECTORY_PERMISSION);
             currentLogFileName = fileName;
             createLogFile();
         }
     }
 
-    private static void createLogFile() {
+    private static Boolean createLogFile() {
         try {
+            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), DIRECTORY_PERMISSION);
+            System.out.println("New Relic Security Agent: Writing InitLogs to log file:"+currentLogFile);
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
             writer.write(LOG_FILE_INITIATED_MSG);
@@ -95,14 +100,16 @@ public class InitLogWriter implements Runnable {
             }
             writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
             writer.flush();
+            return true;
         } catch (Throwable e) {
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
             String tmpDir = System.getProperty("java.io.tmpdir");
-            System.err.println("[NR-CSEC-JA] Unable to create status log file!!! Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+            System.err.println("[NR-CSEC-JA] Init Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
             try {
                 e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
             } catch (FileNotFoundException ex) {
             }
+            return false;
         }
     }
 
@@ -164,7 +171,9 @@ public class InitLogWriter implements Runnable {
             FileLoggerThreadPool.getInstance().setInitLoggingActive(true);
 
 //			writer.newLine();
-            rollover(currentLogFileName);
+            if(maxFileSize > 0) {
+                rollover(currentLogFileName);
+            }
         } catch (IOException e) {
             //TODO report to cloud
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);

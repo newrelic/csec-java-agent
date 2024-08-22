@@ -2,10 +2,7 @@ package com.newrelic.agent.security.instrumentation.grpc1400;
 
 import com.google.protobuf.Descriptors;
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -91,11 +88,14 @@ public class GrpcServerUtils {
         }
     }
 
-    public static void postProcessSecurityHook(Metadata metadata, String className, String methodName) {
+    public static void postProcessSecurityHook(Metadata metadata, int statusCode, String className, String methodName) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(statusCode);
+
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
@@ -186,6 +186,9 @@ public class GrpcServerUtils {
                 NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER))));
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GenericHelper.CSEC_PARENT_ID, metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER)));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
             String headerFullValue = EMPTY;
             String[] headerElements = metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER)).split(";");

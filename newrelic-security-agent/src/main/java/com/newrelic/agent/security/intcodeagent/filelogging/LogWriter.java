@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
@@ -13,6 +14,7 @@ import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -27,6 +29,8 @@ public class LogWriter implements Runnable {
     private static final String STR_HYPHEN = " - ";
 
     private static final String STR_COLON = " : ";
+
+    public static final String LOGS = "logs";
 
     public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
     public static final String CAUSED_BY = "Caused by: ";
@@ -64,9 +68,10 @@ public class LogWriter implements Runnable {
     private String logTime;
 
     private static boolean createLogFile() {
-        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), IUtilConstants.DIRECTORY_PERMISSION);
 
         try {
+            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), IUtilConstants.DIRECTORY_PERMISSION);
+            System.out.println("New Relic Security Agent: Writing to log file:"+currentLogFile);
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
@@ -81,7 +86,7 @@ public class LogWriter implements Runnable {
                 FileLoggerThreadPool.getInstance().setLoggingActive(false);
             }
             String tmpDir = System.getProperty("java.io.tmpdir");
-            System.err.println("[NR-CSEC-JA] Unable to create log file!!! Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+            System.err.println("[NR-CSEC-JA] CSEC Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
             try {
                 e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
             } catch (FileNotFoundException ex) {
@@ -166,7 +171,9 @@ public class LogWriter implements Runnable {
             FileLoggerThreadPool.getInstance().setLoggingActive(true);
 
 //			writer.newLine();
-            rollover(currentLogFileName);
+            if(maxFileSize > 0){
+                rollover(currentLogFileName);
+            }
         } catch (IOException e) {
             if (FileLoggerThreadPool.getInstance().isLoggingActive()) {
                 //TODO report to cloud

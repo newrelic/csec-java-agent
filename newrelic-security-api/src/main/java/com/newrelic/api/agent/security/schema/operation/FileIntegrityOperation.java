@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -144,25 +145,18 @@ public class FileIntegrityOperation extends AbstractOperation {
     }
 
     public boolean isIntegrityBreached(File file){
-        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
         try {
-            if(lockAcquired) {
-                Boolean exists = file.exists();
-                long lastModified = exists ? file.lastModified() : -1;
-                String permissions = StringUtils.EMPTY;
-                long length = file.length();
-                if (exists) {
-                    PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
-                    Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
-                    permissions = permissionSet.toString();
-                }
-                return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
+            Boolean exists = file.exists();
+            long lastModified = exists ? file.lastModified() : -1;
+            String permissions = StringUtils.EMPTY;
+            long length = file.length();
+            if (exists) {
+                PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                permissions = permissionSet.toString();
             }
-        } catch (IOException e) {
-        } finally {
-            if(lockAcquired) {
-                ThreadLocalLockHelper.releaseLock();
-            }
+            return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
+        } catch (IOException | InvalidPathException e) {
         }
         return false;
     }

@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.instrumentation.jersey;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -13,8 +16,9 @@ import java.util.Set;
 public class JerseyHelper {
     private static final String EMPTY = "";
     private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
+    public static final String JERSEY = "JERSEY";
     public static final String ORG_GLASSFISH_JERSEY_SERVER_WADL = "org.glassfish.jersey.server.wadl";
+    public static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
 
     public static void gatherUrlMappings(ResourceModel resourceModel) {
         try {
@@ -23,6 +27,7 @@ public class JerseyHelper {
                 extractMappingsFromResources(resources, EMPTY);
             }
         } catch (Exception ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, JERSEY, ignored.getMessage()), ignored, JerseyHelper.class.getName());
         }
     }
 
@@ -45,7 +50,7 @@ public class JerseyHelper {
                             addURLMappings(url, httpMethod, resource.getHandlerClasses());
                         } else {
                             // httpMethod is null in case when method represents a sub-resource locator.
-                            String modifiedUrl = url + SEPARATOR + WILDCARD;
+                            String modifiedUrl = StringUtils.appendIfMissing(url, StringUtils.SEPARATOR) + WILDCARD;
                             addURLMappings(modifiedUrl, WILDCARD, resource.getHandlerClasses());
                         }
                     }
