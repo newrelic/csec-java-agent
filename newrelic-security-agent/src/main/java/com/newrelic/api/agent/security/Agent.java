@@ -956,4 +956,9 @@ public class Agent implements SecurityAgent {
         return RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
     }
 
+    @Override
+    public void reportURLMapping() {
+        SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
+    }
+
 }

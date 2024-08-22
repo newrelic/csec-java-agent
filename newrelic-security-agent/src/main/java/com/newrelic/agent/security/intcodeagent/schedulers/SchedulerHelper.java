@@ -86,4 +86,12 @@ public class SchedulerHelper {
         return null;
     }
 
+    public void scheduleURLMappingPosting(Runnable runnable) {
+        if(scheduledFutureMap.containsKey(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING)){
+            ScheduledFuture<?> future = scheduledFutureMap.get(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING);
+            future.cancel(false);
+        }
+        ScheduledFuture<?> future = commonExecutor.schedule(runnable, 60, TimeUnit.SECONDS);
+        scheduledFutureMap.put(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING, future);
+    }
 }
