@@ -14,12 +14,12 @@ public interface IUtilConstants {
     String SCAN_TIME_COLLECT_SAMPLES = "security.scan_schedule.always_sample_traces";
     String IAST_LOAD_INTERVAL = "security.scan_controllers.iast_load_interval";
 
-    String SKIP_IAST_SCAN = "security.skip_iast_scan";
+    String SKIP_IAST_SCAN = "security.exclude_from_iast_scan";
     String SKIP_IAST_SCAN_API = SKIP_IAST_SCAN + ".api";
-    String SKIP_IAST_SCAN_PARAMETERS = SKIP_IAST_SCAN + ".parameters";
-    String SKIP_IAST_SCAN_PARAMETERS_HEADER = SKIP_IAST_SCAN + ".parameters.header";
-    String SKIP_IAST_SCAN_PARAMETERS_QUERY = SKIP_IAST_SCAN + ".parameters.query";
-    String SKIP_IAST_SCAN_PARAMETERS_BODY = SKIP_IAST_SCAN + ".parameters.body";
+    String SKIP_IAST_SCAN_PARAMETERS = SKIP_IAST_SCAN + ".http_request_parameters";
+    String SKIP_IAST_SCAN_PARAMETERS_HEADER = SKIP_IAST_SCAN + ".http_request_parameters.header";
+    String SKIP_IAST_SCAN_PARAMETERS_QUERY = SKIP_IAST_SCAN + ".http_request_parameters.query";
+    String SKIP_IAST_SCAN_PARAMETERS_BODY = SKIP_IAST_SCAN + ".http_request_parameters.body";
     String SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY = SKIP_IAST_SCAN + ".iast_detection_category";
     String SKIP_INSECURE_SETTINGS = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".insecure_settings";
     String SKIP_INVALID_FILE_ACCESS = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".invalid_file_access";
