@@ -14,6 +14,7 @@ public class GenericHelper {
     public static final String NR_SEC_CUSTOM_SPRING_REDIS_ATTR = "SPRING-DATA-REDIS";
 
     public static final String REGISTER_OPERATION_EXCEPTION_MESSAGE = "Instrumentation library: %s , error while library instrumented call processing : %s";
+    public static final String SERVER_CONFIG_ERROR = "Instrumentation library: %s , error while detecting Server Configuration : %s";
     public static final String EXIT_OPERATION_EXCEPTION_MESSAGE = "Instrumentation library: %s , error while generating exit operation: %s";
     public static final String SECURITY_EXCEPTION_MESSAGE = "New Relic Security Exception raised for Instrumentation library: %s, reason: %s ";
     public static final String URI_EXCEPTION_MESSAGE = "Instrumentation library: %s , error while extracting URI : %s";
