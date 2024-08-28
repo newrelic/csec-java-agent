@@ -30,6 +30,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -152,6 +153,10 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
+        if (AgentConfig.getInstance().getIastTestIdentifier() != null) {
+            this.addHeader("NR-CSEC-IAST-TEST-IDENTIFIER", AgentConfig.getInstance().getIastTestIdentifier());
+            this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
+        }
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);

@@ -24,6 +24,7 @@ public interface IUtilConstants {
     String NR_SECURITY_ENABLED = "security.enabled";
 
     String NR_SECURITY_HOME_APP = "security.is_home_app";
+    String IAST_TEST_IDENTIFIER = "security.iast_test_identifier";
 
     String NR_SECURITY_CA_BUNDLE_PATH = "ca_bundle_path";
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";

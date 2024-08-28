@@ -50,6 +50,8 @@ public class AgentConfig {
 
     private Map<String, String> noticeErrorCustomParams = new HashMap<>();
 
+    private String iastTestIdentifier;
+
     private AgentConfig(){
     }
 
@@ -68,6 +70,8 @@ public class AgentConfig {
         logger = FileLoggerThreadPool.getInstance();
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
+
+        iastTestIdentifier = NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER);
     }
 
     private static final class InstanceHolder {
@@ -223,5 +227,9 @@ public class AgentConfig {
 
     public String getSecurityHome() {
         return NR_CSEC_HOME;
+    }
+
+    public String getIastTestIdentifier() {
+        return iastTestIdentifier;
     }
 }
