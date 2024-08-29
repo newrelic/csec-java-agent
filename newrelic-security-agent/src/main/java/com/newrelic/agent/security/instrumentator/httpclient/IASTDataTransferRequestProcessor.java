@@ -77,7 +77,7 @@ public class IASTDataTransferRequestProcessor {
                 return;
             }
 
-            int currentFetchThreshold = currentFetchThresholdPerMin/12;
+            int currentFetchThreshold = Math.round((float) currentFetchThresholdPerMin/12);
             if (currentFetchThreshold <= 0){
                 return;
             }
