@@ -155,8 +155,8 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
         if (AgentConfig.getInstance().getIastTestIdentifier() != null) {
             this.addHeader("NR-CSEC-IAST-TEST-IDENTIFIER", AgentConfig.getInstance().getIastTestIdentifier());
-            this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
         }
+        this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);
