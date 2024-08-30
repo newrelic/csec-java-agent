@@ -519,6 +519,7 @@ public class Agent implements SecurityAgent {
             }
             switch (framework){
                 case "vertx-web":
+                case "GRPC":
                     if(i-1 >= 0) {
                         userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
                         if(userClassEntity.getUserClassElement() != null){
