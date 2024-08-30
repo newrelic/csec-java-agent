@@ -3,7 +3,9 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
@@ -28,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.newrelic.agent.security.instrumentator.utils.INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD;
-
 public class IASTDataTransferRequestProcessor {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S = "Unable to send IAST data request due to error: %s : %s";
@@ -46,6 +46,8 @@ public class IASTDataTransferRequestProcessor {
     private final AtomicLong cooldownTillTimestamp = new AtomicLong();
 
     private final AtomicLong lastFuzzCCTimestamp = new AtomicLong();
+
+    private int currentFetchThresholdPerMin = 3600;
 
     private void task() {
         IASTDataTransferRequest request = null;
@@ -75,8 +77,12 @@ public class IASTDataTransferRequestProcessor {
                 return;
             }
 
-            int currentFetchThreshold = NewRelic.getAgent().getConfig()
-                    .getValue(SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD, 300);
+            int currentFetchThreshold = Math.round((float) currentFetchThresholdPerMin/12);
+            if (currentFetchThreshold <= 0){
+                return;
+            }
+
+            int fetchRatio = 300/currentFetchThreshold;
 
             int remainingRecordCapacityRest = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
             int currentRecordBacklogRest = RestRequestThreadPool.getInstance().getQueue().size();
@@ -91,7 +97,7 @@ public class IASTDataTransferRequestProcessor {
                 batchSize /= 2;
             }
 
-            if (batchSize > 100 && remainingRecordCapacity > batchSize) {
+            if (batchSize > 100/fetchRatio && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
                 if (AgentConfig.getInstance().getConfig().getCustomerInfo() != null) {
                     request.setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
@@ -162,6 +168,12 @@ public class IASTDataTransferRequestProcessor {
             }
             if(initialDelay < 0){
                 initialDelay = 0;
+            }
+            // IAST Scan Rate per minute with range [12, 3600]; default 3600 replay requests will be replayed per minute
+            try {
+                currentFetchThresholdPerMin = Math.min(Math.max(NewRelic.getAgent().getConfig().getValue(IUtilConstants.SCAN_REQUEST_RATE_LIMIT, 3600), 12), 3600);
+            } catch (Exception e) {
+                logger.log(LogLevel.WARNING, String.format("Error while reading Configuration security.scan_request_rate_limit : %s,  Using default value %s replay request per min.", e.getMessage(), currentFetchThresholdPerMin), e, this.getClass().getName());
             }
             logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s, after delay of %s seconds", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime(), initialDelay), IASTDataTransferRequestProcessor.class.getName());
             future = executorService.scheduleWithFixedDelay(this::task, initialDelay, delay, timeUnit);
