@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentation.jedis_3_0_0.JedisHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -19,7 +20,7 @@ import static com.newrelic.agent.security.instrumentation.jedis_3_0_0.JedisHelpe
 @Weave(type = MatchType.BaseClass, originalName = "redis.clients.jedis.Connection")
 public abstract class Connection_Instrumentation {
     public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
-        boolean isLockAcquired = JedisHelper.acquireLockIfPossible(cmd.hashCode());
+        boolean isLockAcquired = JedisHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, cmd.hashCode());
         AbstractOperation operation = null;
         if(isLockAcquired && args != null && args.length > 0) { // args.length>0 will ensure the event generation for the commands with data
             List<Object> argList = new ArrayList<>();

@@ -119,6 +119,20 @@ public class ControlCommandProcessorThreadPool {
         return instance;
     }
 
+    public static void clearAllTasks() {
+        if (instance != null) {
+            instance.clearAllTasks(true);
+        }
+    }
+
+    private void clearAllTasks(boolean force) {
+        executor.getQueue().clear();
+        executor.purge();
+        if(force) {
+
+        }
+    }
+
     public static void shutDownPool() {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();

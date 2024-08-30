@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -73,16 +74,11 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            JdbcHelper.releaseLock();
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
-    private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public AbstractJdbc2Statement_Instrumentation(AbstractJdbc2Connection connection, String sql, boolean isCallable, int rsType, int rsConcurrency) throws SQLException {
@@ -90,7 +86,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     public ResultSet executeQuery() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(sqlQuery == null){
@@ -111,7 +107,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE_QUERY);
@@ -129,7 +125,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     public int executeUpdate() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(sqlQuery == null){
@@ -150,7 +146,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     public int executeUpdate(String sql) throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE_UPDATE);
@@ -168,7 +164,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     public boolean execute() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(sqlQuery == null){
@@ -189,7 +185,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     public boolean execute(String sql) throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE);

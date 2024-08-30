@@ -14,7 +14,6 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -73,6 +72,8 @@ public class ControlCommandProcessor implements Runnable {
 
     private long receiveTimestamp;
 
+    private static Instant iastReplayRequestMsgReceiveTime = Instant.now();
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public ControlCommandProcessor(String controlCommandMessage, long receiveTimestamp) {
@@ -110,7 +111,7 @@ public class ControlCommandProcessor implements Runnable {
         switch (controlCommand.getControlCommand()) {
 
             case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
-                InstrumentationUtils.shutdownLogic(true);
+                InstrumentationUtils.shutdownLogic();
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
@@ -118,7 +119,7 @@ public class ControlCommandProcessor implements Runnable {
                 NewRelic.noticeError("Incompatible New Relic Security Agent: " + controlCommand.getArguments().get(0), true);
                 System.err.println(controlCommand.getArguments().get(0));
                 NewRelic.getAgent().getLogger().log(Level.SEVERE, controlCommand.getArguments().get(0));
-                InstrumentationUtils.shutdownLogic(true);
+                InstrumentationUtils.shutdownLogic();
                 break;
 
             case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
@@ -173,6 +174,7 @@ public class ControlCommandProcessor implements Runnable {
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReceivedControlCommands();
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
+                iastReplayRequestMsgReceiveTime = Instant.now();
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
                 RestRequestProcessor.processControlCommand(controlCommand);
                 break;
@@ -278,5 +280,9 @@ public class ControlCommandProcessor implements Runnable {
     public static void processControlCommand(String controlCommandMessage, long receiveTimestamp) {
         ControlCommandProcessorThreadPool.getInstance().executor
                 .submit(new ControlCommandProcessor(controlCommandMessage, receiveTimestamp));
+    }
+
+    public static Instant getIastReplayRequestMsgReceiveTime() {
+        return iastReplayRequestMsgReceiveTime;
     }
 }

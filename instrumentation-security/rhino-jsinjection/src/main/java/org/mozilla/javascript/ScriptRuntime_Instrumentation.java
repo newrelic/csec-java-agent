@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,7 +23,7 @@ public class ScriptRuntime_Instrumentation {
         AbstractOperation operation = null;
         if(cx != null) {
             code = cx.hashCode();
-            isLockAcquired = acquireLockIfPossible(code);
+            isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.JAVASCRIPT_INJECTION, code);
             if (isLockAcquired) {
                 operation = preprocessSecurityHook(code, JSEngineUtils.METHOD_EXEC, cx);
             }
@@ -81,9 +82,9 @@ public class ScriptRuntime_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private static boolean acquireLockIfPossible(int code) {
+    private static boolean acquireLockIfPossible(VulnerabilityCaseType javascriptInjection, int code) {
         try {
-            return GenericHelper.acquireLockIfPossible(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
+            return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
         } catch (Throwable ignored) {}
         return false;
     }

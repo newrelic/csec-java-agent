@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -18,7 +19,7 @@ import org.reactivestreams.Publisher;
 public class Client_Instrumentation {
 
     public void execute(String sql) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(sql, R2dbcHelper.METHOD_EXECUTE);
@@ -80,13 +81,5 @@ public class Client_Instrumentation {
             R2dbcHelper.releaseLock();
         } catch (Throwable ignored) {
         }
-    }
-
-    private boolean acquireLockIfPossible() {
-        try {
-            return R2dbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
     }
 }
