@@ -49,6 +49,8 @@ public class IASTDataTransferRequestProcessor {
 
     private int currentFetchThresholdPerMin = 3600;
 
+    private long scanStartEpochMilli = 0;
+
     private void task() {
         IASTDataTransferRequest request = null;
         try {
@@ -67,6 +69,10 @@ public class IASTDataTransferRequestProcessor {
                 }
             }
             long currentTimestamp = Instant.now().toEpochMilli();
+            if(scanStartEpochMilli <= 0){
+                AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(currentTimestamp);
+                scanStartEpochMilli = currentTimestamp;
+            }
             // Sleep if under cooldown
             long cooldownSleepTime = cooldownTillTimestamp.get() - currentTimestamp;
             if(cooldownSleepTime > 0) {
@@ -196,5 +202,9 @@ public class IASTDataTransferRequestProcessor {
 
     public void setLastFuzzCCTimestamp(long timestamp) {
         lastFuzzCCTimestamp.set(timestamp);
+    }
+
+    public long getScanStartEpochMilli() {
+        return scanStartEpochMilli;
     }
 }

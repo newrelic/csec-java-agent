@@ -5,6 +5,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +18,10 @@ public class JAHealthCheck extends AgentBasicInfo {
 //    private String protectedServer;
 
 //    private Set protectedDB;
+
+    private long procStartTime;
+
+    private long scanStartTime;
 
     private AtomicInteger invokedHookCount;
 
@@ -45,6 +50,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.serviceStatus = new HashMap<>();
         this.eventStats = new EventStats();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
+        this.procStartTime = ManagementFactory.getRuntimeMXBean().getStartTime();
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
@@ -59,6 +65,8 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.schedulerRuns = new SchedulerRuns(jaHealthCheck.schedulerRuns);
         this.invokedHookCount = new AtomicInteger(jaHealthCheck.invokedHookCount.get());
         this.webSocketConnectionStats = new WebSocketConnectionStats(jaHealthCheck.webSocketConnectionStats);
+        this.procStartTime = jaHealthCheck.getProcStartTime();
+        this.scanStartTime = jaHealthCheck.getScanStartTime();
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
@@ -131,6 +139,22 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void setSchedulerRuns(SchedulerRuns schedulerRuns) {
         this.schedulerRuns = schedulerRuns;
+    }
+
+    public long getProcStartTime() {
+        return procStartTime;
+    }
+
+    public void setProcStartTime(long procStartTime) {
+        this.procStartTime = procStartTime;
+    }
+
+    public long getScanStartTime() {
+        return scanStartTime;
+    }
+
+    public void setScanStartTime(long scanStartTime) {
+        this.scanStartTime = scanStartTime;
     }
 
     public void reset(){
