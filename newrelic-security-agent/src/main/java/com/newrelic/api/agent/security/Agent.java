@@ -279,7 +279,7 @@ public class Agent implements SecurityAgent {
         } else {
             IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
         }
-
+        AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(IASTDataTransferRequestProcessor.getInstance().getScanStartEpochMilli());
     }
 
     @Override
