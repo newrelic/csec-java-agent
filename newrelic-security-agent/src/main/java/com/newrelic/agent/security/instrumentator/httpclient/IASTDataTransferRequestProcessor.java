@@ -3,7 +3,6 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
-import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -49,7 +48,7 @@ public class IASTDataTransferRequestProcessor {
 
     private int currentFetchThresholdPerMin = 3600;
 
-    private long scanStartEpochMilli = 0;
+    private long controlCommandRequestedAtEpochMilli = 0;
 
     private void task() {
         IASTDataTransferRequest request = null;
@@ -69,9 +68,10 @@ public class IASTDataTransferRequestProcessor {
                 }
             }
             long currentTimestamp = Instant.now().toEpochMilli();
-            if(scanStartEpochMilli <= 0){
-                AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(currentTimestamp);
-                scanStartEpochMilli = currentTimestamp;
+            if(controlCommandRequestedAtEpochMilli <= 0){
+                AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedAt(currentTimestamp);
+                controlCommandRequestedAtEpochMilli = currentTimestamp;
+                AgentInfo.getInstance().getJaHealthCheck().setScanActive(true);
             }
             // Sleep if under cooldown
             long cooldownSleepTime = cooldownTillTimestamp.get() - currentTimestamp;
@@ -204,7 +204,7 @@ public class IASTDataTransferRequestProcessor {
         lastFuzzCCTimestamp.set(timestamp);
     }
 
-    public long getScanStartEpochMilli() {
-        return scanStartEpochMilli;
+    public long getControlCommandRequestedAtEpochMilli() {
+        return controlCommandRequestedAtEpochMilli;
     }
 }

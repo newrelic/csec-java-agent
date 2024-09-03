@@ -177,6 +177,10 @@ public class ControlCommandProcessor implements Runnable {
                 iastReplayRequestMsgReceiveTime = Instant.now();
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
                 RestRequestProcessor.processControlCommand(controlCommand);
+                if(ControlCommandProcessorThreadPool.getInstance().getScanStartTime() <= 0) {
+                    ControlCommandProcessorThreadPool.getInstance().setScanStartTime(Instant.now().toEpochMilli());
+                    AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(ControlCommandProcessorThreadPool.getInstance().getScanStartTime());
+                }
                 break;
 
             case IntCodeControlCommand.STARTUP_WELCOME_MSG:

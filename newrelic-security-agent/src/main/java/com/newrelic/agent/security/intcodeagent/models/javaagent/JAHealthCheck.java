@@ -1,11 +1,13 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.lang.management.ManagementFactory;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,13 +17,19 @@ public class JAHealthCheck extends AgentBasicInfo {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private static final String HC_CREATED = "Created Health Check: %s";
 
-//    private String protectedServer;
-
-//    private Set protectedDB;
-
     private long procStartTime;
 
+    private long controlCommandRequestedAt;
+
     private long scanStartTime;
+
+    private long trafficStartedAt;
+
+    private final long csecActivationTime;
+
+    private final long iastActivationTime;
+
+    private Boolean scanActive = false;
 
     private AtomicInteger invokedHookCount;
 
@@ -51,6 +59,16 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventStats = new EventStats();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
         this.procStartTime = ManagementFactory.getRuntimeMXBean().getStartTime();
+        if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getNextScanTime() != null) {
+            this.csecActivationTime = AgentConfig.getInstance().getAgentMode().getScanSchedule().getNextScanTime().getTime();
+        } else {
+            this.csecActivationTime = Instant.now().toEpochMilli();
+        }
+        if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime() != null) {
+            this.iastActivationTime = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().getTime();
+        } else {
+            this.iastActivationTime = Instant.now().toEpochMilli();
+        }
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
@@ -66,7 +84,12 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.invokedHookCount = new AtomicInteger(jaHealthCheck.invokedHookCount.get());
         this.webSocketConnectionStats = new WebSocketConnectionStats(jaHealthCheck.webSocketConnectionStats);
         this.procStartTime = jaHealthCheck.getProcStartTime();
+        this.controlCommandRequestedAt = jaHealthCheck.getControlCommandRequestedAt();
         this.scanStartTime = jaHealthCheck.getScanStartTime();
+        this.trafficStartedAt = jaHealthCheck.getTrafficStartedAt();
+        this.csecActivationTime = jaHealthCheck.getCsecActivationTime();
+        this.iastActivationTime = jaHealthCheck.getIastActivationTime();
+        this.scanActive = jaHealthCheck.getScanActive();
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
@@ -149,12 +172,44 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.procStartTime = procStartTime;
     }
 
+    public long getControlCommandRequestedAt() {
+        return controlCommandRequestedAt;
+    }
+
+    public void setControlCommandRequestedAt(long controlCommandRequestedAt) {
+        this.controlCommandRequestedAt = controlCommandRequestedAt;
+    }
+
     public long getScanStartTime() {
         return scanStartTime;
     }
 
     public void setScanStartTime(long scanStartTime) {
         this.scanStartTime = scanStartTime;
+    }
+
+    public long getTrafficStartedAt() {
+        return trafficStartedAt;
+    }
+
+    public void setTrafficStartedAt(long trafficStartedAt) {
+        this.trafficStartedAt = trafficStartedAt;
+    }
+
+    public long getCsecActivationTime() {
+        return csecActivationTime;
+    }
+
+    public Boolean getScanActive() {
+        return scanActive;
+    }
+
+    public void setScanActive(Boolean scanActive) {
+        this.scanActive = scanActive;
+    }
+
+    public long getIastActivationTime() {
+        return iastActivationTime;
     }
 
     public void reset(){
