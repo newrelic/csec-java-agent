@@ -3,6 +3,7 @@ package com.newrelic.agent.security.instrumentation.jcache_1_0_0;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JCacheOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -54,9 +55,9 @@ public class JCacheHelper {
         } catch (Throwable ignored) {}
     }
 
-    public static boolean acquireLockIfPossible(int hashcode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType cachingDataStore, int hashcode) {
         try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
+            return GenericHelper.acquireLockIfPossible(cachingDataStore, NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
         } catch (Throwable ignored) {}
         return false;
     }

@@ -30,6 +30,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -152,6 +153,11 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
+        this.addHeader("NR-CSEC-IGNORED-VUL-CATEGORIES", AgentConfig.getInstance().getAgentMode().getSkipScan().getIastDetectionCategory().getDisabledCategoriesCSV());
+        this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
+        if (AgentConfig.getInstance().getIastTestIdentifier() != null) {
+            this.addHeader("NR-CSEC-IAST-TEST-IDENTIFIER", AgentConfig.getInstance().getIastTestIdentifier());
+        }
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);
@@ -367,8 +373,14 @@ public class WSClient extends WebSocketClient {
         return instance;
     }
 
-    public static void shutDownWSClient(boolean clean) {
+    public static void shutDownWSClientAbnormal(boolean clean) {
         logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
+                WSClient.class.getName());
+        shutDownWSClient(clean, CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
+    }
+
+    public static void shutDownWSClient(boolean clean, int frame, String message) {
+        logger.log(LogLevel.WARNING, String.format("WebSocket Shutdown initiated with %s", frame),
                 WSClient.class.getName());
         WSUtils.getInstance().setConnected(false);
         if(clean) {
@@ -376,7 +388,7 @@ public class WSClient extends WebSocketClient {
             GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
         }
         if (instance != null) {
-            instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
+            instance.close(frame, message);
         }
     }
 

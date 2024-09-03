@@ -16,7 +16,7 @@ import java.util.Map;
 public abstract class SimpleStatement_Instrumentation {
 
     public SimpleStatement_Instrumentation(String query, Object... values) {
-        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, hashCode());
 
         try{
             if(isLockAcquired){
@@ -41,7 +41,7 @@ public abstract class SimpleStatement_Instrumentation {
     }
 
     public SimpleStatement_Instrumentation(String query, Map<String, Object> values){
-        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, hashCode());
 
         try{
             if(isLockAcquired){

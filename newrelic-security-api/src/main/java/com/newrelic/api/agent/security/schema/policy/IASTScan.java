@@ -1,10 +1,16 @@
 
 package com.newrelic.api.agent.security.schema.policy;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+
 public class IASTScan {
 
-    private Boolean enabled = false;
+    private Boolean enabled = true;
     private Probing probing = new Probing();
+    @JsonIgnore
+    private Boolean restricted = false;
+    @JsonIgnore
+    private RestrictionCriteria restrictionCriteria = new RestrictionCriteria();
 
     /**
      * No args constructor for use in serialization
@@ -36,4 +42,19 @@ public class IASTScan {
         this.probing = probing;
     }
 
+    public Boolean getRestricted() {
+        return restricted;
+    }
+
+    public void setRestricted(Boolean restricted) {
+        this.restricted = restricted;
+    }
+
+    public RestrictionCriteria getRestrictionCriteria() {
+        return restrictionCriteria;
+    }
+
+    public void setRestrictionCriteria(RestrictionCriteria restrictionCriteria) {
+        this.restrictionCriteria = restrictionCriteria;
+    }
 }

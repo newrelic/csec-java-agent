@@ -60,6 +60,9 @@ public class AkkaCoreUtils {
     }
 
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, String className, String methodName, Token token) {
+        if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            return;
+        }
         try {
             token.linkAndExpire();
             ServletHelper.executeBeforeExitingTransaction();
