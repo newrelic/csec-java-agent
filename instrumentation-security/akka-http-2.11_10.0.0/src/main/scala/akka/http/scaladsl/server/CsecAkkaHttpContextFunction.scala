@@ -8,6 +8,7 @@
 package akka.http.scaladsl.server
 
 import akka.Done
+import akka.http.scaladsl.model.HttpEntity
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
@@ -55,15 +56,17 @@ class CsecContextWrapper(original: Function1[RequestContext, Future[RouteResult]
   override def apply(ctx: RequestContext): Future[RouteResult] = {
     try {
 
-      var httpRequest = ctx.request;
+      val httpRequest = ctx.request;
       val body: lang.StringBuilder = new lang.StringBuilder();
       val dataBytes: Source[ByteString, AnyRef] = httpRequest.entity.getDataBytes()
       val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
-      val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
-        val chunk = byteString.utf8String
-        body.append(chunk)
+      if (!httpRequest.entity.isInstanceOf[HttpEntity.Chunked]) {
+        val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
+          val chunk = byteString.utf8String
+          body.append(chunk)
+        }
+        val processingResult: Future[Done] = dataBytes.runWith(sink, ctx.materializer)
       }
-      val processingResult: Future[Done] = dataBytes.runWith(sink, ctx.materializer)
       AkkaCoreUtils.preProcessHttpRequest(isLockAquired, httpRequest, body, NewRelic.getAgent.getTransaction.getToken);
       original.apply(ctx)
     } catch {
