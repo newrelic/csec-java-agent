@@ -280,7 +280,7 @@ public class Agent implements SecurityAgent {
         } else {
             IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
         }
-        AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedAt(IASTDataTransferRequestProcessor.getInstance().getControlCommandRequestedAtEpochMilli());
+        AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedTime(IASTDataTransferRequestProcessor.getInstance().getControlCommandRequestedAtEpochMilli());
         AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(ControlCommandProcessorThreadPool.getInstance().getScanStartTime());
     }
 
@@ -472,7 +472,7 @@ public class Agent implements SecurityAgent {
                                 this.getClass().getName());
                         firstEventProcessed.set(true);
                         trafficStartedAt = Instant.now().toEpochMilli();
-                        AgentInfo.getInstance().getJaHealthCheck().setTrafficStartedAt(trafficStartedAt);
+                        AgentInfo.getInstance().getJaHealthCheck().setTrafficStartedTime(trafficStartedAt);
                     }
                 }
             }

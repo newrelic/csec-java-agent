@@ -19,15 +19,15 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private long procStartTime;
 
-    private long controlCommandRequestedAt;
+    private long controlCommandRequestedTime;
 
     private long scanStartTime;
 
-    private long trafficStartedAt;
+    private long trafficStartedTime;
 
     private final long csecActivationTime;
 
-    private final long iastActivationTime;
+    private final long iastDataRequestTime;
 
     private Boolean scanActive = false;
 
@@ -65,9 +65,9 @@ public class JAHealthCheck extends AgentBasicInfo {
             this.csecActivationTime = Instant.now().toEpochMilli();
         }
         if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime() != null) {
-            this.iastActivationTime = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().getTime();
+            this.iastDataRequestTime = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().getTime();
         } else {
-            this.iastActivationTime = Instant.now().toEpochMilli();
+            this.iastDataRequestTime = Instant.now().toEpochMilli();
         }
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
@@ -84,11 +84,11 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.invokedHookCount = new AtomicInteger(jaHealthCheck.invokedHookCount.get());
         this.webSocketConnectionStats = new WebSocketConnectionStats(jaHealthCheck.webSocketConnectionStats);
         this.procStartTime = jaHealthCheck.getProcStartTime();
-        this.controlCommandRequestedAt = jaHealthCheck.getControlCommandRequestedAt();
+        this.controlCommandRequestedTime = jaHealthCheck.getControlCommandRequestedTime();
         this.scanStartTime = jaHealthCheck.getScanStartTime();
-        this.trafficStartedAt = jaHealthCheck.getTrafficStartedAt();
+        this.trafficStartedTime = jaHealthCheck.getTrafficStartedTime();
         this.csecActivationTime = jaHealthCheck.getCsecActivationTime();
-        this.iastActivationTime = jaHealthCheck.getIastActivationTime();
+        this.iastDataRequestTime = jaHealthCheck.getIastDataRequestTime();
         this.scanActive = jaHealthCheck.getScanActive();
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
@@ -172,12 +172,12 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.procStartTime = procStartTime;
     }
 
-    public long getControlCommandRequestedAt() {
-        return controlCommandRequestedAt;
+    public long getControlCommandRequestedTime() {
+        return controlCommandRequestedTime;
     }
 
-    public void setControlCommandRequestedAt(long controlCommandRequestedAt) {
-        this.controlCommandRequestedAt = controlCommandRequestedAt;
+    public void setControlCommandRequestedTime(long controlCommandRequestedTime) {
+        this.controlCommandRequestedTime = controlCommandRequestedTime;
     }
 
     public long getScanStartTime() {
@@ -188,12 +188,12 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.scanStartTime = scanStartTime;
     }
 
-    public long getTrafficStartedAt() {
-        return trafficStartedAt;
+    public long getTrafficStartedTime() {
+        return trafficStartedTime;
     }
 
-    public void setTrafficStartedAt(long trafficStartedAt) {
-        this.trafficStartedAt = trafficStartedAt;
+    public void setTrafficStartedTime(long trafficStartedTime) {
+        this.trafficStartedTime = trafficStartedTime;
     }
 
     public long getCsecActivationTime() {
@@ -208,8 +208,8 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.scanActive = scanActive;
     }
 
-    public long getIastActivationTime() {
-        return iastActivationTime;
+    public long getIastDataRequestTime() {
+        return iastDataRequestTime;
     }
 
     public void reset(){

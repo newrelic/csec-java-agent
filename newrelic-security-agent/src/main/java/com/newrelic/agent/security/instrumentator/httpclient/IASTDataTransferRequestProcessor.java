@@ -69,7 +69,7 @@ public class IASTDataTransferRequestProcessor {
             }
             long currentTimestamp = Instant.now().toEpochMilli();
             if(controlCommandRequestedAtEpochMilli <= 0){
-                AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedAt(currentTimestamp);
+                AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedTime(currentTimestamp);
                 controlCommandRequestedAtEpochMilli = currentTimestamp;
                 AgentInfo.getInstance().getJaHealthCheck().setScanActive(true);
             }
