@@ -226,28 +226,9 @@ public class ControlCommandProcessor implements Runnable {
                  */
                 try {
                     AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementReceivedReconnectAtWill();
+                    WSUtils.getInstance().setReconnecting(true);
                     //TODO no need for draining IAST since last leg has complete ledger.
                     logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
-                    if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                            NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
-                    ) {
-                        WSUtils.getInstance().setReconnecting(true);
-                        while (EventSendPool.getInstance().getExecutor().getActiveCount() > 0 && !EventSendPool.getInstance().isWaiting().get()) {
-                            Thread.sleep(100);
-                        }
-                        logger.log(LogLevel.FINER, WS_RECONNECT_EVENT_SEND_POOL_DRAINED, this.getClass().getName());
-
-                        while (RestRequestThreadPool.getInstance().getExecutor().getActiveCount() > 0 && !RestRequestThreadPool.getInstance().isWaiting().get()) {
-                            Thread.sleep(100);
-                        }
-                        logger.log(LogLevel.FINER, String.format("Request = %s, in process = %s", GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size(), GrpcClientRequestReplayHelper.getInstance().getInProcessRequestQueue().size()), this.getClass().getName());
-                        while (GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size() > 0 && GrpcClientRequestReplayHelper.getInstance().getInProcessRequestQueue().size() > 0 && !GrpcClientRequestReplayHelper.getInstance().isWaiting().get()) {
-                            Thread.sleep(100);
-                        }
-                        logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
-                    }
-//                    RestRequestThreadPool.getInstance().resetIASTProcessing();
-//                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
                     WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());

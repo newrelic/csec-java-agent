@@ -27,8 +27,6 @@ public class EventSendPool {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    private AtomicBoolean isWaiting = new AtomicBoolean(false);
-
     private EventSendPool() {
         // load the settings
         int queueSize = QUEUE_SIZE;
@@ -165,10 +163,6 @@ public class EventSendPool {
             logger.log(LogLevel.FINER, "Event Send Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
             AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementRejected();
         }
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public ThreadPoolExecutor getExecutor() {
