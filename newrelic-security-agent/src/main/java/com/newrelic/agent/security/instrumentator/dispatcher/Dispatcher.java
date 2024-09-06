@@ -6,8 +6,10 @@ import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverte
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
@@ -117,6 +119,10 @@ public class Dispatcher implements Callable {
             if (operation == null) {
                 // Invalid Event. Just drop.
                 return null;
+            }
+
+            if(!isReplayEndpointConfirmed()) {
+                IastHttpClient.getInstance().tryToEstablishApplicationEndpoint(securityMetaData.getRequest());
             }
 
             JavaAgentEventBean eventBean = prepareEvent(securityMetaData.getRequest(), securityMetaData.getMetaData(),
@@ -254,6 +260,16 @@ public class Dispatcher implements Callable {
                     this.getClass().getName());
         }
         return null;
+    }
+
+    private boolean isReplayEndpointConfirmed() {
+        Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig = NewRelicSecurity.getAgent().getApplicationConnectionConfig();
+        for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
+            if (connectionConfig.getValue().isConfirmed()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private JavaAgentEventBean prepareSolrDbRequestEvent(JavaAgentEventBean eventBean, SolrDbOperation solrDbOperation) {
