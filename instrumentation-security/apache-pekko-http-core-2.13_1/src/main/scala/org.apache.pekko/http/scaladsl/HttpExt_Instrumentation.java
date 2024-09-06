@@ -1,0 +1,102 @@
+package org.apache.pekko.http.scaladsl;
+
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import com.newrelic.agent.security.instrumentation.apache.pekko.PekkoCoreUtils;
+import org.apache.pekko.event.LoggingAdapter;
+import org.apache.pekko.http.scaladsl.model.HttpRequest;
+import org.apache.pekko.http.scaladsl.model.HttpResponse;
+import org.apache.pekko.http.scaladsl.settings.ConnectionPoolSettings;
+import com.newrelic.api.agent.weaver.MatchType;
+import com.newrelic.api.agent.weaver.Weave;
+import com.newrelic.api.agent.weaver.Weaver;
+import scala.concurrent.Future;
+
+import java.net.URI;
+
+@Weave(type = MatchType.ExactClass, originalName = "org.apache.pekko.http.scaladsl.HttpExt")
+public class HttpExt_Instrumentation {
+
+    public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings, LoggingAdapter loggingAdapter) {
+
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(PekkoCoreUtils.NR_SEC_CUSTOM_ATTRIB_OUTBOUND_REQ);
+        AbstractOperation operation = null;
+
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(httpRequest, PekkoCoreUtils.METHOD_SINGLE_REQUEST);
+        }
+
+        if (operation!=null) {
+            // TODO Add CSEC Fuzz and parent headers
+
+            try {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
+            }
+        }
+
+        Future<HttpResponse> returnCode = null;
+        // Actual Call
+        try {
+            returnCode = Weaver.callOriginal();
+        } finally {
+            if (isLockAcquired) {
+                GenericHelper.releaseLock(PekkoCoreUtils.NR_SEC_CUSTOM_ATTRIB_OUTBOUND_REQ);
+            }
+        }
+        registerExitOperation(isLockAcquired, operation);
+        return returnCode;
+    }
+
+    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+        try {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            ) {
+                return;
+            }
+            NewRelicSecurity.getAgent().registerExitEvent(operation);
+        } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, ignored.getMessage()), ignored, HttpExt_Instrumentation.class.getName());
+        }
+    }
+
+    private AbstractOperation preprocessSecurityHook(HttpRequest httpRequest, String methodName) {
+        try {
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()) {
+                return null;
+            }
+
+            // Generate required URL
+            String uri = null;
+            try {
+                URI methodURI = new URI(httpRequest.getUri().toString());
+                uri = methodURI.toString();
+                if (methodURI == null) {
+                    return null;
+                }
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, ignored.getMessage()), ignored, this.getClass().getName());
+                return null;
+            }
+
+            return new SSRFOperation(uri, this.getClass().getName(), methodName);
+        } catch (Throwable e) {
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
+                throw e;
+            }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
+        }
+        return null;
+    }
+}
