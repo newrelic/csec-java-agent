@@ -270,9 +270,9 @@ public class RestrictionUtility {
 
     private static @NotNull String getBase(String baseKey, int index) {
         if(StringUtils.isBlank(baseKey)){
-            return String.format("[%s]", index);
+            return "[]";
         }
-        return String.format("%s[%s]", baseKey, index);
+        return String.format("%s[]", baseKey);
     }
 
     private static Map<String, List<String>> parseRequestHeaders(Map<String, String> headers) {
