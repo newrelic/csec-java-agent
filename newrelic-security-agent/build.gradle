@@ -70,7 +70,6 @@ dependencies {
     shadowIntoJar 'org.apache.commons:commons-text:1.10.0'
     shadowIntoJar 'commons-net:commons-net:3.9.0'
     shadowIntoJar 'org.apache.commons:commons-compress:1.26.0'
-    shadowIntoJar 'com.squareup.okhttp3:okhttp:4.10.0'
     shadowIntoJar 'org.apache.commons:commons-collections4:4.4'
     shadowIntoJar 'org.unbescape:unbescape:1.1.6.RELEASE'
     shadowIntoJar 'commons-codec:commons-codec:1.15'

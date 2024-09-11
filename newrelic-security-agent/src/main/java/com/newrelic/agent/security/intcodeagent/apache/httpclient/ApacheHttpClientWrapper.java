@@ -117,6 +117,8 @@ public class ApacheHttpClientWrapper {
                         .setSoTimeout(requestTimeoutInMillis)
                         .setSoKeepAlive(true)
                         .build())
+                .addInterceptorFirst(new ReplayRequestLoggingInterceptor())
+                .addInterceptorLast(new ReplayResponseLoggingInterceptor())
                 .setConnectionManager(connectionManager).build();
     }
 
@@ -190,41 +192,63 @@ public class ApacheHttpClientWrapper {
 
     public ReadResult execute(String api, List<String> pathParams, Map<String, String> queryParams,
                                          Map<String, String> headers, byte[] body) throws IOException, URISyntaxException {
-        RequestLayout requestLayout = getRequestConfigurations(api);
-        HttpUriRequest request = buildHttpRequest(requestLayout, pathParams, queryParams, headers, body);
+        RequestLayout requestLayout = null;
+        try {
+            requestLayout = getRequestConfigurations(api);
+        } catch (ApacheHttpExceptionWrapper e) {
+            logger.log(LogLevel.WARNING, "Error while getting request configurations for API: " + api, ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, "Error while getting request configurations for API: " + api, e, ApacheHttpClientWrapper.class.getName());
+            return null;
+        }
+        HttpUriRequest request;
+        try {
+            request = buildHttpRequest(requestLayout, pathParams, queryParams, headers, body);
+        } catch (ApacheHttpExceptionWrapper e) {
+            logger.log(LogLevel.WARNING, "Error while building request for API: " + api + "with content requestLayout : " + requestLayout +" pathParams: "+ pathParams+" queryParams: "+ queryParams+" headers: "+ headers+" body: "+ Arrays.toString(body), ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, "Error while building request for API: " + api + "with content requestLayout : " + requestLayout +" pathParams: "+ pathParams+" queryParams: "+ queryParams+" headers: "+ headers+" body: "+ Arrays.toString(body), e, ApacheHttpClientWrapper.class.getName());
+            return null;
+        }
         logger.log(LogLevel.FINEST, "Executing request: " + request, ApacheHttpClientWrapper.class.getName());
 
         try (CloseableHttpResponse response = httpClient.execute(request, createContext())) {
             return mapResponseToResult(response);
         } catch (HttpHostConnectException hostConnectException) {
-            //TODO log error
+            String message = "HttpHostConnectException Error while executing request %s message : %s";
+            logger.log(LogLevel.FINE, String.format(message, request, hostConnectException.getMessage()), ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
             throw hostConnectException;
+        } catch (ApacheHttpExceptionWrapper e) {
+            logger.log(LogLevel.WARNING, "Error while reading response for request: " + request, ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, "Error while reading response for request: " + request, e, ApacheHttpClientWrapper.class.getName());
+            return null;
         }
     }
 
-    public ReadResult execute(HttpRequest httpRequest, String endpoint) throws IOException, URISyntaxException {
+    public ReadResult execute(HttpRequest httpRequest, String endpoint) throws IOException, URISyntaxException, ApacheHttpExceptionWrapper {
         return execute(httpRequest, endpoint, false);
     }
 
 
-    public ReadResult execute(HttpRequest httpRequest, String endpoint, boolean addEventIgnoreHeader) throws IOException, URISyntaxException {
+    public ReadResult execute(HttpRequest httpRequest, String endpoint, boolean addEventIgnoreHeader) throws IOException, URISyntaxException, ApacheHttpExceptionWrapper {
         HttpUriRequest request = buildIastFuzzRequest(httpRequest, endpoint, addEventIgnoreHeader);
         logger.log(LogLevel.FINEST, "Executing request: " + request, ApacheHttpClientWrapper.class.getName());
 
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             return mapResponseToResult(response);
         } catch (IOException hostConnectException) {
-            logger.log(LogLevel.FINE, "Error while executing request", hostConnectException, ApacheHttpClientWrapper.class.getName());
+            String message = "IOException Error while executing request %s message : %s";
+            logger.log(LogLevel.FINE, String.format(message, request, hostConnectException.getMessage()), ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
             throw hostConnectException;
         }
     }
 
-    private HttpUriRequest buildIastFuzzRequest(HttpRequest httpRequest, String endpoint, boolean addEventIgnoreHeader) throws URISyntaxException, UnsupportedEncodingException {
+    private HttpUriRequest buildIastFuzzRequest(HttpRequest httpRequest, String endpoint, boolean addEventIgnoreHeader) throws URISyntaxException, UnsupportedEncodingException, ApacheHttpExceptionWrapper {
         RequestBuilder requestBuilder = getRequestBuilder(httpRequest.getMethod());
         URIBuilder uriBuilder = new URIBuilder(endpoint);
         String requestUrl = httpRequest.getUrl();
         if (StringUtils.isBlank(requestUrl)) {
-            //TODO throw error
+            throw new ApacheHttpExceptionWrapper("Request URL is empty");
         }
         String path = StringUtils.substringBefore(requestUrl, SEPARATOR_QUESTION_MARK);
         uriBuilder.setPath(path);
@@ -260,7 +284,7 @@ public class ApacheHttpClientWrapper {
     }
 
     private HttpUriRequest buildHttpRequest(RequestLayout requestLayout, List<String> pathParams, Map<String, String> queryParams, Map<String, String> headers, byte[] body)
-            throws URISyntaxException {
+            throws URISyntaxException, ApacheHttpExceptionWrapper {
         RequestBuilder requestBuilder = getRequestBuilder(requestLayout.getMethod());
         String apiPath = setPathParams(requestLayout.getPath(), pathParams);
         URI uri = setQueryParams(requestLayout.getEndpoint(), apiPath, queryParams);
@@ -270,7 +294,7 @@ public class ApacheHttpClientWrapper {
         return requestBuilder.build();
     }
 
-    private static RequestBuilder getRequestBuilder(String method) {
+    private static RequestBuilder getRequestBuilder(String method) throws ApacheHttpExceptionWrapper {
         RequestBuilder requestBuilder = null;
         switch (method){
             case "GET":
@@ -298,14 +322,14 @@ public class ApacheHttpClientWrapper {
                requestBuilder = RequestBuilder.trace();
                break;
             default:
-                //TODO throw error
+                throw new ApacheHttpExceptionWrapper("Unsupported HTTP method: " + method);
         }
         return requestBuilder;
     }
 
-    private void setHeader(RequestBuilder requestBuilder, Map<String, String> headers) {
+    private void setHeader(RequestBuilder requestBuilder, Map<String, String> headers) throws ApacheHttpExceptionWrapper {
         if(headers == null) {
-            //TODO throw error
+            throw new ApacheHttpExceptionWrapper("Headers are null");
         }
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             if(StringUtils.isBlank(entry.getKey()) || StringUtils.isBlank(entry.getValue()) || entry.getKey().equalsIgnoreCase("content-length")) {
@@ -336,18 +360,17 @@ public class ApacheHttpClientWrapper {
         return  builder.build();
     }
 
-    private RequestLayout getRequestConfigurations(String api) {
+    private RequestLayout getRequestConfigurations(String api) throws ApacheHttpExceptionWrapper {
         if(StringUtils.isBlank(api)){
-            //TODO throw exception here
+            throw new ApacheHttpExceptionWrapper("Unsupported API");
         }
         return CommunicationApis.get(api);
     }
 
-    private ReadResult mapResponseToResult(HttpResponse response) throws IOException {
+    private ReadResult mapResponseToResult(HttpResponse response) throws IOException, ApacheHttpExceptionWrapper {
         StatusLine statusLine = response.getStatusLine();
         if (statusLine == null) {
-            //TODO throw error
-            // throw new Exception("HttpClient returned null status line");
+            throw new ApacheHttpExceptionWrapper("HttpClient returned null status line");
         }
 
         return ReadResult.create(
@@ -371,11 +394,10 @@ public class ApacheHttpClientWrapper {
         return proxyAuthenticateValue;
     }
 
-    private String readResponseBody(HttpResponse response) throws IOException {
+    private String readResponseBody(HttpResponse response) throws IOException, ApacheHttpExceptionWrapper {
         HttpEntity entity = response.getEntity();
         if (entity == null) {
-            //TODO throw error
-            //throw new Exception("The http response entity was null");
+            throw new ApacheHttpExceptionWrapper("The http response entity was null");
         }
         try (
                 InputStream is = entity.getContent();

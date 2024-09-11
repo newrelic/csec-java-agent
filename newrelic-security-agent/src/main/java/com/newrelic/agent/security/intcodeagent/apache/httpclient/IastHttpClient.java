@@ -23,9 +23,18 @@ public class IastHttpClient {
 
 
     private ApacheHttpClientWrapper httpClient;
+    private boolean connected = false;
 
     private IastHttpClient() {
         httpClient = new ApacheHttpClientWrapper(30000);
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    public boolean isConnected() {
+        return this.connected;
     }
 
     private static final class InstanceHolder {
@@ -45,11 +54,14 @@ public class IastHttpClient {
                 RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                 if(200 <= result.getStatusCode() && result.getStatusCode() < 300) {
                     break;
+                } else {
+                    logger.log(LogLevel.FINE, "Request failed with status code " + result.getStatusCode() + " and reason: " + result.getResponseBody(), IastHttpClient.class.getName());
+                    logger.postLogMessageIfNecessary(LogLevel.FINE, "Request failed with status code " + result.getStatusCode() + " and reason: " + result.getResponseBody(), null, IastHttpClient.class.getName());
                 }
-            } catch (IOException | URISyntaxException e) {
-                logger.log(LogLevel.FINE, "Error while replaying request", e, IastHttpClient.class.getName());
             } catch (Exception e) {
-                logger.log(LogLevel.WARNING, "Error while replaying request", e, IastHttpClient.class.getName());
+                String message = "Error while replaying control command %s with message : %s";
+                logger.log(LogLevel.FINE, String.format(message, fuzzRequestId, e.getMessage()), IastHttpClient.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, fuzzRequestId, e.getMessage()), e, ApacheHttpClientWrapper.class.getName());
             }
         }
     }
@@ -70,8 +82,10 @@ public class IastHttpClient {
                         serverConnectionConfiguration.setConfirmed(true);
                         return;
                     }
-                } catch (IOException | URISyntaxException e) {
-                    logger.log(LogLevel.FINEST, "Error while trying to establish application endpoint ", e, IastHttpClient.class.getName());
+                } catch (ApacheHttpExceptionWrapper | IOException | URISyntaxException e) {
+                    String message = "Error while executing request for connection endpoint detection %s message : %s";
+                    logger.log(LogLevel.FINE, String.format(message, request, e.getMessage()), IastHttpClient.class.getName());
+                    logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, request, e.getMessage()), e, ApacheHttpClientWrapper.class.getName());
                 }
             }
         }

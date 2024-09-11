@@ -24,7 +24,6 @@ import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -328,7 +327,6 @@ public class Dispatcher implements Callable {
                 clazz == String.class;
     }
 
-    @Nullable
     private JavaAgentEventBean processFileOperationEvent(JavaAgentEventBean eventBean, FileOperation fileOperationalBean) {
         prepareFileEvent(eventBean, fileOperationalBean);
         String URL = StringUtils.substringBefore(securityMetaData.getRequest().getUrl(), QUESTION_CHAR);
