@@ -40,12 +40,12 @@ public class HttpExt_Instrumentation {
             // Add CSEC Fuzz and parent headers
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {
-                httpRequest = httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
+                httpRequest = (HttpRequest)httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
             }
 
             String csecParaentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
             if(StringUtils.isNotBlank(csecParaentId)){
-                httpRequest = httpRequest.addHeader(RawHeader.apply(GenericHelper.CSEC_PARENT_ID, csecParaentId));
+                httpRequest = (HttpRequest)httpRequest.addHeader(RawHeader.apply(GenericHelper.CSEC_PARENT_ID, csecParaentId));
             }
 
             try {
@@ -57,7 +57,7 @@ public class HttpExt_Instrumentation {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add CSEC distributed tracing header
-                    httpRequest = httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
+                    httpRequest = (HttpRequest)httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
                             SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(),
                                     NewRelicSecurity.getAgent().getAgentUUID())));
                 }
