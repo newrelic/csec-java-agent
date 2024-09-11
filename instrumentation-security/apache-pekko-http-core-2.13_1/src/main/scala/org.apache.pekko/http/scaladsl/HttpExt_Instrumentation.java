@@ -2,15 +2,19 @@ package org.apache.pekko.http.scaladsl;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.instrumentation.apache.pekko.PekkoCoreUtils;
 import org.apache.pekko.event.LoggingAdapter;
 import org.apache.pekko.http.scaladsl.model.HttpRequest;
 import org.apache.pekko.http.scaladsl.model.HttpResponse;
+import org.apache.pekko.http.scaladsl.model.headers.RawHeader;
 import org.apache.pekko.http.scaladsl.settings.ConnectionPoolSettings;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -33,17 +37,34 @@ public class HttpExt_Instrumentation {
         }
 
         if (operation!=null) {
-            // TODO Add CSEC Fuzz and parent headers
+            // Add CSEC Fuzz and parent headers
+            String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+            if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+                httpRequest = httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
+            }
+
+            String csecParaentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+            if(StringUtils.isNotBlank(csecParaentId)){
+                httpRequest = httpRequest.addHeader(RawHeader.apply(GenericHelper.CSEC_PARENT_ID, csecParaentId));
+            }
 
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
             } catch (Exception e) {
                 NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
                 NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, PekkoCoreUtils.PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, this.getClass().getName());
+            } finally {
+                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                    // Add CSEC distributed tracing header
+                    httpRequest = httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
+                            SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(),
+                                    NewRelicSecurity.getAgent().getAgentUUID())));
+                }
             }
         }
 
-        Future<HttpResponse> returnCode = null;
+        Future<HttpResponse> returnCode;
         // Actual Call
         try {
             returnCode = Weaver.callOriginal();
