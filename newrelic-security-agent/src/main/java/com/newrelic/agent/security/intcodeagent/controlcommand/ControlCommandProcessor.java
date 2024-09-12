@@ -1,12 +1,14 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
@@ -28,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -111,7 +114,9 @@ public class ControlCommandProcessor implements Runnable {
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
+                NewRelic.noticeError("Incompatible New Relic Security Agent: " + controlCommand.getArguments().get(0), true);
                 System.err.println(controlCommand.getArguments().get(0));
+                NewRelic.getAgent().getLogger().log(Level.SEVERE, controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic();
                 break;
 
@@ -164,6 +169,7 @@ public class ControlCommandProcessor implements Runnable {
                 }
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReceivedControlCommands();
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
@@ -212,6 +218,7 @@ public class ControlCommandProcessor implements Runnable {
                  * Post reconnect: reset 'reconnecting phase' in WSClient.
                  */
                 try {
+                    AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementReceivedReconnectAtWill();
                     //TODO no need for draining IAST since last leg has complete ledger.
                     logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
                     if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&

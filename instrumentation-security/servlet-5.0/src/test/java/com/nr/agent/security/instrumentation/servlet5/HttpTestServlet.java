@@ -103,8 +103,36 @@ public class HttpTestServlet extends HttpServlet {
             Cookie cookie = new Cookie("key", "value");
             cookie.setSecure(true);
             response.addCookie(cookie);
-        } else if(path.equals("/session/cookie")){
-            Cookie cookie = new Cookie("key1", "value1");
+        }  else if(path.equals("/session/cookie")){
+            // add insecure cookie to response
+            response.addCookie(new Cookie("key", "value"));
+        } else if (path.equals("/session/secure_cookies")) {
+            // add multiple secure cookies to response
+            Cookie cookie = new Cookie("secure-cookie-1", "value");
+            cookie.setSecure(true);
+            response.addCookie(cookie);
+
+            Cookie cookie1 = new Cookie("secure-cookie-2", "value");
+            cookie1.setSecure(true);
+            cookie1.setHttpOnly(true);
+            cookie1.setComment("__SAME_SITE_STRICT__");
+            response.addCookie(cookie1);
+        } else if (path.equals("/session/insecure_cookies")) {
+            // add multiple insecure cookies to response
+            response.addCookie(new Cookie("insecure-cookie-1", "value"));
+            response.addCookie(new Cookie("insecure-cookie-2", "value"));
+        } else if (path.equals("/session/cookies")){
+            // add multiple cookies to response
+            Cookie cookie = new Cookie("secure-cookie", "value");
+            cookie.setSecure(true);
+            response.addCookie(cookie);
+
+            response.addCookie(new Cookie("insecure-cookie","value"));
+        } else if (path.equals("/session/single-cookie")){
+            Cookie cookie = new Cookie("cookie", "value");
+            cookie.setSecure(true);
+            cookie.setHttpOnly(true);
+            cookie.setComment("__SAME_SITE_LAX__");
             response.addCookie(cookie);
         }
     }

@@ -1,5 +1,8 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.newrelic.agent.security.AgentConfig;
+import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
@@ -10,13 +13,12 @@ import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -91,6 +93,10 @@ public class IASTDataTransferRequestProcessor {
 
             if (batchSize > 100 && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
+                if (AgentConfig.getInstance().getConfig().getCustomerInfo() != null) {
+                    request.setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+                }
+                request.setAppEntityGuid(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
 
                 request.setBatchSize(batchSize);
                 request.setCompletedRequests(getEffectiveCompletedRequests());
