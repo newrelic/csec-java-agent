@@ -741,9 +741,7 @@ public class Dispatcher implements Callable {
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
             VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
-        if(AgentConfig.getInstance().getAgentMode().getIastScan().getRestricted()) {
-            metaData.setSkipScanParameters(AgentConfig.getInstance().getAgentMode().getIastScan().getRestrictionCriteria().getSkipScanParameters());
-        }
+        metaData.setSkipScanParameters(AgentConfig.getInstance().getAgentMode().getSkipScan().getParameters());
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);

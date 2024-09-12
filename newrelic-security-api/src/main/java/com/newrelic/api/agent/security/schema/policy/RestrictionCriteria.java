@@ -5,7 +5,7 @@ import java.util.List;
 
 public class RestrictionCriteria {
 
-    private ScanTime scanTime = new ScanTime();
+    private ScanSchedule scanSchedule = new ScanSchedule();
 
     private AccountInfo accountInfo = new AccountInfo();
 
@@ -18,12 +18,12 @@ public class RestrictionCriteria {
     public RestrictionCriteria() {
     }
 
-    public ScanTime getScanTime() {
-        return scanTime;
+    public ScanSchedule getScanTime() {
+        return scanSchedule;
     }
 
-    public void setScanTime(ScanTime scanTime) {
-        this.scanTime = scanTime;
+    public void setScanTime(ScanSchedule scanSchedule) {
+        this.scanSchedule = scanSchedule;
     }
 
     public AccountInfo getAccountInfo() {

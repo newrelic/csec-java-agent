@@ -11,6 +11,7 @@ package spray.httpx.marshalling;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -25,7 +26,7 @@ public class SprayToResponseMarshallingContext {
 
     @Trace(async = true)
     public void marshalTo(HttpResponse httpResponse) {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && httpResponse.entity().nonEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(httpResponse.entity().data().asString(StandardCharsets.UTF_8)));

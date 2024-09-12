@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SchedulerHelper {
 
+    public static final String IAST_TRIGGER = "IastTrigger";
     private final ScheduledExecutorService commonExecutor;
 
     private SchedulerHelper() {
@@ -38,7 +39,13 @@ public class SchedulerHelper {
     private final Map<String, ScheduledFuture<?>> scheduledFutureMap = new ConcurrentHashMap<>();
 
     public ScheduledFuture<?> scheduleIastTrigger(Runnable runnable, long initialDelay, TimeUnit unit) {
-        return commonExecutor.schedule(runnable, initialDelay, unit);
+        if(scheduledFutureMap.containsKey(IAST_TRIGGER)){
+            ScheduledFuture<?> currentFuture = scheduledFutureMap.get(IAST_TRIGGER);
+            currentFuture.cancel(false);
+        }
+        ScheduledFuture<?> future = commonExecutor.schedule(runnable, initialDelay, unit);
+        scheduledFutureMap.put(IAST_TRIGGER, future);
+        return future;
     }
 
     public ScheduledFuture<?> scheduleHealthCheck(Runnable command,

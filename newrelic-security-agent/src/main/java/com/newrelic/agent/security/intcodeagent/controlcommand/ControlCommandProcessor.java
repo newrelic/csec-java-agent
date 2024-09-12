@@ -72,6 +72,8 @@ public class ControlCommandProcessor implements Runnable {
 
     private long receiveTimestamp;
 
+    private static Instant iastReplayRequestMsgReceiveTime = Instant.now();
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public ControlCommandProcessor(String controlCommandMessage, long receiveTimestamp) {
@@ -172,8 +174,13 @@ public class ControlCommandProcessor implements Runnable {
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReceivedControlCommands();
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
+                iastReplayRequestMsgReceiveTime = Instant.now();
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
                 RestRequestProcessor.processControlCommand(controlCommand);
+                if(ControlCommandProcessorThreadPool.getInstance().getScanStartTime() <= 0) {
+                    ControlCommandProcessorThreadPool.getInstance().setScanStartTime(Instant.now().toEpochMilli());
+                    AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(ControlCommandProcessorThreadPool.getInstance().getScanStartTime());
+                }
                 break;
 
             case IntCodeControlCommand.STARTUP_WELCOME_MSG:
@@ -277,5 +284,9 @@ public class ControlCommandProcessor implements Runnable {
     public static void processControlCommand(String controlCommandMessage, long receiveTimestamp) {
         ControlCommandProcessorThreadPool.getInstance().executor
                 .submit(new ControlCommandProcessor(controlCommandMessage, receiveTimestamp));
+    }
+
+    public static Instant getIastReplayRequestMsgReceiveTime() {
+        return iastReplayRequestMsgReceiveTime;
     }
 }

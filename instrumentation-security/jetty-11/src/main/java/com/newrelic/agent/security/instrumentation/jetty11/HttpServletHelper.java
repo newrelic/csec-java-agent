@@ -178,8 +178,10 @@ public class HttpServletHelper {
     public static void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response,
                                                String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return;
+            }
+            if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());

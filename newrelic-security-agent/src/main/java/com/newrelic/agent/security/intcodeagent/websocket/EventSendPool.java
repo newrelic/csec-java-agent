@@ -177,5 +177,6 @@ public class EventSendPool {
 
     public void reset() {
         executor.getQueue().clear();
+        executor.purge();
     }
 }
