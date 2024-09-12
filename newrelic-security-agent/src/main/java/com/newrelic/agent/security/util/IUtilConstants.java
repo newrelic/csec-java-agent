@@ -12,7 +12,7 @@ public interface IUtilConstants {
     String SCAN_TIME_SCHEDULE = "security.scan_schedule.schedule";
     String SCAN_TIME_DURATION = "security.scan_schedule.duration";
     String SCAN_TIME_COLLECT_SAMPLES = "security.scan_schedule.always_sample_traces";
-    String SCAN_REQUEST_RATE_LIMIT = "security.scan_request_rate_limit";
+    String SCAN_REQUEST_RATE_LIMIT = "security.scan_controllers.iast_scan_request_rate_limit";
 
     String SKIP_IAST_SCAN = "security.exclude_from_iast_scan";
     String SKIP_IAST_SCAN_API = SKIP_IAST_SCAN + ".api";
@@ -62,6 +62,7 @@ public interface IUtilConstants {
     String NR_SECURITY_ENABLED = "security.enabled";
 
     String NR_SECURITY_HOME_APP = "security.is_home_app";
+    String IAST_TEST_IDENTIFIER = "security.iast_test_identifier";
 
     String NR_SECURITY_CA_BUNDLE_PATH = "ca_bundle_path";
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";
