@@ -1,8 +1,11 @@
 package com.newrelic.agent.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -82,13 +85,13 @@ public class AgentConfig {
         groupName = applyRequiredGroup();
         Agent.getCustomNoticeErrorParameters().put(IUtilConstants.SECURITY_MODE, groupName);
         // Enable low severity hooks
+        // Set required LogLevel
+        logLevel = applyRequiredLogLevel();
 
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
 
         logger = FileLoggerThreadPool.getInstance();
-        // Set required LogLevel
-        logLevel = applyRequiredLogLevel();
 
         iastTestIdentifier = NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER);
 
@@ -319,6 +322,7 @@ public class AgentConfig {
         Agent.getCustomNoticeErrorParameters().put(IUtilConstants.NR_SECURITY_HOME, NR_CSEC_HOME);
         try {
             noticeErrorCustomParams.put("CSEC_HOME", SecurityhomePath.toString());
+            Agent.getCustomNoticeErrorParameters().put(IUtilConstants.NR_SECURITY_HOME, NR_CSEC_HOME);
             if(!CommonUtils.forceMkdirs(SecurityhomePath, DIRECTORY_PERMISSION)){
                 NewRelic.noticeError(String.format("CSEC home directory creation failed, reason : %s", NR_CSEC_HOME), noticeErrorCustomParams, true);
                 System.err.printf("[NR-CSEC-JA] CSEC home directory creation failed at %s%n", NR_CSEC_HOME);
