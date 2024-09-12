@@ -27,6 +27,8 @@ public class ControlCommandProcessorThreadPool {
     private final boolean allowCoreThreadTimeOut = false;
     private static Object mutex = new Object();
 
+    private long scanStartTime = 0;
+
     public ThreadPoolExecutor getExecutor() {
         return executor;
     }
@@ -157,4 +159,11 @@ public class ControlCommandProcessorThreadPool {
         }
     }
 
+    public long getScanStartTime() {
+        return scanStartTime;
+    }
+
+    public void setScanStartTime(long scanStartTime) {
+        this.scanStartTime = scanStartTime;
+    }
 }
