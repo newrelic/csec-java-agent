@@ -110,6 +110,7 @@ public class Agent implements SecurityAgent {
             info = AgentInfo.getInstance();
         }
         long delay = config.instantiate();
+        AgentInfo.initialiseLogger();
         SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
     }
 
@@ -228,7 +229,7 @@ public class Agent implements SecurityAgent {
         BuildInfo buildInfo = new BuildInfo();
         try {
             Properties properties = new Properties();
-            properties.load(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"));
+            properties.load(ResourceUtils.getResourceStreamFromAgentJar("Agent.properties"));
             buildInfo = new ObjectMapper().convertValue(properties, BuildInfo.class);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());

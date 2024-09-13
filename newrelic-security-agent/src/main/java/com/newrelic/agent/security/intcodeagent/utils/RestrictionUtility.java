@@ -71,29 +71,29 @@ public class RestrictionUtility {
         if(!request.isRequestParametersParsed()){
             parseHttpRequestParameters(request);
         }
-        for (MappingParameters mappingParameter : restrictionCriteria.getMappingParameters()) {
-            boolean match = false;
-            switch (mappingParameter.getAccountIdLocation()) {
-                case QUERY:
-                    List<String> queryParameters = getQueryString(mappingParameter.getAccountIdKey(), request.getQueryParameters());
-                    match = matcher(accountIds, queryParameters);
-                    break;
-                case PATH:
-                    match = matcher(accountIds, request.getPathParameters());
-                    break;
-                case HEADER:
-                    List<String> headerValues = getHeaderParameters(mappingParameter.getAccountIdKey(), request.getRequestHeaderParameters());
-                    match = matcher(accountIds, headerValues);
-                    break;
-                case BODY:
-                    List<String> bodyValues = getBodyParameters(mappingParameter.getAccountIdKey(), request.getRequestBodyParameters());
-                    match = matcher(accountIds, bodyValues);
-                    break;
-            }
-            if(match){
+
+        if(restrictionCriteria.getMappingParameters().getHeader().isEnabled()) {
+            List<String> headerValues = restrictionCriteria.getMappingParameters().getHeader().getLocations();
+            if(matcher(accountIds, headerValues)){
                 return true;
             }
         }
+        if(restrictionCriteria.getMappingParameters().getQuery().isEnabled()) {
+            List<String> queryValues = restrictionCriteria.getMappingParameters().getQuery().getLocations();
+            if(matcher(accountIds, queryValues)){
+                return true;
+            }
+        }
+        if(restrictionCriteria.getMappingParameters().getPath().isEnabled()) {
+            if(matcher(accountIds, request.getPathParameters())){
+                return true;
+            }
+        }
+        if(restrictionCriteria.getMappingParameters().getBody().isEnabled()) {
+            List<String> bodyValues = restrictionCriteria.getMappingParameters().getBody().getLocations();
+            return matcher(accountIds, bodyValues);
+        }
+
         return false;
     }
 
