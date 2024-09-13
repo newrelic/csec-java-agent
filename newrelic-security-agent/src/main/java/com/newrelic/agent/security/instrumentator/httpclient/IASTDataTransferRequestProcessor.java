@@ -54,19 +54,20 @@ public class IASTDataTransferRequestProcessor {
         IASTDataTransferRequest request = null;
         try {
             if(!AgentUsageMetric.isIASTRequestProcessingActive()){
+                logger.log(LogLevel.FINER, "IAST request processing deactivated for the moment.", IASTDataTransferRequestProcessor.class.getName());
                 return;
             }
 
-            if (WSUtils.getInstance().isReconnecting() ||
-                    !WSClient.getInstance().isOpen()) {
-                synchronized (WSUtils.getInstance()) {
-                    RestRequestThreadPool.getInstance().isWaiting().set(true);
-                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(true);
-                    WSUtils.getInstance().wait();
-                    RestRequestThreadPool.getInstance().isWaiting().set(false);
-                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(false);
-                }
+            if (!WSClient.getInstance().isOpen()) {
+                logger.log(LogLevel.FINER, "IAST request processing deactivated due to websocket connection status.", IASTDataTransferRequestProcessor.class.getName());
+                return;
             }
+
+            if(WSUtils.getInstance().isReconnecting()) {
+                logger.log(LogLevel.FINER, "IAST request processing deactivated due to SE requested for reconnection..", IASTDataTransferRequestProcessor.class.getName());
+                return;
+            }
+
             long currentTimestamp = Instant.now().toEpochMilli();
             if(controlCommandRequestedAtEpochMilli <= 0){
                 AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedTime(currentTimestamp);
