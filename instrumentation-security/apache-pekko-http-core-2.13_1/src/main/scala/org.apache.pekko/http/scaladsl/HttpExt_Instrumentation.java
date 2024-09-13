@@ -19,12 +19,42 @@ import org.apache.pekko.http.scaladsl.settings.ConnectionPoolSettings;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import org.apache.pekko.http.scaladsl.settings.ServerSettings;
+import org.apache.pekko.stream.Materializer;
+import scala.Function1;
 import scala.concurrent.Future;
 
 import java.net.URI;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.apache.pekko.http.scaladsl.HttpExt")
 public class HttpExt_Instrumentation {
+
+    // These methods are deprecated but still exist in Pekko Http Core 1.0.0.
+    // They have been replaced by Http().newServerAt().bind().
+
+    public Future<Http.ServerBinding> bindAndHandleAsync(
+            Function1<HttpRequest, Future<HttpResponse>> handler,
+            String interfaceString, int port,
+            ConnectionContext connectionContext,
+            ServerSettings settings, int parallelism,
+            LoggingAdapter adapter, Materializer mat) {
+
+        AsyncRequestHandler wrapperHandler = new AsyncRequestHandler(handler, mat.executionContext(), mat);
+        handler = wrapperHandler;
+        return Weaver.callOriginal();
+    }
+
+    public Future<Http.ServerBinding> bindAndHandleSync(
+            Function1<HttpRequest, HttpResponse> handler,
+            String interfaceString, int port,
+            ConnectionContext connectionContext,
+            ServerSettings settings,
+            LoggingAdapter adapter, Materializer mat) {
+
+        SyncRequestHandler wrapperHandler = new SyncRequestHandler(handler, mat);
+        handler = wrapperHandler;
+        return Weaver.callOriginal();
+    }
 
     public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings, LoggingAdapter loggingAdapter) {
 
