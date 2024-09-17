@@ -10,10 +10,15 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import org.apache.pekko.http.javadsl.model.HttpHeader;
 import org.apache.pekko.http.javadsl.model.HttpRequest;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 
 public class PekkoCoreUtils {
@@ -106,7 +111,8 @@ public class PekkoCoreUtils {
 
             securityRequest.setServerPort(request.getUri().getPort());
 
-            // TODO process http request headers
+            processHttpRequestHeader(request, securityRequest);
+            securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
             securityRequest.setProtocol(getProtocol(request.protocol().value()));
 
@@ -144,5 +150,60 @@ public class PekkoCoreUtils {
         } else {
             return value;
         }
+    }
+
+    public static String getTraceHeader(Map<String, String> headers) {
+        String data = StringUtils.EMPTY;
+        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
+            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
+            if (data == null || data.trim().isEmpty()) {
+                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
+            }
+        }
+        return data;
+    }
+
+    public static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){
+        Iterator<HttpHeader> headers = request.getHeaders().iterator();
+        while (headers.hasNext()) {
+            boolean takeNextValue = false;
+            HttpHeader nextHeader = headers.next();
+            String headerKey = nextHeader.name();
+            if(headerKey != null){
+                headerKey = headerKey.toLowerCase();
+            }
+            AgentPolicy agentPolicy = NewRelicSecurity.getAgent().getCurrentPolicy();
+            AgentMetaData agentMetaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
+            if (agentPolicy != null
+                    && agentPolicy.getProtectionMode().getEnabled()
+                    && agentPolicy.getProtectionMode().getIpBlocking().getEnabled()
+                    && agentPolicy.getProtectionMode().getIpBlocking().getIpDetectViaXFF()
+                    && X_FORWARDED_FOR.equals(headerKey)) {
+                takeNextValue = true;
+            } else if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(headerKey)) {
+                // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(nextHeader.value()));
+            } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey).get().value());
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
+            }
+            String headerFullValue = nextHeader.value();
+            if (headerFullValue != null && !headerFullValue.trim().isEmpty()) {
+                if (takeNextValue) {
+                    agentMetaData.setClientDetectedFromXFF(true);
+                    securityRequest.setClientIP(headerFullValue);
+                    agentMetaData.getIps()
+                            .add(securityRequest.getClientIP());
+                    securityRequest.setClientPort(StringUtils.EMPTY);
+                    takeNextValue = false;
+                }
+            }
+            securityRequest.getHeaders().put(headerKey, headerFullValue);
+        }
+
     }
 }
