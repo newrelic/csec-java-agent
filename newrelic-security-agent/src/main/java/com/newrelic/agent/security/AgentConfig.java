@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
+import com.newrelic.agent.security.intcodeagent.models.collectorconfig.ScanControllers;
 import com.newrelic.agent.security.intcodeagent.utils.CronExpression;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.policy.*;
@@ -74,7 +75,7 @@ public class AgentConfig {
 
     private Map<String, String> noticeErrorCustomParams = new HashMap<>();
 
-    private String iastTestIdentifier;
+    private ScanControllers scanControllers = new ScanControllers();
 
     private AgentConfig(){
     }
@@ -100,7 +101,16 @@ public class AgentConfig {
         //Do not repeat this task
         logger.initialiseLogger();
 
-        iastTestIdentifier = NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER);
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER) instanceof String) {
+            scanControllers.setIastTestIdentifier(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER));
+        } else {
+            scanControllers.setIastTestIdentifier(StringUtils.EMPTY);
+        }
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT) instanceof Integer) {
+            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT));
+        } else {
+            scanControllers.setScanInstanceCount(-1);
+        }
 
         instantiateAgentMode(groupName);
 
@@ -437,11 +447,15 @@ public class AgentConfig {
         return NR_CSEC_HOME;
     }
 
-    public String getIastTestIdentifier() {
-        return iastTestIdentifier;
-    }
-
     public AgentMode getAgentMode() {
         return agentMode;
+    }
+
+    public ScanControllers getScanControllers() {
+        return scanControllers;
+    }
+
+    public void setScanControllers(ScanControllers scanControllers) {
+        this.scanControllers = scanControllers;
     }
 }
