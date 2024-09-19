@@ -10,6 +10,8 @@ public class HttpRequest {
 
     @JsonIgnore
     public static final int MAX_ALLOWED_REQUEST_BODY_LENGTH = 500000;
+    @JsonIgnore
+    public static final String QUESTION_MARK = "?";
 
     private StringBuilder body;
 
@@ -38,6 +40,7 @@ public class HttpRequest {
     private boolean isRequestParsed;
     private boolean isGrpc;
     private String route;
+    private String requestURI;
 
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
@@ -54,6 +57,7 @@ public class HttpRequest {
         this.isRequestParsed = false;
         this.isGrpc = false;
         this.route = StringUtils.EMPTY;
+        this.requestURI = StringUtils.EMPTY;
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -71,6 +75,7 @@ public class HttpRequest {
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
+        this.requestURI = servletInfo.requestURI;
     }
 
     public String getMethod() {
@@ -87,6 +92,7 @@ public class HttpRequest {
 
     public void setUrl(String url) {
         this.url = url;
+        this.requestURI = StringUtils.substringBefore(url, QUESTION_MARK);
     }
 
     public Map<String, String> getHeaders() {
@@ -221,6 +227,14 @@ public class HttpRequest {
 
     public void setRoute(String route){
         this.route = StringUtils.removeEnd(StringUtils.prependIfMissing(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+    }
+
+    public String getRequestURI() {
+        return requestURI;
+    }
+
+    public void setRequestURI(String requestURI) {
+        this.requestURI = requestURI;
     }
 
     public void setRoute(String segment, boolean isAlreadyServlet) {
