@@ -1,6 +1,5 @@
 package org.apache.pekko.http.scaladsl
 
-import com.newrelic.agent.security.instrumentation.apache.pekko.PekkoCoreUtils
 import com.newrelic.api.agent.{NewRelic, Trace}
 import org.apache.pekko.Done
 import org.apache.pekko.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse}
