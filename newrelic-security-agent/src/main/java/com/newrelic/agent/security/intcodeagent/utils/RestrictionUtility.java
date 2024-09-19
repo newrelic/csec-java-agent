@@ -104,7 +104,9 @@ public class RestrictionUtility {
         List<String> values = new ArrayList<>();
         for (String accountId : accountIds) {
             String lowerCaseAccountId = accountId.toLowerCase();
-            values.addAll(requestBodyParameters.get(lowerCaseAccountId));
+            if(requestBodyParameters.containsKey(lowerCaseAccountId)) {
+                values.addAll(requestBodyParameters.get(lowerCaseAccountId));
+            }
         }
 
         return values;
@@ -117,7 +119,9 @@ public class RestrictionUtility {
         List<String> values = new ArrayList<>();
         for (String accountId : accountIds) {
             String lowerCaseAccountId = accountId.toLowerCase();
-            values.addAll(requestHeaderParameters.get(lowerCaseAccountId));
+            if(requestHeaderParameters.containsKey(lowerCaseAccountId)) {
+                values.addAll(requestHeaderParameters.get(lowerCaseAccountId));
+            }
         }
         return values;
     }
@@ -129,7 +133,9 @@ public class RestrictionUtility {
         List<String> values = new ArrayList<>();
         for (String accountId : accountIds) {
             String lowerCaseAccountId = accountId.toLowerCase();
-            values.addAll(queryParameters.get(lowerCaseAccountId));
+            if(queryParameters.containsKey(lowerCaseAccountId)) {
+                values.addAll(queryParameters.get(lowerCaseAccountId));
+            }
         }
         return values;
     }
@@ -341,7 +347,7 @@ public class RestrictionUtility {
         }
         headerValues.add(StringUtils.lowerCase(value));
         headerValues.add(StringUtils.lowerCase(ServletHelper.urlDecode(value)));
-        requestHeaderParameters.put(key, headerValues);
+        requestHeaderParameters.put(StringUtils.lowerCase(key), headerValues);
     }
 
     private static Map<String, List<String>> parseQueryParameters(String url) {
@@ -367,7 +373,7 @@ public class RestrictionUtility {
             List<String> values = new ArrayList<>();
             values.add(StringUtils.lowerCase(value));
             values.add(StringUtils.lowerCase(ServletHelper.urlDecode(value)));
-            queryParameters.put(key, values);
+            queryParameters.put(StringUtils.lowerCase(key), values);
         }
         return queryParameters;
     }
