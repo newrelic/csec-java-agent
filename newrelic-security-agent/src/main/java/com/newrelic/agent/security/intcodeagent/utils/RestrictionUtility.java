@@ -72,7 +72,7 @@ public class RestrictionUtility {
         }
 
         if(restrictionCriteria.getMappingParameters().getHeader().isEnabled()) {
-            List<String> headerValues = getHeaderParameters(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getQueryParameters());
+            List<String> headerValues = getHeaderParameters(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getRequestHeaderParameters());
             if(matcher(accountIds, headerValues)){
                 return true;
             }
