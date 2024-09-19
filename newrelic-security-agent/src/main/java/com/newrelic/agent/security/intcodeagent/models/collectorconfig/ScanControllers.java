@@ -4,7 +4,7 @@ public class ScanControllers {
 
     private String iastTestIdentifier;
 
-    private Integer scanInstanceCount;
+    private Integer scanInstanceCount = 0;
 
     public ScanControllers() {
     }
