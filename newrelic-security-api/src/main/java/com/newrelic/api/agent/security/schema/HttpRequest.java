@@ -1,7 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
-
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,8 +36,12 @@ public class HttpRequest {
     private Map<String, String> pathParameterMap;
 
     private boolean isRequestParsed;
+
     private boolean isGrpc;
+
     private String route;
+
+    private Map<String, String> customDataType;
 
     @JsonIgnore
     private List<String> pathParameters;
@@ -70,6 +73,7 @@ public class HttpRequest {
         this.isRequestParsed = false;
         this.isGrpc = false;
         this.route = StringUtils.EMPTY;
+        this.customDataType = new HashMap<>();
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -92,6 +96,7 @@ public class HttpRequest {
         this.requestHeaderParameters = servletInfo.requestHeaderParameters;
         this.requestBodyParameters = servletInfo.requestBodyParameters;
         this.isRequestParametersParsed = servletInfo.isRequestParametersParsed;
+        this.customDataType = servletInfo.customDataType;
     }
 
     public String getMethod() {
@@ -294,6 +299,11 @@ public class HttpRequest {
     public void setRequestParametersParsed(boolean requestParametersParsed) {
         isRequestParametersParsed = requestParametersParsed;
     }
+
+    public Map<String, String> getCustomDataType() {
+        return customDataType;
+    }
+
 }
 
 
