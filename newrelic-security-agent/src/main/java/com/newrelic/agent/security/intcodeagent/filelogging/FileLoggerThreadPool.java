@@ -32,13 +32,19 @@ public class FileLoggerThreadPool {
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private FileLoggerThreadPool() throws IOException {
+        maxfiles = LogFileHelper.logFileCount();
+        maxfilesize = LogFileHelper.logFileLimit()* 1024L;
+    }
+
+    /**
+     * Initialise the logger, call this method only once
+     */
+    public void initialiseLogger() {
         // load the settings
         int queueSize = 15000;
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 600;
-        maxfiles = LogFileHelper.logFileCount();
-        maxfilesize = LogFileHelper.logFileLimit()* 1024L;
 
         TimeUnit timeUnit = TimeUnit.SECONDS;
         try {
@@ -47,7 +53,7 @@ public class FileLoggerThreadPool {
             }
         } catch (NumberFormatException e){}
 
-        if(!isLoggingToStdOut && StringUtils.isNotBlank(osVariables.getLogDirectory())) {
+        if(!isLoggingToStdOut && StringUtils.isBlank(osVariables.getLogDirectory())) {
             isLoggingActive = false;
             isInitLoggingActive = false;
             return;
@@ -80,7 +86,6 @@ public class FileLoggerThreadPool {
                 return t;
             }
         });
-
     }
 
 

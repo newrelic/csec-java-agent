@@ -10,6 +10,7 @@ package com.newrelic.agent.security.instrumentation.jersey2;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
@@ -39,7 +40,7 @@ public abstract class ContainerResponse_Instrumentation {
     public void close() {
         boolean isLockAcquired = false;
         try {
-            isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_IS_OPERATION_LOCK);
+            isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SERVLET_GET_IS_OPERATION_LOCK);
             if(isLockAcquired) {
                 HttpRequestHelper.postProcessSecurityHook(this.getClass().getName(), getWrappedMessageContext());
             }

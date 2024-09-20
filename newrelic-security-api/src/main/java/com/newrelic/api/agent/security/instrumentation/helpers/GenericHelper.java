@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.regex.Pattern;
 
@@ -49,6 +50,64 @@ public class GenericHelper {
         return false;
     }
 
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType caseType, String nrSecCustomAttrName, int hashCode) {
+        boolean enabled = false;
+        if(!NewRelicSecurity.isHookProcessingActive()) {
+            return false;
+        }
+        switch (caseType) {
+            case SYSTEM_COMMAND:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getCommandInjectionEnabled();
+                break;
+            case FILE_OPERATION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInvalidFileAccessEnabled();
+                break;
+            case SQL_DB_COMMAND:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getSqlInjectionEnabled();
+                break;
+            case NOSQL_DB_COMMAND:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getNoSqlInjectionEnabled();
+                break;
+            case DYNAMO_DB_COMMAND:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getNoSqlInjectionEnabled();
+                break;
+            case HTTP_REQUEST:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getSsrfEnabled();
+                break;
+            case LDAP:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getLdapInjectionEnabled();
+                break;
+            case XPATH:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getXpathInjectionEnabled();
+                break;
+            case REFLECTED_XSS:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled();
+                break;
+            case FILE_INTEGRITY:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInvalidFileAccessEnabled();
+                break;
+            case JAVASCRIPT_INJECTION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getJavascriptInjectionEnabled();
+                break;
+            case XQUERY_INJECTION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getXpathInjectionEnabled();
+                break;
+            case SECURE_COOKIE:
+            case CRYPTO:
+            case RANDOM:
+            case TRUSTBOUNDARY:
+            case HASH:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInsecureSettingsEnabled();
+                break;
+            default:
+                break;
+        }
+        if(enabled) {
+            return false;
+        }
+        return acquireLockIfPossible(nrSecCustomAttrName, hashCode);
+    }
+
     public static boolean acquireLockIfPossible(String nrSecCustomAttrName, int hashCode) {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
@@ -68,11 +127,19 @@ public class GenericHelper {
         } catch (Throwable ignored){}
     }
 
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType caseType, String nrSecCustomAttrName) {
+        return acquireLockIfPossible(caseType, nrSecCustomAttrName, 0);
+    }
+
     public static boolean acquireLockIfPossible(String nrSecCustomAttrName) {
         return acquireLockIfPossible(nrSecCustomAttrName, 0);
     }
 
     public static void releaseLock(String nrSecCustomAttrName) {
         releaseLock(nrSecCustomAttrName, 0);
+    }
+
+    public static void onTransactionFinish() {
+
     }
 }
