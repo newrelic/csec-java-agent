@@ -9,8 +9,6 @@ public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 
     private static final long serialVersionUID = -2320594688008671870L;
 
-    private String applicationUUID;
-
     private String status;
 
     private JSONArray resonForTermination;
@@ -19,20 +17,6 @@ public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 
     public ShutDownEvent() {
         super();
-    }
-
-    /**
-     * @return the applicationUUID
-     */
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    /**
-     * @param applicationUUID the applicationUUID to set
-     */
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     /**

@@ -82,19 +82,17 @@ public class ServletHelper {
                     && NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
                 return k2RequestIdentifierInstance;
             }
-            String[] data = StringUtils.splitByWholeSeparatorWorker(requestHeaderVal, SEPARATOR_SEMICOLON, -1, false);
+            String[] data = StringUtils.splitByWholeSeparatorWorker(requestHeaderVal, SEPARATOR_SEMICOLON, -1, true);
 
-            if (data.length >= 5) {
+            if (data.length >= 8) {
                 k2RequestIdentifierInstance.setApiRecordId(data[0].trim());
                 k2RequestIdentifierInstance.setRefId(data[1].trim());
                 k2RequestIdentifierInstance.setRefValue(data[2].trim());
                 k2RequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
                 k2RequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
                 k2RequestIdentifierInstance.setK2Request(true);
-                if (data.length >= 6 && StringUtils.isNotBlank(data[5])) {
-                    k2RequestIdentifierInstance.setRefKey(data[5].trim());
-                }
-                if (data.length >= 8) {
+                k2RequestIdentifierInstance.setRefKey(data[5].trim());
+                if(!StringUtils.isAnyBlank(data[6], data[7])) {
                     String encryptedData = data[6].trim();
                     String hashVerifier = data[7].trim();
                     String filesToCreate = NewRelicSecurity.getAgent().decryptAndVerify(encryptedData, hashVerifier);
@@ -103,45 +101,49 @@ public class ServletHelper {
                         return k2RequestIdentifierInstance;
                     }
 
-                    String[] allFiles = StringUtils.splitByWholeSeparatorWorker(filesToCreate, StringUtils.COMMA_DELIMETER, -1, false);
-
-                    for (int i = 0; i < allFiles.length; i++) {
-                        String tmpFile = allFiles[i].trim();
-                        if(StringUtils.contains(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED)) {
-                            tmpFile = urlDecode(tmpFile);
-                        }
-                        tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
-                                NewRelicSecurity.getAgent().getAgentTempDir());
-                        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
-                        try {
-                            if (lockAcquired) {
-                                File fileToCreate = new File(tmpFile);
-                                if (fileToCreate.getParentFile() != null) {
-
-                                    File parentFile = fileToCreate;
-                                    while (parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()) {
-                                        parentFile = parentFile.getParentFile();
-                                    }
-                                    filesToRemove.add(parentFile.getAbsolutePath());
-                                    fileToCreate.getParentFile().mkdirs();
-                                }
-                                if (!fileToCreate.exists()) {
-                                    Files.createFile(fileToCreate.toPath());
-                                    k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
-                                }
-                            }
-                        } catch (IOException | InvalidPathException ignored) {}
-                        catch (Throwable e) {
-                            String message = "Error while parsing fuzz request : %s";
-                            NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
-                        } finally {
-                            ThreadLocalLockHelper.releaseLock();
-                        }
-                    }
+                    fileCreationForReplayRequest(filesToCreate, k2RequestIdentifierInstance);
                 }
             }
         }
         return k2RequestIdentifierInstance;
+    }
+
+    private static void fileCreationForReplayRequest(String filesToCreate, K2RequestIdentifier k2RequestIdentifierInstance) {
+        String[] allFiles = StringUtils.splitByWholeSeparatorWorker(filesToCreate, StringUtils.COMMA_DELIMETER, -1, false);
+
+        for (int i = 0; i < allFiles.length; i++) {
+            String tmpFile = allFiles[i].trim();
+            if (StringUtils.contains(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED)) {
+                tmpFile = urlDecode(tmpFile);
+            }
+            tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
+                    NewRelicSecurity.getAgent().getAgentTempDir());
+            boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+            try {
+                if (lockAcquired) {
+                    File fileToCreate = new File(tmpFile);
+                    if (fileToCreate.getParentFile() != null) {
+
+                        File parentFile = fileToCreate;
+                        while (parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()) {
+                            parentFile = parentFile.getParentFile();
+                        }
+                        filesToRemove.add(parentFile.getAbsolutePath());
+                        fileToCreate.getParentFile().mkdirs();
+                    }
+                    if (!fileToCreate.exists()) {
+                        Files.createFile(fileToCreate.toPath());
+                        k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
+                    }
+                }
+            } catch (IOException | InvalidPathException ignored) {}
+            catch (Throwable e ) {
+                String message = "Error while parsing fuzz request : %s";
+                NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
+            } finally {
+                ThreadLocalLockHelper.releaseLock();
+            }
+        }
     }
 
     /**

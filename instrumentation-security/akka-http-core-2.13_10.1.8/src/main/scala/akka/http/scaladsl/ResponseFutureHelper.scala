@@ -41,7 +41,7 @@ object ResponseFutureHelper {
         processingResult.onComplete {
          _ => {
            token.linkAndExpire()
-           AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, response.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken)
+           AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, response.entity.contentType.toString(), response.status.intValue(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken)
          }
         }
 
@@ -68,7 +68,7 @@ object ResponseFutureHelper {
       }
       val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
 
-      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
+      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), httpResponse.status.intValue(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken)
     } catch {
       case t: NewRelicSecurityException =>
         NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, t.getMessage), t, classOf[AkkaCoreUtils].getName)

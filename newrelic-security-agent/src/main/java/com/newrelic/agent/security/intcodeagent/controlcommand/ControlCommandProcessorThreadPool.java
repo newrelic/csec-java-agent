@@ -27,6 +27,10 @@ public class ControlCommandProcessorThreadPool {
     private final boolean allowCoreThreadTimeOut = false;
     private static Object mutex = new Object();
 
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
+
     /**
      * A handler for rejected tasks that throws a
      * {@code RejectedExecutionException}.

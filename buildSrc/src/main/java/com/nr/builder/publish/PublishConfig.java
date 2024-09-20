@@ -75,7 +75,7 @@ public class PublishConfig {
     private static void configurePom(MavenPom pom) {
         pom.getUrl().set("https://github.com/newrelic/csec-java-agent");
         pom.licenses(spec -> spec.license(license -> {
-            license.getName().set("New Relic Pre-Release Software License");
+            license.getName().set("New Relic Software License, Version 1.0");
             license.getUrl().set("https://github.com/newrelic/csec-java-agent/blob/main/LICENSE.md");
             license.getDistribution().set("repo");
         }));
