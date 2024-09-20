@@ -628,6 +628,7 @@ public class Agent implements SecurityAgent {
     }
 
     private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        boolean frameworkSpecificEntityFound = false;
         UserClassEntity userClassEntity = new UserClassEntity();
         StackTraceElement userStackTraceElement = securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class);
         if(userStackTraceElement == null && securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
@@ -651,21 +652,19 @@ public class Agent implements SecurityAgent {
             }
             switch (framework){
                 case "vertx-web":
-                    if(i-1 >= 0) {
+                case "GRPC":
+                    if(!frameworkSpecificEntityFound && i-1 >= 0) {
                         userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
                         if(userClassEntity.getUserClassElement() != null){
-                            return userClassEntity;
+                            frameworkSpecificEntityFound = true;
                         }
                     }
                     break;
                 default:
-                    if(userStackTraceElement != null){
-                        if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
-                                && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
-                            userClassEntity.setUserClassElement(stackTraceElement);
-                            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                            return userClassEntity;
-                        }
+                    if(userStackTraceElement != null && StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                            && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                        userClassEntity.setUserClassElement(stackTraceElement);
+                        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
                     }
             }
         }
@@ -675,8 +674,16 @@ public class Agent implements SecurityAgent {
             return userClassEntity;
         }
 
+        if (frameworkSpecificEntityFound && userClassEntity.getUserClassElement() != null && !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()){
+            return userClassEntity;
+        }
+
+        if (userClassEntity.getUserClassElement() != null){
+            return userClassEntity;
+        }
+
         // user class identification using annotations
-        if (userClassEntity.getUserClassElement() == null && securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+        if (securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
             return setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace());
         }
 
