@@ -10,6 +10,7 @@ package io.vertx.core.http.impl;
 import com.newrelic.agent.security.instrumentation.vertx.web.VertxClientHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.vertx.core.AsyncResult;
@@ -26,7 +27,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
     public abstract String absoluteURI();
 
     public void end(Buffer chunk) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = VertxClientHelper.preprocessSecurityHook(absoluteURI(), this.getClass().getName(),
@@ -45,7 +46,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
 
     public void end(Buffer chunk, Handler<AsyncResult<Void>> handler) {
 
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = VertxClientHelper.preprocessSecurityHook(absoluteURI(), this.getClass().getName(),
@@ -64,7 +65,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
 
     public void end() {
 
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = VertxClientHelper.preprocessSecurityHook(absoluteURI(), this.getClass().getName(),
@@ -83,7 +84,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
 
     public void end(Handler<AsyncResult<Void>> handler) {
 
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = VertxClientHelper.preprocessSecurityHook(absoluteURI(), this.getClass().getName(),
@@ -103,7 +104,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
         GenericHelper.releaseLock(VertxClientHelper.getNrSecCustomAttribName());
     }
 
-    private boolean acquireLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VertxClientHelper.getNrSecCustomAttribName());
+    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, VertxClientHelper.getNrSecCustomAttribName());
     }
 }

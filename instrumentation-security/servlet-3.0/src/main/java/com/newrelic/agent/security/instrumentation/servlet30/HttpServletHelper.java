@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.StringUtils;
@@ -43,6 +44,10 @@ public class HttpServletHelper {
             if(dir.endsWith(SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
                 for (String path : resourcePaths) {
+                    String entry = StringUtils.removeStart(StringUtils.removeEnd(path, SEPARATOR), StringUtils.SEPARATOR);
+                    if ( StringUtils.equalsAny(entry, "META-INF", "WEB-INF")) {
+                        continue;
+                    }
                     if(path.endsWith(SEPARATOR)) {
                         getJSPMappings(servletContext, path);
                     }

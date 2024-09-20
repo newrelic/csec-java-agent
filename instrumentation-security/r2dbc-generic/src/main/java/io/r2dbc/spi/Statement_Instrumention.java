@@ -2,6 +2,7 @@ package io.r2dbc.spi;
 
 import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
@@ -25,7 +26,7 @@ public class Statement_Instrumention {
     private boolean lock = false;
 
     public Publisher<? extends Result> execute() {
-        boolean isLockAcquired = R2dbcHelper.acquireLockIfPossible();
+        boolean isLockAcquired = R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = R2dbcHelper.preprocessSecurityHook(sql, R2dbcHelper.METHOD_EXECUTE, this.getClass().getName(), params, isPrepared);

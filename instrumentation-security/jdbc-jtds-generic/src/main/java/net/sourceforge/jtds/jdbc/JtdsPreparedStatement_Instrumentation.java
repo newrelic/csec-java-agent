@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -78,16 +79,13 @@ public abstract class JtdsPreparedStatement_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible(VulnerabilityCaseType sqlDbCommand) {
+        return GenericHelper.acquireLockIfPossible(sqlDbCommand, JdbcHelper.getNrSecCustomAttribName());
     }
 
     @Trace(leaf = true)
     public ResultSet executeQuery() {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, getParameterValues(), JdbcHelper.METHOD_EXECUTE_QUERY);
@@ -106,7 +104,7 @@ public abstract class JtdsPreparedStatement_Instrumentation {
 
     @Trace(leaf = true)
     public int executeUpdate() {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, getParameterValues(), JdbcHelper.METHOD_EXECUTE_UPDATE);
@@ -125,7 +123,7 @@ public abstract class JtdsPreparedStatement_Instrumentation {
 
     @Trace(leaf = true)
     public boolean execute() {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(sql, getParameterValues(), JdbcHelper.METHOD_EXECUTE);

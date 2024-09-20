@@ -146,6 +146,10 @@ public class HttpServletHelper {
             if(dir.endsWith(SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
                 for (String path : resourcePaths) {
+                    String entry = StringUtils.removeStart(StringUtils.removeEnd(path, SEPARATOR), StringUtils.SEPARATOR);
+                    if ( StringUtils.equalsAny(entry, "META-INF", "WEB-INF")) {
+                        continue;
+                    }
                     if(path.endsWith(SEPARATOR)) {
                         getJSPMappings(servletContext, path);
                     }

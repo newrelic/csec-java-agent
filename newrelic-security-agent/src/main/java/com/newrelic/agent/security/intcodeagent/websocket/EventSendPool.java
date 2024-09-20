@@ -27,8 +27,6 @@ public class EventSendPool {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    private AtomicBoolean isWaiting = new AtomicBoolean(false);
-
     private EventSendPool() {
         // load the settings
         int queueSize = QUEUE_SIZE;
@@ -167,15 +165,12 @@ public class EventSendPool {
         }
     }
 
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
-    }
-
     public ThreadPoolExecutor getExecutor() {
         return executor;
     }
 
     public void reset() {
         executor.getQueue().clear();
+        executor.purge();
     }
 }
