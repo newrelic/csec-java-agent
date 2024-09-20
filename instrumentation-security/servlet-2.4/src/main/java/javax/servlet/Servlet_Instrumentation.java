@@ -32,6 +32,9 @@ public abstract class Servlet_Instrumentation {
 
     public void service(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
+        if (NewRelicSecurity.isHookProcessingActive() && request instanceof HttpServletRequest){
+            HttpServletHelper.setRoute((HttpServletRequest) request, NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(), getServletConfig());
+        }
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
@@ -143,4 +146,6 @@ public abstract class Servlet_Instrumentation {
             HttpServletHelper.releaseServletLock();
         } catch (Throwable e) {}
     }
+
+    public abstract ServletConfig getServletConfig();
 }

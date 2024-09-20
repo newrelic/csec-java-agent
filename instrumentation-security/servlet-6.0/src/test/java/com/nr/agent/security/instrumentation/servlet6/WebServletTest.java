@@ -30,6 +30,7 @@ public class WebServletTest {
         AgentMetaData metaData = introspector.getSecurityMetaData().getMetaData();
         Assert.assertTrue(metaData.isUserLevelServiceMethodEncountered());
         Assert.assertNotNull(metaData.getServiceTrace());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Trace(dispatcher = true)
