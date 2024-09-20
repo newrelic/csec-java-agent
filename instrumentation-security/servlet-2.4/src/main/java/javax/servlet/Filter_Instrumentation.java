@@ -29,6 +29,9 @@ public abstract class Filter_Instrumentation {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
+        if (NewRelicSecurity.isHookProcessingActive() && request instanceof HttpServletRequest){
+            HttpServletHelper.setRoute((HttpServletRequest) request, NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(), null);
+        }
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
@@ -71,7 +74,6 @@ public abstract class Filter_Instrumentation {
             }
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
-            HttpServletHelper.setRoute(httpServletRequest, securityRequest, securityAgentMetaData);
 
             securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
 

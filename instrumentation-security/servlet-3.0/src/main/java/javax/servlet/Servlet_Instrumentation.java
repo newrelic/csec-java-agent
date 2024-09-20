@@ -10,12 +10,15 @@ import com.newrelic.api.agent.weaver.Weaver;
 import javax.servlet.http.HttpServletRequest;
 
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.Servlet")
-public class Servlet_Instrumentation {
+public abstract class Servlet_Instrumentation {
+
     public void service(ServletRequest req, ServletResponse res){
         if (NewRelicSecurity.isHookProcessingActive() && req instanceof HttpServletRequest){
-            SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            HttpServletHelper.setRoute((HttpServletRequest) req, metaData.getRequest(), metaData.getMetaData());
+            HttpServletHelper.setRoute((HttpServletRequest) req, NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(), getServletConfig());
         }
         Weaver.callOriginal();
     }
+
+    public abstract ServletConfig getServletConfig();
+
 }

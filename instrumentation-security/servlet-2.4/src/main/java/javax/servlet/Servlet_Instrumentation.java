@@ -13,7 +13,6 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -33,6 +32,9 @@ public abstract class Servlet_Instrumentation {
 
     public void service(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
+        if (NewRelicSecurity.isHookProcessingActive() && request instanceof HttpServletRequest){
+            HttpServletHelper.setRoute((HttpServletRequest) request, NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(), getServletConfig());
+        }
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
@@ -75,7 +77,6 @@ public abstract class Servlet_Instrumentation {
             }
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
-            HttpServletHelper.setRoute(httpServletRequest, securityRequest, securityAgentMetaData);
 
             securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
 
@@ -142,4 +143,6 @@ public abstract class Servlet_Instrumentation {
             HttpServletHelper.releaseServletLock();
         } catch (Throwable e) {}
     }
+
+    public abstract ServletConfig getServletConfig();
 }

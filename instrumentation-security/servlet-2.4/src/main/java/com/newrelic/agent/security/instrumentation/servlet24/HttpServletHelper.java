@@ -6,15 +6,19 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HttpServletHelper {
 
@@ -155,18 +159,28 @@ public class HttpServletHelper {
         }
     }
 
-    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData) {
+    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, ServletConfig servletConfig) {
         try {
             if (URLMappingsHelper.getApplicationURLMappings().isEmpty()){
                 return;
             }
-            String route = request.getServletPath();
-            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, route))) {
-                securityRequest.setRoute(route);
-            } else if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, route+URLMappingsHelper.subResourceSegment))) {
-                securityRequest.setRoute(route + URLMappingsHelper.subResourceSegment);
+            String servletPath = request.getServletPath();
+            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, servletPath))) {
+                securityRequest.setRoute(servletPath);
+            } else if (servletConfig != null) {
+                ServletRegistration registration = servletConfig.getServletContext().getServletRegistration(servletConfig.getServletName());
+                if (registration != null && registration.getMappings() != null && !registration.getMappings().isEmpty()) {
+                    for (String mapping : registration.getMappings()) {
+                        Pattern pattern = Pattern.compile(StringUtils.replace(mapping, URLMappingsHelper.WILDCARD, ".*"));
+                        Matcher matcher = pattern.matcher(servletPath);
+                        if (matcher.matches()) {
+                            securityRequest.setRoute(mapping);
+                            break;
+                        }
+                    }
+                }
             }
-            metaData.setFramework(Framework.SERVLET);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SERVLET);
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }

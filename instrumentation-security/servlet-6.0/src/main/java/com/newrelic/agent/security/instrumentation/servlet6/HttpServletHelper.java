@@ -157,18 +157,16 @@ public class HttpServletHelper {
         }
     }
 
-    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData){
+    public static void setRoute(HttpServletRequest request){
         try {
-            if (URLMappingsHelper.getApplicationURLMappings().isEmpty()){
+            if (!NewRelicSecurity.isHookProcessingActive() || URLMappingsHelper.getApplicationURLMappings().isEmpty() || (!NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().isEmpty() && !NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().equals(Framework.SERVLET.name()))){
                 return;
             }
             HttpServletMapping mapping = request.getHttpServletMapping();
-            if (!mapping.getMappingMatch().equals(MappingMatch.EXTENSION) && URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, mapping.getPattern()))){
-                securityRequest.setRoute(mapping.getPattern());
-            } else if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, mapping.getPattern()))) {
-                securityRequest.setRoute(request.getServletPath());
+            if (mapping != null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(mapping.getPattern());
             }
-            metaData.setFramework(Framework.SERVLET);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SERVLET);
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }

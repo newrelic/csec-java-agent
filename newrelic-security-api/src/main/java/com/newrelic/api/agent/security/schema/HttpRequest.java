@@ -216,10 +216,14 @@ public class HttpRequest {
     }
 
     public void setRoute(String route){
-        this.route = StringUtils.prependIfMissing(StringUtils.removeEnd(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        setRoute(route, true);
     }
 
-    public void setRoute(String segment, boolean isAlreadyServlet) {
+    public void setRoute(String segment, Boolean isAlreadyServlet) {
+        if (isAlreadyServlet == null){
+            this.route = StringUtils.EMPTY;
+            return;
+        }
         // remove servlet detected route if another framework detected;
         if (isAlreadyServlet) {
             this.route = StringUtils.EMPTY;

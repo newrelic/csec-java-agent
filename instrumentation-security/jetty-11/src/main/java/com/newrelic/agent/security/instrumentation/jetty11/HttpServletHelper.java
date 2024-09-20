@@ -4,7 +4,6 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
-import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -13,10 +12,8 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServletMapping;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.MappingMatch;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -154,8 +151,6 @@ public class HttpServletHelper {
                 securityAgentMetaData.getIps().add(securityRequest.getClientIP());
                 securityRequest.setClientPort(String.valueOf(httpServletRequest.getRemotePort()));
             }
-            // route detection
-            HttpServletHelper.setRoute(httpServletRequest, securityRequest, securityAgentMetaData);
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
 
@@ -238,14 +233,5 @@ public class HttpServletHelper {
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
         }
-    }
-    public static void setRoute(HttpServletRequest request, HttpRequest securityRequest, AgentMetaData metaData){
-        HttpServletMapping mapping = request.getHttpServletMapping();
-        if (!mapping.getMappingMatch().equals(MappingMatch.EXTENSION)){
-            securityRequest.setRoute(mapping.getPattern());
-        } else {
-            securityRequest.setRoute(request.getServletPath());
-        }
-        metaData.setFramework(Framework.SERVLET);
     }
 }
