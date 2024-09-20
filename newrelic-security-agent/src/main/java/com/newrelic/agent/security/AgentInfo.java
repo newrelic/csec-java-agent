@@ -144,6 +144,11 @@ public class AgentInfo {
         AgentUtils.getInstance().getStatusLogValues().put("server-name", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("app-location", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("framework", NOT_AVAILABLE);
+
+        Map<String, String> statusLogValues = AgentUtils.getInstance().getStatusLogValues();
+        logger.logInit(LogLevel.INFO, String.format("CSEC HOME: %s, permissions read & write: %s", statusLogValues.get("csec-home"), statusLogValues.get("csec-home-permissions")), AgentInfo.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Agent location: %s", statusLogValues.get("agent-location")), AgentInfo.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Current working directory: %s, permissions read & write: %s", statusLogValues.get("cwd"), statusLogValues.get("cwd-permissions")), AgentInfo.class.getName());
     }
 
     public boolean agentStatTrigger(boolean clean){
