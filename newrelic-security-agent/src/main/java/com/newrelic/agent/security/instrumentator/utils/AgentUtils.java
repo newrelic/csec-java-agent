@@ -651,7 +651,6 @@ public class AgentUtils {
 
 
     public static void sendApplicationURLMappings() {
-        //TODO mappings to be send once new mappings are discovered, after startup.
         ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
         applicationURLMappings.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings), Agent.class.getName());

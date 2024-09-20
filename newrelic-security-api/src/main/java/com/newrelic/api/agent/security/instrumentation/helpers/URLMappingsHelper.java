@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.RouteSegment;
 import com.newrelic.api.agent.security.schema.RouteSegments;
@@ -63,6 +64,7 @@ public class URLMappingsHelper {
         if (mapping.getHandler() != null){
             handlers.add(mapping.getHandler().hashCode());
         }
+        NewRelicSecurity.getAgent().reportURLMapping();
     }
 
     private synchronized static void generateRouteSegments(String endpoint) {

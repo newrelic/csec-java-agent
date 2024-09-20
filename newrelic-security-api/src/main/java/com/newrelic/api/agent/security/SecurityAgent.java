@@ -78,4 +78,6 @@ public interface SecurityAgent {
     void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception);
 
     boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception);
+
+    void reportURLMapping();
 }

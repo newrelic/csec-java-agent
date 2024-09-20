@@ -7,7 +7,6 @@
 
 package com.newrelic.api.agent.security;
 
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
@@ -149,5 +148,9 @@ class NoOpAgent implements SecurityAgent {
         return false;
     }
 
+    @Override
+    public void reportURLMapping() {
+
+    }
 
 }

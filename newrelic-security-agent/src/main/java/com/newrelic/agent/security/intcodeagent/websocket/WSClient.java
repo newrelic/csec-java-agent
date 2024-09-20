@@ -264,7 +264,6 @@ public class WSClient extends WebSocketClient {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
-        AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
