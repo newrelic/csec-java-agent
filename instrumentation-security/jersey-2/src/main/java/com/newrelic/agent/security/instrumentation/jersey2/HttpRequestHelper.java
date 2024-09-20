@@ -27,17 +27,12 @@ public class HttpRequestHelper {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
-    public static final String QUESTION_MARK = "?";
     public static final String CONTAINER_RESPONSE_METHOD_NAME = "ContainerResponse";
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "REQUEST_LOCK-";
-    private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME_POST_PROCESSING = "JERSEY_LOCK_POST_PROCESSING-";
     public static final String HEADER_SEPARATOR = ";";
-    public static final String GRIZZLY_REQUEST_PROPERTIES_DELEGATE = "GRIZZLY_REQUEST_PROPERTIES_DELEGATE";
-    public static final String GRIZZLY_REQUEST = "GRIZZLY_REQUEST";
     public static final String ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_GRIZZLY_REQUEST_PROPERTIES_DELEGATE = "org.glassfish.jersey.grizzly2.httpserver.GrizzlyRequestPropertiesDelegate";
-    public static final String ORG_GLASSFISH_GRIZZLY_HTTP_SERVER_REQUEST = "org.glassfish.grizzly.http.server.Request";
     public static final String FIELD_REQUEST = "request";
     public static final String METHOD_GET_REMOTE_ADDR = "getRemoteAddr";
     public static final String METHOD_GET_REMOTE_PORT = "getRemotePort";
@@ -45,19 +40,12 @@ public class HttpRequestHelper {
     public static final String METHOD_GET_SCHEME = "getScheme";
     public static final String METHOD_GET_CONTENT_TYPE = "getContentType";
     public static final String ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE = "org.glassfish.jersey.message.internal.TracingAwarePropertiesDelegate";
-    public static final String TRACING_AWARE_PROPERTIES_DELEGATE = "TRACING_AWARE_PROPERTIES_DELEGATE";
     public static final String FIELD_PROPERTIES_DELEGATE = "propertiesDelegate";
 
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
     public static final String CONTENT_TYPE = "content-type";
     public static final String HEADER_CONTENT_TYPE = "contenttype";
     public static final String JERSEY_2 = "JERSEY-2";
-
-    public static Class grizzlyRequestPropertiesDelegateKlass = null;
-
-    public static Class grizzlyRequest = null;
-
-    public static Class tracingAwarePropertiesDelegateKlass = null;
 
     public static void preprocessSecurityHook(ContainerRequest requestContext) {
         try {
@@ -92,8 +80,7 @@ public class HttpRequestHelper {
 
     public static void postProcessSecurityHook(String className, OutboundMessageContext wrappedMessageContext) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
             ServletHelper.executeBeforeExitingTransaction();
@@ -229,14 +216,19 @@ public class HttpRequestHelper {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 
+    public static String getNrSecCustomAttribForPostProcessing() {
+        return NR_SEC_CUSTOM_ATTRIB_NAME_POST_PROCESSING + Thread.currentThread().getId();
+    }
+
     public static void processPropertiesDelegate(PropertiesDelegate propertiesDelegate, HttpRequest securityRequest) {
         if(StringUtils.equals(propertiesDelegate.getClass().getName(), ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_GRIZZLY_REQUEST_PROPERTIES_DELEGATE)){
             try {
-                Class grizzlyRequestPropertiesDelegateKlass = propertiesDelegate.getClass();
+                Class<? extends PropertiesDelegate> grizzlyRequestPropertiesDelegateKlass = propertiesDelegate.getClass();
                 Field requestField = grizzlyRequestPropertiesDelegateKlass.getDeclaredField(FIELD_REQUEST);
                 requestField.setAccessible(true);
                 Object requestObject = requestField.get(propertiesDelegate);
-                Class requestClass = requestObject.getClass();
+
+                Class<?> requestClass = requestObject.getClass();
                 Method getRemoteAddr = requestClass.getMethod(METHOD_GET_REMOTE_ADDR);
                 Method getRemotePort = requestClass.getMethod(METHOD_GET_REMOTE_PORT);
                 Method getLocalPort = requestClass.getMethod(METHOD_GET_LOCAL_PORT);
@@ -255,7 +247,7 @@ public class HttpRequestHelper {
 
         } else if (StringUtils.equals(propertiesDelegate.getClass().getName(), ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE)){
             try {
-                Class tracingAwarePropertiesDelegateKlass = propertiesDelegate.getClass();
+                Class<? extends PropertiesDelegate> tracingAwarePropertiesDelegateKlass = propertiesDelegate.getClass();
                 Field propertiesDelegateField = tracingAwarePropertiesDelegateKlass.getDeclaredField(FIELD_PROPERTIES_DELEGATE);
                 propertiesDelegateField.setAccessible(true);
                 Object propertiesDelegateObject = propertiesDelegateField.get(propertiesDelegate);

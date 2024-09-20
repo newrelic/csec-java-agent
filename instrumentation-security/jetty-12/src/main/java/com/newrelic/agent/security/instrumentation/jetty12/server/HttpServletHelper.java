@@ -26,11 +26,9 @@ public class HttpServletHelper {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
-    public static final String QUESTION_MARK = "?";
     public static final String SERVICE_METHOD_NAME = "handle";
-    public static final String SERVICE_ASYNC_METHOD_NAME = "handleAsync";
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "JETTY_SERVLET_LOCK-";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     public static final String JETTY_12 = "JETTY-12";
 
     public static void processHttpRequestHeader(Request request, HttpRequest securityRequest) {
@@ -127,7 +125,7 @@ public class HttpServletHelper {
     }
 
     private static String getNrSecCustomAttribName() {
-        return NR_SEC_CUSTOM_ATTRIB_NAME;
+        return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 
     public static void preprocessSecurityHook(Request request) {

@@ -7,13 +7,11 @@
 
 package com.newrelic.agent.security.instrumentation.jersey2;
 
-import com.newrelic.api.agent.Trace;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.glassfish.jersey.server.ContainerRequest;
-
-import java.io.OutputStream;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.glassfish.jersey.server.ApplicationHandler")
 public abstract class ApplicationHandler_Handler {
@@ -24,6 +22,7 @@ public abstract class ApplicationHandler_Handler {
             if (requestContext != null) {
                 isRequestLockAcquired = HttpRequestHelper.acquireRequestLockIfPossible();
                 if (isRequestLockAcquired) {
+                    GenericHelper.acquireLockIfPossible(HttpRequestHelper.getNrSecCustomAttribForPostProcessing());
                     HttpRequestHelper.preprocessSecurityHook(requestContext);
                     HttpRequestHelper.registerUserLevelCode("JERSEY");
                 }
@@ -31,6 +30,7 @@ public abstract class ApplicationHandler_Handler {
             Weaver.callOriginal();
         } finally {
             if(isRequestLockAcquired){
+                GenericHelper.releaseLock(HttpRequestHelper.getNrSecCustomAttribForPostProcessing());
                 HttpRequestHelper.releaseRequestLock();
             }
         }
