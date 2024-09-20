@@ -163,11 +163,13 @@ public class HttpServletHelper {
 
     public static void setRoute(HttpServletRequest request){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || URLMappingsHelper.getApplicationURLMappings().isEmpty() || (!NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().isEmpty() && !NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().equals(Framework.SERVLET.name()))){
+            if (!NewRelicSecurity.isHookProcessingActive() || URLMappingsHelper.getApplicationURLMappings().isEmpty()){
                 return;
             }
             HttpServletMapping mapping = request.getHttpServletMapping();
-            if (mapping != null) {
+            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, request.getServletPath()))) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(request.getServletPath());
+            } else if (mapping != null) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(mapping.getPattern());
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SERVLET);

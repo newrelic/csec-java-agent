@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 
 import java.nio.file.Paths;
@@ -241,6 +242,10 @@ public class HttpRequest {
     }
 
     public void setRoute(String route){
+        if(!NewRelicSecurity.isHookProcessingActive() ||
+                (!NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().isEmpty() && !NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().equals(Framework.SERVLET.name()))){
+            return;
+        }
         setRoute(route, true);
     }
 
