@@ -43,6 +43,21 @@ public class HttpRequest {
 
     private Map<String, String> customDataType;
 
+    @JsonIgnore
+    private List<String> pathParameters;
+
+    @JsonIgnore
+    private Map<String, List<String>> queryParameters;
+
+    @JsonIgnore
+    private Map<String, List<String>> requestHeaderParameters;
+
+    @JsonIgnore
+    private Map<String, List<String>> requestBodyParameters;
+
+    @JsonIgnore
+    private boolean isRequestParametersParsed = false;
+
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
         this.body = new StringBuilder();
@@ -76,6 +91,11 @@ public class HttpRequest {
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
+        this.pathParameterMap = servletInfo.pathParameterMap;
+        this.queryParameters = servletInfo.queryParameters;
+        this.requestHeaderParameters = servletInfo.requestHeaderParameters;
+        this.requestBodyParameters = servletInfo.requestBodyParameters;
+        this.isRequestParametersParsed = servletInfo.isRequestParametersParsed;
         this.customDataType = servletInfo.customDataType;
     }
 
@@ -238,6 +258,46 @@ public class HttpRequest {
         if (!StringUtils.isEmpty(formatedSegment)) {
             this.route = Paths.get(this.route, formatedSegment).normalize().toString();
         }
+    }
+
+    public List<String> getPathParameters() {
+        return pathParameters;
+    }
+
+    public void setPathParameters(List<String> pathParameters) {
+        this.pathParameters = pathParameters;
+    }
+
+    public Map<String, List<String>> getQueryParameters() {
+        return queryParameters;
+    }
+
+    public void setQueryParameters(Map<String, List<String>> queryParameters) {
+        this.queryParameters = queryParameters;
+    }
+
+    public Map<String, List<String>> getRequestHeaderParameters() {
+        return requestHeaderParameters;
+    }
+
+    public void setRequestHeaderParameters(Map<String, List<String>> requestHeaderParameters) {
+        this.requestHeaderParameters = requestHeaderParameters;
+    }
+
+    public Map<String, List<String>> getRequestBodyParameters() {
+        return requestBodyParameters;
+    }
+
+    public void setRequestBodyParameters(Map<String, List<String>> requestBodyParameters) {
+        this.requestBodyParameters = requestBodyParameters;
+    }
+
+    public boolean isRequestParametersParsed() {
+        return isRequestParametersParsed;
+    }
+
+    public void setRequestParametersParsed(boolean requestParametersParsed) {
+        isRequestParametersParsed = requestParametersParsed;
     }
 
     public Map<String, String> getCustomDataType() {
