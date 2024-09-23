@@ -42,6 +42,7 @@ The agent automatically instruments the following frameworks.
 - Netty Server 4.0.0.Final to latest
 - Netty Reactor Server 0.7.0.RELEASE to latest
 - Vertx web 3.2.0 to latest
+- GraphQL 16.0.0 to latest
 
 ** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
