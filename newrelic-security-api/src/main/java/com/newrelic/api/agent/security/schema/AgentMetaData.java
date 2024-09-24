@@ -1,11 +1,9 @@
 package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+import com.newrelic.api.agent.security.schema.policy.SkipScanParameters;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AgentMetaData {
 
@@ -25,6 +23,8 @@ public class AgentMetaData {
     private Map<String, String> userDataTranslationMap;
 
     private Map<String, String> reflectedMetaData;
+
+    private SkipScanParameters skipScanParameters;
 
     @JsonIgnore
     private StackTraceElement[] serviceTrace;
@@ -56,6 +56,7 @@ public class AgentMetaData {
         this.reflectedMetaData = new HashMap<>();
         this.appServerInfo = new AppServerInfo();
         this.framework = StringUtils.EMPTY;
+        this.skipScanParameters = new SkipScanParameters();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -77,6 +78,7 @@ public class AgentMetaData {
         this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
         this.fromJumpRequiredInStackTrace = agentMetaData.getFromJumpRequiredInStackTrace();
         this.framework = agentMetaData.framework;
+        this.skipScanParameters = agentMetaData.skipScanParameters;
     }
 
     public boolean isTriggerViaRCI() {
@@ -218,5 +220,13 @@ public class AgentMetaData {
         if (StringUtils.isEmpty(this.framework) || StringUtils.equals(this.framework, Framework.SERVLET.name())) {
             this.framework = framework.name();
         }
+    }
+
+    public SkipScanParameters getSkipScanParameters() {
+        return skipScanParameters;
+    }
+
+    public void setSkipScanParameters(SkipScanParameters skipScanParameters) {
+        this.skipScanParameters = skipScanParameters;
     }
 }

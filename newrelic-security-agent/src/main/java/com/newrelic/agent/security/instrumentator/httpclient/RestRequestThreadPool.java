@@ -29,8 +29,6 @@ public class RestRequestThreadPool {
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
 
-    private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
-
     private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
 
     private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
@@ -126,10 +124,6 @@ public class RestRequestThreadPool {
 
     public BlockingQueue<Runnable> getQueue() {
         return this.executor.getQueue();
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public ThreadPoolExecutor getExecutor() {

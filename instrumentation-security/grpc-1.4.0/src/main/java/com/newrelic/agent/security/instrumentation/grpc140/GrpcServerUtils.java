@@ -95,6 +95,9 @@ public class GrpcServerUtils {
 
     public static void postProcessSecurityHook(Metadata metadata, int statusCode, String className, String methodName) {
         try {
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return;
+            }
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }

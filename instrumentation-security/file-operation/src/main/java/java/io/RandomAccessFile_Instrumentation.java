@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,7 +23,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 public abstract class RandomAccessFile_Instrumentation {
 
     private void open(String name, int mode) throws FileNotFoundException {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(name);
@@ -37,17 +38,12 @@ public abstract class RandomAccessFile_Instrumentation {
         registerExitOperation(isFileLockAcquired, operation);
     }
 
-    private boolean acquireFileLockIfPossible() {
-        try {
-            return FileHelper.acquireFileLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+    private static boolean acquireFileLockIfPossible(VulnerabilityCaseType fileOperation) {
+        return GenericHelper.acquireLockIfPossible(fileOperation, FileHelper.getNrSecCustomAttribName());
     }
 
-    private void releaseFileLock() {
-        try {
-            FileHelper.releaseFileLock();
-        } catch (Throwable e) {}
+    private static void releaseFileLock() {
+        GenericHelper.releaseLock(FileHelper.getNrSecCustomAttribName());
     }
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {

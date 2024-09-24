@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RandomOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,7 +23,7 @@ import static com.newrelic.agent.security.instrumentation.random.RandomUtils.WEA
 public class Random_Instrumentation {
 
     public int nextInt() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -44,7 +45,7 @@ public class Random_Instrumentation {
     }
 
     public int nextInt(int bound) {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -66,7 +67,7 @@ public class Random_Instrumentation {
     }
 
     public void nextBytes(byte[] bytes) {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -86,7 +87,7 @@ public class Random_Instrumentation {
     }
 
     public long nextLong() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -108,7 +109,7 @@ public class Random_Instrumentation {
     }
 
     public float nextFloat() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -130,7 +131,7 @@ public class Random_Instrumentation {
     }
 
     public double nextDouble() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -152,7 +153,7 @@ public class Random_Instrumentation {
     }
 
     public double nextGaussian() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -174,7 +175,7 @@ public class Random_Instrumentation {
     }
 
     public boolean nextBoolean() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.RANDOM, hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
@@ -246,9 +247,9 @@ public class Random_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(int hashCode) {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType random, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
+            return GenericHelper.acquireLockIfPossible(random, RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {
         }
         return false;

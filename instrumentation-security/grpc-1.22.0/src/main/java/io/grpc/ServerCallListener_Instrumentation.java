@@ -7,6 +7,8 @@ import com.newrelic.agent.security.instrumentation.grpc1220.GrpcUtils;
 import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
@@ -32,6 +34,7 @@ public abstract class ServerCallListener_Instrumentation<ReqT> {
         if (isLockAcquired) {
             GrpcUtils.preProcessSecurityHook(message, GrpcUtils.Type.REQUEST, descriptorForType.getFullName());
         }
+        ServletHelper.registerUserLevelCode(Framework.GRPC.name());
         try {
             Weaver.callOriginal();
         } finally {

@@ -3,6 +3,7 @@ package io.grpc;
 import com.newrelic.agent.security.instrumentation.grpc1220.GrpcClientUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
@@ -20,7 +21,7 @@ public abstract class ClientCall_Instrumentation<ReqT, RespT> {
     MethodDescriptor<ReqT, RespT> methodDescriptor = null;
 
     public void start(ClientCall.Listener<RespT> var1, Metadata var2) {
-        boolean isLockAcquired = GrpcClientUtils.acquireLockIfPossible();
+        boolean isLockAcquired = GrpcClientUtils.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
 
         if (isLockAcquired) {

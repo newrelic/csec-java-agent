@@ -3,6 +3,7 @@ package spray.can.rendering;
 import akka.event.LoggingAdapter;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -18,7 +19,7 @@ public class ResponseRendering_Instrumentation {
     private static boolean renderResponse$1(ResponseRenderingComponent component, HttpResponse response,
             Rendering rendering, ResponsePartRenderingContext context, LoggingAdapter adapter) {
 
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && response.entity().nonEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(response.entity().data().asString(StandardCharsets.UTF_8)));

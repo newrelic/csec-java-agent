@@ -4,6 +4,7 @@ import com.mongodb.async.SingleResultCallback;
 import com.mongodb.binding.AsyncWriteBinding;
 import com.mongodb.binding.WriteBinding;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -17,7 +18,7 @@ public class CommandWriteOperation_Instrumentation<T> {
 
     public T execute(final WriteBinding binding) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = MongoUtil.acquireLockIfPossible(this.hashCode());
+        boolean isLockAcquired = MongoUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
         if (isLockAcquired) {
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
@@ -35,7 +36,7 @@ public class CommandWriteOperation_Instrumentation<T> {
 
     public void executeAsync(final AsyncWriteBinding binding, final SingleResultCallback<T> callback) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = MongoUtil.acquireLockIfPossible(this.hashCode());
+        boolean isLockAcquired = MongoUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
         if (isLockAcquired) {
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
