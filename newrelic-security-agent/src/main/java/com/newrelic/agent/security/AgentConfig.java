@@ -101,17 +101,20 @@ public class AgentConfig {
         //Do not repeat this task
         logger.initialiseLogger();
 
+
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT) instanceof Integer) {
+            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT));
+        } else {
+            scanControllers.setScanInstanceCount(0);
+        }
+        //Always set IAST Test Identifier after IAST_SCAN_INSTANCE_COUNT
         if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER) instanceof String) {
             scanControllers.setIastTestIdentifier(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER));
             scanControllers.setScanInstanceCount(1);
         } else {
             scanControllers.setIastTestIdentifier(StringUtils.EMPTY);
         }
-        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT) instanceof Integer) {
-            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT));
-        } else {
-            scanControllers.setScanInstanceCount(0);
-        }
+
 
         instantiateAgentMode(groupName);
 
