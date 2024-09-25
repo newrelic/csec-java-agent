@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       # The scan_request_rate_limit configuration allows to specify maximum number of replay request played per minute.
       iast_scan_request_rate_limit: 3600 # Number of IAST replay request played per minute, Default is 3600
   ```
-  - [PR-315](https://github.com/newrelic/csec-java-agent/pull/315) GraphQL Support : The security agent now also supports GraphQL Version 16.0.0 and above, default is disabled. [NR-299885](https://new-relic.atlassian.net/browse/NR-299885)
+- [PR-315](https://github.com/newrelic/csec-java-agent/pull/315) GraphQL Support : The security agent now also supports GraphQL Version 16.0.0 and above, default is disabled. [NR-299885](https://new-relic.atlassian.net/browse/NR-299885)
 
 ### Fixes
 - [PR-322](https://github.com/newrelic/csec-java-agent/pull/322) Report Application endpoints immediately upon detecting new endpoints. [NR-287324](https://new-relic.atlassian.net/browse/NR-287324)
