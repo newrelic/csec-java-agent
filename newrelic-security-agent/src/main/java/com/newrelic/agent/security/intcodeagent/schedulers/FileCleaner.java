@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -8,6 +9,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +33,12 @@ public class FileCleaner {
 
         @Override
         public void run() {
+            AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementIastFileCleaner();
             long delay = Instant.now().toEpochMilli() - TimeUnit.MINUTES.toMillis(2);
             logger.log(LogLevel.INFO, FILE_CLEANER_INVOKED_INITIATING_TEMP_FILE_DIRECTORY_CLEANUP, FileCleaner.class.getName());
+            if(StringUtils.isBlank(osVariables.getTmpDirectory())) {
+                return;
+            }
             FileUtils.iterateFiles(new File(osVariables.getTmpDirectory()), new AgeFileFilter(delay), DirectoryFileFilter.INSTANCE).forEachRemaining( file -> {
                 FileUtils.deleteQuietly(file);
             });

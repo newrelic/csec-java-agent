@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -19,7 +20,7 @@ public abstract class XPath_Instrumentation {
 
     public String evaluate(String expression, InputSource source)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -42,7 +43,7 @@ public abstract class XPath_Instrumentation {
             InputSource source,
             QName returnType)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -62,7 +63,7 @@ public abstract class XPath_Instrumentation {
 
     public String evaluate(String expression, Object item)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -82,7 +83,7 @@ public abstract class XPath_Instrumentation {
 
     public Object evaluate(String expression, Object item, QName returnType)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -140,9 +141,9 @@ public abstract class XPath_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
         try {
-            return GenericHelper.acquireLockIfPossible("XPATH_OPERATION_LOCK_JAVAXPATH-");
+            return GenericHelper.acquireLockIfPossible(xpath, "XPATH_OPERATION_LOCK_JAVAXPATH-");
         } catch (Throwable ignored) {}
         return false;
     }

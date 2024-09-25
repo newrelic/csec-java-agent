@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentation.vertx.web;
 
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class VertxClientHelper {
 
@@ -17,7 +18,7 @@ public class VertxClientHelper {
         GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
-    public static boolean acquireLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, getNrSecCustomAttribName());
     }
 }

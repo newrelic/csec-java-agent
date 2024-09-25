@@ -7,11 +7,14 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.mule.api.processor.MessageProcessor;
 import org.mule.module.http.api.HttpHeaders;
 import org.mule.module.http.api.listener.HttpListener;
 import org.mule.module.http.internal.domain.request.HttpRequest;
+import org.mule.module.http.internal.listener.ListenerPath;
 import org.mule.processor.InvokerMessageProcessor;
 
 import java.util.HashMap;
@@ -28,6 +31,7 @@ public class MuleHelper {
     private static final String EMPTY = "";
     public static final String LIBRARY_NAME = "MULE-SERVER";
     private static final Map<Integer, String> handlerMap = new HashMap<>();
+    public static final String MULE_3_7 = "MULE-3.7";
 
     public static void processHttpRequestHeader(HttpRequest httpRequest, com.newrelic.api.agent.security.schema.HttpRequest securityRequest) {
         for (String headerName : httpRequest.getHeaderNames()) {
@@ -108,10 +112,23 @@ public class MuleHelper {
                     URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method, path, handlerClass));
                 }
             }
-        } catch (Exception ignored){}
+        } catch (Exception ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, MULE_3_7, ignored.getMessage()), ignored, MuleHelper.class.getName());
+        }
     }
 
     public static Map<Integer, String> getHandlerMap() {
         return handlerMap;
+    }
+
+    public static void setRequestRoute(ListenerPath listenerPath) {
+        if (NewRelicSecurity.isHookProcessingActive()) {
+            try {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(listenerPath.getResolvedPath());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.MULE);
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, MULE_3_7, e.getMessage()), e, MuleHelper.class.getName());
+            }
+        }
     }
 }

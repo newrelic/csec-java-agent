@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -229,22 +230,11 @@ public class NettyUtils {
         return false;
     }
 
-    public static boolean acquireNettyLockIfPossible(String operationLock) {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isNettyLockAcquired(operationLock)) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+    public static boolean acquireNettyLockIfPossible(VulnerabilityCaseType reflectedXss, String operationLock) {
+        return GenericHelper.acquireLockIfPossible(reflectedXss, operationLock + Thread.currentThread().getId());
     }
 
     public static void releaseNettyLock(String operationLock) {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(operationLock + Thread.currentThread().getId());
     }
 }

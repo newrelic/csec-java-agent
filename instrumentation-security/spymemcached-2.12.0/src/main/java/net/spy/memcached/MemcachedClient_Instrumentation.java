@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentation.spy.memcached.MemcachedHelper
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.MemcachedOperation;
 import com.newrelic.api.agent.weaver.Weave;
@@ -19,7 +20,7 @@ public class MemcachedClient_Instrumentation {
 
     private <T> OperationFuture<Boolean> asyncStore(StoreType storeType,
                 String key, int exp, T value, Transcoder<T> tc) {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = MemcachedHelper.preprocessSecurityHook(storeType.name(), MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_STORE);
@@ -38,7 +39,7 @@ public class MemcachedClient_Instrumentation {
 
     private <T> OperationFuture<Boolean> asyncCat(ConcatenationType catType,
             long cas, String key, T value, Transcoder<T> tc) {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = MemcachedHelper.preprocessSecurityHook(catType.name(), MemcachedHelper.UPDATE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAT);
@@ -57,7 +58,7 @@ public class MemcachedClient_Instrumentation {
 
     public <T> OperationFuture<CASResponse>
     asyncCAS(String key, long casId, int exp, T value, Transcoder<T> tc) {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = MemcachedHelper.preprocessSecurityHook(StoreType.set.name(), MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAS);

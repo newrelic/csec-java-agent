@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
-import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
@@ -137,7 +136,7 @@ public class RestClient {
                             e, RestRequestProcessor.class.getName());
                     RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                     // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
-                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
                     fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
                     EventSendPool.getInstance().sendEvent(fuzzFailEvent);
                 }
@@ -228,7 +227,7 @@ public class RestClient {
                     e, RestRequestProcessor.class.getName());
             RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
             // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
-            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
         } catch (Exception e){
