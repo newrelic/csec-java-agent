@@ -33,7 +33,7 @@ The agent automatically instruments the following frameworks.
 - Resin 3.1.9 to 4.0.x
 - Jetty 9.3.0.M1 to latest
 - Mule ESB 3.6 to 3.9.x
-- gRPC 1.4.0 to latest**
+- gRPC 1.4.0 to latest [**](#grpc-instrumentation)
 - Jersey 2.0 to latest
 - Akka Server 10.0 to latest (with scala 2.11 and above)
 - Spray Can 1.3.1 to latest (with scala 2.11 and above)
@@ -42,9 +42,18 @@ The agent automatically instruments the following frameworks.
 - Netty Server 4.0.0.Final to latest
 - Netty Reactor Server 0.7.0.RELEASE to latest
 - Vertx web 3.2.0 to latest
-- GraphQL 16.0.0 to latest
+- GraphQL 16.0.0 to latest [**](#graphql-instrumentation)
 
-** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
+#### gRPC Instrumentation
+IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
+
+#### GraphQL Instrumentation
+By default, GraphQL instrumentation is disabled in IAST as it is an experimental feature. To take advantage of this feature enable GraphQL instrumentation, update your configuration by adding the following settings under the class_transformer section:
+```yaml
+class_transformer:
+  com.newrelic.instrumentation.security.graphql-java-16.2:
+    enabled: true
+```
 
 ### Java Native Operations
 
