@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.apache.pekko;
+package org.apache.pekko.http.scaladsl;
 
 import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.security.NewRelicSecurity;
@@ -13,7 +13,7 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.pekko.http.javadsl.model.HttpHeader;
-import org.apache.pekko.http.javadsl.model.HttpRequest;
+import org.apache.pekko.http.scaladsl.model.HttpRequest;
 import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 
 import java.util.Arrays;
@@ -74,6 +74,7 @@ public class PekkoCoreUtils {
             }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
+            e.printStackTrace();
             if(e instanceof NewRelicSecurityException){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, PekkoCoreUtils.class.getName());
                 throw e;
@@ -125,6 +126,7 @@ public class PekkoCoreUtils {
             if (queryString != null && !queryString.trim().isEmpty()) {
                 securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
             }
+            System.out.println("content-type : " + request.entity().getContentType());
 
             securityRequest.setContentType(request.entity().getContentType().toString());
 
@@ -133,6 +135,7 @@ public class PekkoCoreUtils {
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
+            ignored.printStackTrace();
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, PEKKO_HTTP_CORE_2_13_1, ignored.getMessage()), ignored, PekkoCoreUtils.class.getName());
         }
         finally {

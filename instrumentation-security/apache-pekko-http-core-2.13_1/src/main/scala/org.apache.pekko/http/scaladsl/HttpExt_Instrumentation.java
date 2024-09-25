@@ -10,7 +10,6 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
-import com.newrelic.agent.security.instrumentation.apache.pekko.PekkoCoreUtils;
 import org.apache.pekko.event.LoggingAdapter;
 import org.apache.pekko.http.scaladsl.model.HttpRequest;
 import org.apache.pekko.http.scaladsl.model.HttpResponse;

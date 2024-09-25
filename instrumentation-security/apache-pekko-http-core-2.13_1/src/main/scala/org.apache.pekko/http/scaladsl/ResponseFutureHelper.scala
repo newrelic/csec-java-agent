@@ -1,6 +1,5 @@
 package org.apache.pekko.http.scaladsl
 
-import com.newrelic.agent.security.instrumentation.apache.pekko.PekkoCoreUtils
 import com.newrelic.api.agent.security.NewRelicSecurity
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException

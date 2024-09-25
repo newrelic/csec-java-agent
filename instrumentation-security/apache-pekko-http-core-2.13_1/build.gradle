@@ -15,6 +15,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:agent-bridge:${nrAPIVersion}")
     implementation("org.apache.pekko:pekko-http_2.13:1.0.1")
+    implementation("org.apache.pekko:pekko-http-core_2.13:1.0.1")
     implementation("org.apache.pekko:pekko-stream_2.13:1.0.1")
     implementation("org.apache.pekko:pekko-actor_2.13:1.0.1")
 }
