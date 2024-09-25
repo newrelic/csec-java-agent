@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.0] - TBD
 ### New features
 - Json Version bump to 1.2.9.
-- [PR-315](https://github.com/newrelic/csec-java-agent/pull/315) GraphQL Support : The security agent now also supports GraphQL Version 16.0.0 and above. [NR-299885](https://new-relic.atlassian.net/browse/NR-299885)
 - [PR-327](https://github.com/newrelic/csec-java-agent/pull/327) Application endpoint detection for gRPC Server [NR-303616](https://new-relic.atlassian.net/browse/NR-303616)
 - [PR-326](https://github.com/newrelic/csec-java-agent/pull/326) Add IAST Scan start time and Traffic Start Time in Health Check [NR-308822](https://new-relic.atlassian.net/browse/NR-308822)
 - [PR-320](https://github.com/newrelic/csec-java-agent/pull/320) Add feature to allow IAST Scan Scheduling. [NR-301534](https://new-relic.atlassian.net/browse/NR-301534)
@@ -80,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       # The scan_request_rate_limit configuration allows to specify maximum number of replay request played per minute.
       iast_scan_request_rate_limit: 3600 # Number of IAST replay request played per minute, Default is 3600
   ```
+  - [PR-315](https://github.com/newrelic/csec-java-agent/pull/315) GraphQL Support : The security agent now also supports GraphQL Version 16.0.0 and above, default is disabled. [NR-299885](https://new-relic.atlassian.net/browse/NR-299885)
 
 ### Fixes
 - [PR-322](https://github.com/newrelic/csec-java-agent/pull/322) Report Application endpoints immediately upon detecting new endpoints. [NR-287324](https://new-relic.atlassian.net/browse/NR-287324)
