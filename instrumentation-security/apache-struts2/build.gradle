@@ -3,6 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation('org.apache.struts:struts2-core:6.1.2')
+    implementation("javax.servlet:javax.servlet-api:4.0.1")
 }
 
 jar {
@@ -10,7 +11,6 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.apache.struts.xwork:xwork-core:[0,)'
     passesOnly 'org.apache.struts:struts2-core:[2.1.2,)'
     excludeRegex 'org.apache.struts:struts2-core:2.3.15.1-atlassian-[4-5]$'
 }

@@ -19,4 +19,12 @@ public abstract class DefaultGrailsController_Instrumentation {
     public DefaultGrailsController_Instrumentation() {
         GrailsHelper.gatherUrlMappings(uri2viewMap, getClazz().getName());
     }
+
+    public String getViewByURI(String uri) {
+        String view = Weaver.callOriginal();
+        if (view != null) {
+            GrailsHelper.setRoute(uri);
+        }
+        return view;
+    }
 }
