@@ -110,6 +110,7 @@ public class Agent implements SecurityAgent {
             info = AgentInfo.getInstance();
         }
         long delay = config.instantiate();
+        AgentInfo.initialiseLogger();
         SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
     }
 
@@ -228,7 +229,7 @@ public class Agent implements SecurityAgent {
         BuildInfo buildInfo = new BuildInfo();
         try {
             Properties properties = new Properties();
-            properties.load(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"));
+            properties.load(ResourceUtils.getResourceStreamFromAgentJar("Agent.properties"));
             buildInfo = new ObjectMapper().convertValue(properties, BuildInfo.class);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
@@ -627,6 +628,7 @@ public class Agent implements SecurityAgent {
     }
 
     private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        boolean frameworkSpecificEntityFound = false;
         UserClassEntity userClassEntity = new UserClassEntity();
         StackTraceElement userStackTraceElement = securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class);
         if(userStackTraceElement == null && securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
@@ -650,21 +652,19 @@ public class Agent implements SecurityAgent {
             }
             switch (framework){
                 case "vertx-web":
-                    if(i-1 >= 0) {
+                case "GRPC":
+                    if(!frameworkSpecificEntityFound && i-1 >= 0) {
                         userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
                         if(userClassEntity.getUserClassElement() != null){
-                            return userClassEntity;
+                            frameworkSpecificEntityFound = true;
                         }
                     }
                     break;
                 default:
-                    if(userStackTraceElement != null){
-                        if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
-                                && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
-                            userClassEntity.setUserClassElement(stackTraceElement);
-                            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                            return userClassEntity;
-                        }
+                    if(userStackTraceElement != null && StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                            && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                        userClassEntity.setUserClassElement(stackTraceElement);
+                        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
                     }
             }
         }
@@ -674,8 +674,16 @@ public class Agent implements SecurityAgent {
             return userClassEntity;
         }
 
+        if (frameworkSpecificEntityFound && userClassEntity.getUserClassElement() != null && !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()){
+            return userClassEntity;
+        }
+
+        if (userClassEntity.getUserClassElement() != null){
+            return userClassEntity;
+        }
+
         // user class identification using annotations
-        if (userClassEntity.getUserClassElement() == null && securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+        if (securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
             return setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace());
         }
 
@@ -1085,6 +1093,11 @@ public class Agent implements SecurityAgent {
         String traceId = generateTraceIdForRuntimeError(securityMetaData, HttpStatusCodes.getStatusCode(responseCode), messageException);
         ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, responseCode, route, HttpStatusCodes.getStatusCode(responseCode), AgentInfo.getInstance().getApplicationUUID(), traceId);
         return RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+    }
+
+    @Override
+    public void reportURLMapping() {
+        SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
     }
 
 }

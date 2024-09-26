@@ -4,37 +4,57 @@ import com.newrelic.api.agent.security.schema.annotations.JsonProperty;
 
 public class MappingParameters {
 
-    @JsonProperty("account_id_location")
-    private HttpParameterLocation accountIdLocation;
+    private MappingParameter header;
 
-    @JsonProperty("account_id_key")
-    private String accountIdKey;
+    private MappingParameter body;
+
+    private MappingParameter query;
+
+    private MappingParameter path;
 
     public MappingParameters() {
+        this.header = new MappingParameter();
+        this.body = new MappingParameter();
+        this.query = new MappingParameter();
+        this.path = new MappingParameter();
     }
 
-    public MappingParameters(HttpParameterLocation accountIdLocation) {
-        this.accountIdLocation = accountIdLocation;
+    public MappingParameters(MappingParameter header, MappingParameter body, MappingParameter query, MappingParameter path) {
+        this.header = header;
+        this.body = body;
+        this.query = query;
+        this.path = path;
     }
 
-    public MappingParameters(HttpParameterLocation accountIdLocation, String accountIdKey) {
-        this.accountIdLocation = accountIdLocation;
-        this.accountIdKey = accountIdKey;
+    public MappingParameter getHeader() {
+        return header;
     }
 
-    public HttpParameterLocation getAccountIdLocation() {
-        return accountIdLocation;
+    public void setHeader(MappingParameter header) {
+        this.header = header;
     }
 
-    public void setAccountIdLocation(HttpParameterLocation accountIdLocation) {
-        this.accountIdLocation = accountIdLocation;
+    public MappingParameter getBody() {
+        return body;
     }
 
-    public String getAccountIdKey() {
-        return accountIdKey;
+    public void setBody(MappingParameter body) {
+        this.body = body;
     }
 
-    public void setAccountIdKey(String accountIdKey) {
-        this.accountIdKey = accountIdKey;
+    public MappingParameter getQuery() {
+        return query;
+    }
+
+    public void setQuery(MappingParameter query) {
+        this.query = query;
+    }
+
+    public MappingParameter getPath() {
+        return path;
+    }
+
+    public void setPath(MappingParameter path) {
+        this.path = path;
     }
 }

@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandPro
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.ResourceUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -130,7 +131,7 @@ public class WSClient extends WebSocketClient {
             inputStream = Files.newInputStream(Paths.get(caBundlePath));
         } else {
             noticeErrorCustomParameters.put("ca_bundle_path", "internal-pem");
-            inputStream = CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
+            inputStream = ResourceUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
         }
         return inputStream;
     }
@@ -263,7 +264,6 @@ public class WSClient extends WebSocketClient {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
-        AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 

@@ -8,7 +8,6 @@ import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeExcept
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.policy.MappingParameters;
 import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
 import com.newrelic.api.agent.security.schema.policy.SkipScan;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -71,54 +70,74 @@ public class RestrictionUtility {
         if(!request.isRequestParametersParsed()){
             parseHttpRequestParameters(request);
         }
-        for (MappingParameters mappingParameter : restrictionCriteria.getMappingParameters()) {
-            boolean match = false;
-            switch (mappingParameter.getAccountIdLocation()) {
-                case QUERY:
-                    List<String> queryParameters = getQueryString(mappingParameter.getAccountIdKey(), request.getQueryParameters());
-                    match = matcher(accountIds, queryParameters);
-                    break;
-                case PATH:
-                    match = matcher(accountIds, request.getPathParameters());
-                    break;
-                case HEADER:
-                    List<String> headerValues = getHeaderParameters(mappingParameter.getAccountIdKey(), request.getRequestHeaderParameters());
-                    match = matcher(accountIds, headerValues);
-                    break;
-                case BODY:
-                    List<String> bodyValues = getBodyParameters(mappingParameter.getAccountIdKey(), request.getRequestBodyParameters());
-                    match = matcher(accountIds, bodyValues);
-                    break;
-            }
-            if(match){
+
+        if(restrictionCriteria.getMappingParameters().getHeader().isEnabled()) {
+            List<String> headerValues = getHeaderParameters(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getRequestHeaderParameters());
+            if(matcher(accountIds, headerValues)){
                 return true;
             }
         }
+        if(restrictionCriteria.getMappingParameters().getQuery().isEnabled()) {
+            List<String> queryValues = getQueryString(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getQueryParameters());
+            if(matcher(accountIds, queryValues)){
+                return true;
+            }
+        }
+        if(restrictionCriteria.getMappingParameters().getPath().isEnabled()) {
+            if(matcher(accountIds, request.getPathParameters())){
+                return true;
+            }
+        }
+        if(restrictionCriteria.getMappingParameters().getBody().isEnabled()) {
+            List<String> bodyValues = getBodyParameters(restrictionCriteria.getMappingParameters().getBody().getLocations(), request.getRequestBodyParameters());
+            return matcher(accountIds, bodyValues);
+        }
+
         return false;
     }
 
-    private static List<String> getBodyParameters(String accountId, Map<String, List<String>> requestBodyParameters) {
+    private static List<String> getBodyParameters(List<String> accountIds, Map<String, List<String>> requestBodyParameters) {
         if (requestBodyParameters == null || requestBodyParameters.isEmpty()) {
             return Collections.emptyList();
         }
-        String lowerCaseAccountId = accountId.toLowerCase();
-        return requestBodyParameters.get(lowerCaseAccountId);
+
+        List<String> values = new ArrayList<>();
+        for (String accountId : accountIds) {
+            String lowerCaseAccountId = accountId.toLowerCase();
+            if(requestBodyParameters.containsKey(lowerCaseAccountId)) {
+                values.addAll(requestBodyParameters.get(lowerCaseAccountId));
+            }
+        }
+
+        return values;
     }
 
-    private static List<String> getHeaderParameters(String accountId, Map<String, List<String>> requestHeaderParameters) {
+    private static List<String> getHeaderParameters(List<String> accountIds, Map<String, List<String>> requestHeaderParameters) {
         if (requestHeaderParameters == null || requestHeaderParameters.isEmpty()) {
             return Collections.emptyList();
         }
-        String lowerCaseAccountId = accountId.toLowerCase();
-        return requestHeaderParameters.get(lowerCaseAccountId);
+        List<String> values = new ArrayList<>();
+        for (String accountId : accountIds) {
+            String lowerCaseAccountId = accountId.toLowerCase();
+            if(requestHeaderParameters.containsKey(lowerCaseAccountId)) {
+                values.addAll(requestHeaderParameters.get(lowerCaseAccountId));
+            }
+        }
+        return values;
     }
 
-    private static List<String> getQueryString(String accountId, Map<String, List<String>> queryParameters) {
+    private static List<String> getQueryString(List<String> accountIds, Map<String, List<String>> queryParameters) {
         if(queryParameters == null || queryParameters.isEmpty()) {
             return Collections.emptyList();
         }
-        String lowerCaseAccountId = accountId.toLowerCase();
-        return queryParameters.get(lowerCaseAccountId);
+        List<String> values = new ArrayList<>();
+        for (String accountId : accountIds) {
+            String lowerCaseAccountId = accountId.toLowerCase();
+            if(queryParameters.containsKey(lowerCaseAccountId)) {
+                values.addAll(queryParameters.get(lowerCaseAccountId));
+            }
+        }
+        return values;
     }
 
     private static boolean matcher(List<String> accountIds, List<String> values) {
@@ -293,9 +312,9 @@ public class RestrictionUtility {
 
     private static @NotNull String getBase(String baseKey, int index) {
         if(StringUtils.isBlank(baseKey)){
-            return String.format("[%s]", index);
+            return "[]";
         }
-        return String.format("%s[%s]", baseKey, index);
+        return String.format("%s[]", baseKey);
     }
 
     private static Map<String, List<String>> parseRequestHeaders(Map<String, String> headers) {
@@ -328,7 +347,7 @@ public class RestrictionUtility {
         }
         headerValues.add(StringUtils.lowerCase(value));
         headerValues.add(StringUtils.lowerCase(ServletHelper.urlDecode(value)));
-        requestHeaderParameters.put(key, headerValues);
+        requestHeaderParameters.put(StringUtils.lowerCase(key), headerValues);
     }
 
     private static Map<String, List<String>> parseQueryParameters(String url) {
@@ -354,7 +373,7 @@ public class RestrictionUtility {
             List<String> values = new ArrayList<>();
             values.add(StringUtils.lowerCase(value));
             values.add(StringUtils.lowerCase(ServletHelper.urlDecode(value)));
-            queryParameters.put(key, values);
+            queryParameters.put(StringUtils.lowerCase(key), values);
         }
         return queryParameters;
     }
