@@ -52,7 +52,6 @@ public class MongoUtil {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && command != null) {
                 operation = new NoSQLOperation(command.toJson(), typeOfOperation, klassName, methodName);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
@@ -235,6 +234,9 @@ public class MongoUtil {
         AbstractOperation noSQLOperation = null;
         try {
             List<BsonDocument> operations;
+            if (NewRelicSecurity.isHookProcessingActive()){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
+            }
             if (operation instanceof AggregateOperation) {
                 AggregateOperation aggregateOperation = (AggregateOperation) operation;
                 noSQLOperation = recordMongoOperation(aggregateOperation.getPipeline(), MongoUtil.OP_AGGREGATE, className, methodName);
