@@ -186,7 +186,7 @@ public class FileHelper {
         } catch (Throwable ignored){}
     }
 
-    private static String getNrSecCustomAttribName() {
+    public static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 }

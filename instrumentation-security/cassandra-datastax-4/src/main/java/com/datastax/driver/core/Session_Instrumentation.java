@@ -5,6 +5,7 @@ import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -17,7 +18,7 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 public class Session_Instrumentation {
     public <RequestT extends Request, ResultT> ResultT execute(RequestT request, GenericType<ResultT> resultType) {
         AbstractOperation cqlOperation = null;
-        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(request.hashCode());
+        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, request.hashCode());
 
         ResultT result = null;
         try {

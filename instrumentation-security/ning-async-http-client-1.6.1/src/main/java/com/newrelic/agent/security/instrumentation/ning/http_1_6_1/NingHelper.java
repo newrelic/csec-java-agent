@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -78,9 +79,9 @@ public class NingHelper {
         }
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+            return GenericHelper.acquireLockIfPossible(httpRequest, NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {
         }
         return false;

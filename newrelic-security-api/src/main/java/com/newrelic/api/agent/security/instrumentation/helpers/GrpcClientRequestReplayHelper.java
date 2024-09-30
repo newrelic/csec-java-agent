@@ -20,7 +20,6 @@ public class GrpcClientRequestReplayHelper {
     private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
     private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
     private final Set<String> rejectedIds = ConcurrentHashMap.newKeySet();
-    private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     public static GrpcClientRequestReplayHelper getInstance(){
         return InstanceHolder.instance;
@@ -67,10 +66,6 @@ public class GrpcClientRequestReplayHelper {
 
     public void setGrpcRequestExecutorStarted(boolean grpcRequestExecutorStarted) {
         isGrpcRequestExecutorStarted = grpcRequestExecutorStarted;
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public void addFuzzFailEventToQueue(FuzzRequestBean requestBean, Throwable e){
