@@ -15,6 +15,7 @@ import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import org.apache.commons.lang3.StringUtils;
+import sun.rmi.runtime.Log;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -89,6 +90,8 @@ public class IASTDataTransferRequestProcessor {
                 return;
             }
 
+            logger.log(LogLevel.FINEST, String.format("IAST data pull request started currentFetchThreshold %s", currentFetchThreshold), IASTDataTransferRequestProcessor.class.getName());
+
             int fetchRatio = 300/currentFetchThreshold;
 
             int remainingRecordCapacityRest = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
@@ -104,6 +107,8 @@ public class IASTDataTransferRequestProcessor {
                 batchSize /= 2;
             }
 
+            logger.log(LogLevel.FINEST, String.format("IAST data pull request batchSize: %s, remainingRecordCapacity %s, initiate: %s", batchSize, remainingRecordCapacity, (batchSize > 100/fetchRatio && remainingRecordCapacity > batchSize)), IASTDataTransferRequestProcessor.class.getName());
+
             if (batchSize > 100/fetchRatio && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
                 if (AgentConfig.getInstance().getConfig().getCustomerInfo() != null) {
@@ -118,6 +123,7 @@ public class IASTDataTransferRequestProcessor {
                 pendingRequestIds.addAll(RestRequestThreadPool.getInstance().getPendingIds());
                 pendingRequestIds.addAll(GrpcClientRequestReplayHelper.getInstance().getPendingIds());
                 request.setPendingRequestIds(pendingRequestIds);
+                logger.log(LogLevel.FINEST, "IAST data pull request to be sent: " + JsonConverter.toJSON(request), IASTDataTransferRequestProcessor.class.getName());
                 WSClient.getInstance().send(request.toString());
             }
         } catch (Throwable e) {
