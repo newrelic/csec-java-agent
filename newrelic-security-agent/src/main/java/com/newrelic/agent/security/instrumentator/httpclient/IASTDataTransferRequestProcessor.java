@@ -43,17 +43,18 @@ public class IASTDataTransferRequestProcessor {
 
     private static final Object syncLock = new Object();
 
-    private final AtomicLong cooldownTillTimestamp = new AtomicLong();
+    private static final AtomicLong cooldownTillTimestamp = new AtomicLong();
 
-    private final AtomicLong lastFuzzCCTimestamp = new AtomicLong();
+    private static final AtomicLong lastFuzzCCTimestamp = new AtomicLong();
 
-    private int currentFetchThresholdPerMin = 3600;
+    private static int currentFetchThresholdPerMin = 3600;
 
-    private long controlCommandRequestedAtEpochMilli = 0;
+    private static long controlCommandRequestedAtEpochMilli = 0;
 
-    private void task() {
+    private static void task() {
         IASTDataTransferRequest request = null;
         try {
+            logger.log(LogLevel.FINEST, "IAST data pull request task started", IASTDataTransferRequestProcessor.class.getName());
             if(!AgentUsageMetric.isIASTRequestProcessingActive()){
                 logger.log(LogLevel.FINER, "IAST request processing deactivated for the moment.", IASTDataTransferRequestProcessor.class.getName());
                 return;
@@ -78,15 +79,18 @@ public class IASTDataTransferRequestProcessor {
             // Sleep if under cooldown
             long cooldownSleepTime = cooldownTillTimestamp.get() - currentTimestamp;
             if(cooldownSleepTime > 0) {
+                logger.log(LogLevel.FINEST, String.format("IAST data pull request is under cooldown. Sleeping for %sms", cooldownSleepTime), IASTDataTransferRequestProcessor.class.getName());
                 Thread.sleep(cooldownSleepTime);
             }
 
             if (currentTimestamp - lastFuzzCCTimestamp.get() < TimeUnit.SECONDS.toMillis(5)) {
+                logger.log(LogLevel.FINEST, "IAST data pull request is under fuzz control command processing. Sleeping for 5 seconds", IASTDataTransferRequestProcessor.class.getName());
                 return;
             }
 
             int currentFetchThreshold = Math.round((float) currentFetchThresholdPerMin/12);
             if (currentFetchThreshold <= 0){
+                logger.log(LogLevel.FINEST, String.format("IAST data pull request is canceled. due to low fetch threshold %s", currentFetchThreshold), IASTDataTransferRequestProcessor.class.getName());
                 return;
             }
 
@@ -126,14 +130,15 @@ public class IASTDataTransferRequestProcessor {
                 logger.log(LogLevel.FINEST, "IAST data pull request to be sent: " + JsonConverter.toJSON(request), IASTDataTransferRequestProcessor.class.getName());
                 WSClient.getInstance().send(request.toString());
             }
+            logger.log(LogLevel.FINEST, "IAST data pull request task completed", IASTDataTransferRequestProcessor.class.getName());
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), this.getClass().getName());
-            logger.log(LogLevel.FINEST, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, request), e, this.getClass().getName());
-            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, JsonConverter.toJSON(request)), e, this.getClass().getName());
+            logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), IASTDataTransferRequestProcessor.class.getName());
+            logger.log(LogLevel.FINEST, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, request), e, IASTDataTransferRequestProcessor.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, JsonConverter.toJSON(request)), e, IASTDataTransferRequestProcessor.class.getName());
         }
     }
 
-    private Map<String, Set<String>> getEffectiveCompletedRequests() {
+    private static Map<String, Set<String>> getEffectiveCompletedRequests() {
         Map<String, Set<String>> completedRequest = new HashMap<>();
         completedRequest.putAll(RestRequestThreadPool.getInstance().getProcessedIds());
         completedRequest.putAll(GrpcClientRequestReplayHelper.getInstance().getProcessedIds());
@@ -189,7 +194,7 @@ public class IASTDataTransferRequestProcessor {
                 logger.log(LogLevel.WARNING, String.format("Error while reading Configuration security.scan_request_rate_limit : %s,  Using default value %s replay request per min.", e.getMessage(), currentFetchThresholdPerMin), e, this.getClass().getName());
             }
             logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s, after delay of %s seconds", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime(), initialDelay), IASTDataTransferRequestProcessor.class.getName());
-            future = executorService.scheduleWithFixedDelay(this::task, initialDelay, delay, timeUnit);
+            future = executorService.scheduleWithFixedDelay(IASTDataTransferRequestProcessor::task, initialDelay, delay, timeUnit);
         } catch (Throwable ignored){}
     }
 

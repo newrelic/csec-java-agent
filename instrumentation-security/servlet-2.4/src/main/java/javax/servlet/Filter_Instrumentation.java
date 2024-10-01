@@ -28,18 +28,21 @@ public abstract class Filter_Instrumentation {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
+        Exception originalCallFailledWithException = null;
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
         try {
             Weaver.callOriginal();
-        } finally {
+        } catch (Exception e){
+            originalCallFailledWithException = e;
+            throw e;
+        }
+        finally {
             if(isServletLockAcquired){
+                postProcessSecurityHook(request, response, originalCallFailledWithException);
                 releaseServletLock();
             }
-        }
-        if(isServletLockAcquired) {
-            postProcessSecurityHook(request, response);
         }
     }
 
@@ -92,11 +95,8 @@ public abstract class Filter_Instrumentation {
         }
     }
 
-    private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
+    private void postProcessSecurityHook(ServletRequest request, ServletResponse response, Exception originalCallFailledWithException) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
@@ -107,6 +107,15 @@ public abstract class Filter_Instrumentation {
             }
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
+
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return;
+            }
+            if(originalCallFailledWithException != null){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setException(originalCallFailledWithException);
+                return;
+            }
+
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

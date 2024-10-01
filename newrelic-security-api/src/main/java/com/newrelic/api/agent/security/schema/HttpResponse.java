@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,6 +15,9 @@ public class HttpResponse {
 
     private int responseCode;
 
+    @JsonIgnore
+    private Exception exception;
+
     public HttpResponse() {
         this.headers = new ConcurrentHashMap<>();
         this.responseBody = new StringBuilder();
@@ -24,6 +29,7 @@ public class HttpResponse {
         this.responseBody = new StringBuilder(httpResponse.responseBody);
         this.contentType = new String(httpResponse.contentType.trim());
         this.responseCode = httpResponse.responseCode;
+        this.exception = httpResponse.exception;
     }
 
     public Map<String, String> getHeaders() {
@@ -60,6 +66,14 @@ public class HttpResponse {
         } else {
             this.contentType = StringUtils.EMPTY;
         }
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        this.exception = exception;
     }
 
     public boolean isEmpty() {

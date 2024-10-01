@@ -23,8 +23,13 @@ public abstract class AkkaHttpToResponseMarshallable {
     public Token token;
 
     public Marshaller<Object, HttpResponse> marshaller() {
-        Marshaller<Object, HttpResponse> marshaller = Weaver.callOriginal();
-        return marshaller.map(new AkkaResponseHelper());
+        try {
+            Marshaller<Object, HttpResponse> marshaller = Weaver.callOriginal();
+            return marshaller.map(new AkkaResponseHelper());
+        } catch (Exception e){
+            new AkkaResponseHelper().apply(null);
+            throw e;
+        }
     }
 
 }
