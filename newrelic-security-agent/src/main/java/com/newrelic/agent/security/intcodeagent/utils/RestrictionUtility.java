@@ -72,13 +72,13 @@ public class RestrictionUtility {
         }
 
         if(restrictionCriteria.getMappingParameters().getHeader().isEnabled()) {
-            List<String> headerValues = getHeaderParameters(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getRequestHeaderParameters());
+            Set<String> headerValues = getHeaderParameters(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getRequestHeaderParameters());
             if(matcher(accountIds, headerValues)){
                 return true;
             }
         }
         if(restrictionCriteria.getMappingParameters().getQuery().isEnabled()) {
-            List<String> queryValues = getQueryString(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getQueryParameters());
+            Set<String> queryValues = getQueryString(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getQueryParameters());
             if(matcher(accountIds, queryValues)){
                 return true;
             }
@@ -89,19 +89,19 @@ public class RestrictionUtility {
             }
         }
         if(restrictionCriteria.getMappingParameters().getBody().isEnabled()) {
-            List<String> bodyValues = getBodyParameters(restrictionCriteria.getMappingParameters().getBody().getLocations(), request.getRequestBodyParameters());
+            Set<String> bodyValues = getBodyParameters(restrictionCriteria.getMappingParameters().getBody().getLocations(), request.getRequestBodyParameters());
             return matcher(accountIds, bodyValues);
         }
 
         return false;
     }
 
-    private static List<String> getBodyParameters(List<String> accountIds, Map<String, List<String>> requestBodyParameters) {
+    private static Set<String> getBodyParameters(List<String> accountIds, Map<String, Set<String>> requestBodyParameters) {
         if (requestBodyParameters == null || requestBodyParameters.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
 
-        List<String> values = new ArrayList<>();
+        Set<String> values = new HashSet<>();
         for (String accountId : accountIds) {
             String lowerCaseAccountId = accountId.toLowerCase();
             if(requestBodyParameters.containsKey(lowerCaseAccountId)) {
@@ -112,11 +112,11 @@ public class RestrictionUtility {
         return values;
     }
 
-    private static List<String> getHeaderParameters(List<String> accountIds, Map<String, List<String>> requestHeaderParameters) {
+    private static Set<String> getHeaderParameters(List<String> accountIds, Map<String, Set<String>> requestHeaderParameters) {
         if (requestHeaderParameters == null || requestHeaderParameters.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        List<String> values = new ArrayList<>();
+        Set<String> values = new HashSet<>();
         for (String accountId : accountIds) {
             String lowerCaseAccountId = accountId.toLowerCase();
             if(requestHeaderParameters.containsKey(lowerCaseAccountId)) {
@@ -126,11 +126,11 @@ public class RestrictionUtility {
         return values;
     }
 
-    private static List<String> getQueryString(List<String> accountIds, Map<String, List<String>> queryParameters) {
+    private static Set<String> getQueryString(List<String> accountIds, Map<String, Set<String>> queryParameters) {
         if(queryParameters == null || queryParameters.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        List<String> values = new ArrayList<>();
+        Set<String> values = new HashSet<>();
         for (String accountId : accountIds) {
             String lowerCaseAccountId = accountId.toLowerCase();
             if(queryParameters.containsKey(lowerCaseAccountId)) {
@@ -140,7 +140,7 @@ public class RestrictionUtility {
         return values;
     }
 
-    private static boolean matcher(List<String> accountIds, List<String> values) {
+    private static boolean matcher(List<String> accountIds, Set<String> values) {
         for (String accountId : accountIds) {
             if(values == null || values.isEmpty() || StringUtils.isBlank(accountId)) {
                 continue;
@@ -165,10 +165,10 @@ public class RestrictionUtility {
             logger.log(LogLevel.WARNING, String.format("Request Body parsing failed reason %s", e.getMessage()), RestrictionUtility.class.getName());
         }
         request.setRequestBodyParameters(parseRequestParameterMap(request.getParameterMap(), request.getRequestBodyParameters()));
-        request.setRequestParsed(true);
+        request.setRequestParametersParsed(true);
     }
 
-    private static Map<String, List<String>> parseRequestParameterMap(Map<String, String[]> parameterMap, Map<String, List<String>> requestBodyParameters) {
+    private static Map<String, Set<String>> parseRequestParameterMap(Map<String, String[]> parameterMap, Map<String, Set<String>> requestBodyParameters) {
         if(parameterMap == null) {
             return requestBodyParameters;
         }
@@ -179,7 +179,7 @@ public class RestrictionUtility {
         for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
             String key = entry.getKey();
             String[] values = entry.getValue();
-            List<String> valuesList = new ArrayList<>();
+            Set<String> valuesList = new HashSet<>();
             for (String value : values) {
                 valuesList.add(StringUtils.lowerCase(value));
             }
@@ -192,7 +192,7 @@ public class RestrictionUtility {
         return requestBodyParameters;
     }
 
-    private static Map<String, List<String>> parseRequestBody(StringBuilder body, String contentType, Map<String, List<String>> requestBodyParameters) throws RestrictionModeException {
+    private static Map<String, Set<String>> parseRequestBody(StringBuilder body, String contentType, Map<String, Set<String>> requestBodyParameters) throws RestrictionModeException {
         if(StringUtils.isBlank(body.toString())) {
             return requestBodyParameters;
         }
@@ -220,11 +220,12 @@ public class RestrictionUtility {
 
     }
 
-    private static Map<String,? extends List<String>> parseXmlRequestBody(String body) throws RestrictionModeException {
+    private static Map<String,? extends Set<String>> parseXmlRequestBody(String body) throws RestrictionModeException {
         //write logic to xml parsing
-        Map<String, List<String>> requestBodyParameters = new HashMap<>();
+        Map<String, Set<String>> requestBodyParameters = new HashMap<>();
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setExpandEntityReferences(false);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new InputSource(new StringReader(body)));
             document.getDocumentElement().normalize();
@@ -237,7 +238,7 @@ public class RestrictionUtility {
         return requestBodyParameters;
     }
 
-    private static void parseXmlNode(Node node, String baseKey, Map<String, List<String>> requestBodyParameters) {
+    private static void parseXmlNode(Node node, String baseKey, Map<String, Set<String>> requestBodyParameters) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             Element element = (Element) node;
             NodeList children = element.getChildNodes();
@@ -245,7 +246,7 @@ public class RestrictionUtility {
             if (children.getLength() == 1 && children.item(0).getNodeType() == Node.TEXT_NODE) {
                 String value = children.item(0).getTextContent().trim();
                 if (!value.isEmpty()) {
-                    requestBodyParameters.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+                    requestBodyParameters.computeIfAbsent(key, k -> new HashSet<>()).add(value);
                 }
             } else {
                 for (int i = 0; i < children.getLength(); i++) {
@@ -255,12 +256,12 @@ public class RestrictionUtility {
         }
     }
 
-    private static Map<String,? extends List<String>> parseJsonRequestBody(String body) throws RestrictionModeException {
+    private static Map<String,? extends Set<String>> parseJsonRequestBody(String body) throws RestrictionModeException {
         JsonNode node;
         ObjectMapper mapper = new ObjectMapper();
         try {
             node = mapper.readValue(body, JsonNode.class);
-            Map<String, List<String>> requestBodyParameters = new HashMap<>();
+            Map<String, Set<String>> requestBodyParameters = new HashMap<>();
             return parseJsonNode(node, StringUtils.EMPTY, requestBodyParameters);
         } catch (JsonProcessingException e) {
             logger.log(LogLevel.FINER, String.format("JSON Request Body parsing failed for %s : reason %s", body, e.getMessage()), RestrictionUtility.class.getName());
@@ -268,7 +269,7 @@ public class RestrictionUtility {
         }
     }
 
-    private static Map<String, List<String>> parseJsonNode(JsonNode node, String baseKey, Map<String, List<String>> requestBodyParameters) {
+    private static Map<String, Set<String>> parseJsonNode(JsonNode node, String baseKey, Map<String, Set<String>> requestBodyParameters) {
         if (node.isObject()) {
             Iterator<Map.Entry<String, JsonNode>> iterator = node.fields();
             while (iterator.hasNext()) {
@@ -280,7 +281,7 @@ public class RestrictionUtility {
                     parseJsonNode(value, base, requestBodyParameters);
                 } else if (StringUtils.isNotBlank(value.asText())) {
                     if(!requestBodyParameters.containsKey(base)){
-                        requestBodyParameters.put(base, new ArrayList<>());
+                        requestBodyParameters.put(base, new HashSet<>());
                     }
                     requestBodyParameters.get(base).add(value.asText());
                 }
@@ -294,7 +295,7 @@ public class RestrictionUtility {
                     parseJsonNode(jsonNode, base, requestBodyParameters);
                 } else if (StringUtils.isNotBlank(jsonNode.asText())) {
                     if(!requestBodyParameters.containsKey(base)){
-                        requestBodyParameters.put(base, new ArrayList<>());
+                        requestBodyParameters.put(base, new HashSet<>());
                     }
                     requestBodyParameters.get(base).add(jsonNode.asText());
                 }
@@ -317,8 +318,8 @@ public class RestrictionUtility {
         return String.format("%s[]", baseKey);
     }
 
-    private static Map<String, List<String>> parseRequestHeaders(Map<String, String> headers) {
-        Map<String, List<String>> requestHeaderParameters = new HashMap<>();
+    private static Map<String, Set<String>> parseRequestHeaders(Map<String, String> headers) {
+        Map<String, Set<String>> requestHeaderParameters = new HashMap<>();
         for (Map.Entry<String, String> header : headers.entrySet()) {
             String key = header.getKey();
             String value = header.getValue();
@@ -330,7 +331,7 @@ public class RestrictionUtility {
                             && !StringUtils.endsWith(headerKeyValues[i], EQUAL)) {
                         String headerKey = StringUtils.substringBefore(headerKeyValues[i], EQUAL).trim();
                         String headerValue = StringUtils.substringAfter(headerKeyValues[i], EQUAL).trim();
-                        putHeaderParameter(headerKey, headerValue, requestHeaderParameters);
+                        putHeaderParameter(key, headerKey, headerValue, requestHeaderParameters);
                     } else {
                         putHeaderParameter(key, headerKeyValues[i], requestHeaderParameters);
                     }
@@ -340,18 +341,25 @@ public class RestrictionUtility {
         return requestHeaderParameters;
     }
 
-    private static void putHeaderParameter(String key, String value, Map<String, List<String>> requestHeaderParameters) {
-        List<String> headerValues = requestHeaderParameters.get(key);
+    private static void putHeaderParameter(String baseKey, String headerKey, String headerValue, Map<String, Set<String>> requestHeaderParameters) {
+        if(StringUtils.isBlank(baseKey)){
+            putHeaderParameter(headerKey, headerValue, requestHeaderParameters);
+        }
+        putHeaderParameter(String.format("%s.%s", baseKey, headerKey), headerValue, requestHeaderParameters);
+    }
+
+    private static void putHeaderParameter(String key, String value, Map<String, Set<String>> requestHeaderParameters) {
+        Set<String> headerValues = requestHeaderParameters.get(key);
         if (headerValues == null) {
-            headerValues = new ArrayList<>();
+            headerValues = new HashSet<>();
         }
         headerValues.add(StringUtils.lowerCase(value));
         headerValues.add(StringUtils.lowerCase(ServletHelper.urlDecode(value)));
         requestHeaderParameters.put(StringUtils.lowerCase(key), headerValues);
     }
 
-    private static Map<String, List<String>> parseQueryParameters(String url) {
-        Map<String, List<String>> queryParameters = new HashMap<>();
+    private static Map<String, Set<String>> parseQueryParameters(String url) {
+        Map<String, Set<String>> queryParameters = new HashMap<>();
         String query = StringUtils.substringAfter(url, SEPARATOR_CHARS_QUESTION_MARK);
         if (StringUtils.isNotBlank(query)) {
             queryParamKeyValueGenerator(query, queryParameters);
@@ -364,13 +372,13 @@ public class RestrictionUtility {
         return queryParameters;
     }
 
-    private static Map<String, List<String>> queryParamKeyValueGenerator(String query, Map<String, List<String>> queryParameters) {
+    private static Map<String, Set<String>> queryParamKeyValueGenerator(String query, Map<String, Set<String>> queryParameters) {
         String[] queryParams = StringUtils.split(query, AND);
         for (String queryParam : queryParams) {
             String key, value;
             key = StringUtils.substringBefore(queryParam, SEPARATOR_EQUALS);
             value = StringUtils.substringAfter(queryParam, SEPARATOR_EQUALS);
-            List<String> values = new ArrayList<>();
+            Set<String> values = new HashSet<>();
             values.add(StringUtils.lowerCase(value));
             values.add(StringUtils.lowerCase(ServletHelper.urlDecode(value)));
             queryParameters.put(StringUtils.lowerCase(key), values);
@@ -378,8 +386,8 @@ public class RestrictionUtility {
         return queryParameters;
     }
 
-    private static List<String> parsePathParameters(String uri) {
-        List<String> pathParameters = new ArrayList<>();
+    private static Set<String> parsePathParameters(String uri) {
+        Set<String> pathParameters = new HashSet<>();
         String requestPath = StringUtils.substringBefore(uri,
                 SEPARATOR_CHARS_SEMICOLON);
         if(StringUtils.isNotBlank(requestPath)) {
