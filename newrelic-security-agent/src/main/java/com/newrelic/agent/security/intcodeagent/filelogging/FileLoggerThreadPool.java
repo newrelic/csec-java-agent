@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.*;
 
 public class FileLoggerThreadPool {
@@ -125,6 +126,7 @@ public class FileLoggerThreadPool {
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             // Just eat the rejection error.
+            System.err.println(new Date()+" Log rejected : "+Thread.currentThread().getName());
         }
     }
 

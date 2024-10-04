@@ -163,6 +163,7 @@ public class IASTDataTransferRequestProcessor {
                         "NewRelic-IASTDataTransferRequestProcessor-" + threadNumber.getAndIncrement());
             }
         });
+
     }
 
     public static IASTDataTransferRequestProcessor getInstance() {
@@ -218,5 +219,9 @@ public class IASTDataTransferRequestProcessor {
 
     public long getControlCommandRequestedAtEpochMilli() {
         return controlCommandRequestedAtEpochMilli;
+    }
+
+    public ScheduledFuture getFuture() {
+        return future;
     }
 }

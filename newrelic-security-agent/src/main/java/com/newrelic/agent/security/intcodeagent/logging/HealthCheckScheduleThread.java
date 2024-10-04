@@ -2,6 +2,7 @@ package com.newrelic.agent.security.intcodeagent.logging;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
@@ -69,6 +70,12 @@ public class HealthCheckScheduleThread {
                 // since tcp connection keep alive check is more than 2 hours
                 // we send our custom object to check if connection is still alive or not
                 // this will be ignored by ic agent on the other side.
+                try {
+                    logger.log(LogLevel.FINEST, String.format("IASTDataTransferRequestProcessor future : Done: %s , canceled : %s , Get : %s", IASTDataTransferRequestProcessor.getInstance().getFuture().isDone(),
+                            IASTDataTransferRequestProcessor.getInstance().getFuture().isCancelled(), IASTDataTransferRequestProcessor.getInstance().getFuture().get(100, TimeUnit.MILLISECONDS)), IASTDataTransferRequestProcessor.class.getName());
+                } catch (Throwable t){
+                    logger.log(LogLevel.FINEST, "Error while checking IASTDataTransferRequestProcessor future : ", t, IASTDataTransferRequestProcessor.class.getName());
+                }
 
                 AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
                 AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
