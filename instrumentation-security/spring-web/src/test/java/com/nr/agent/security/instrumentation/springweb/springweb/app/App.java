@@ -1,9 +1,3 @@
-/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
 package com.nr.agent.security.instrumentation.springweb.springweb.app;
 
 import com.newrelic.api.agent.Trace;
@@ -16,7 +10,7 @@ public class App {
             TestMappings path = new TestMappings();
             return path.testRequest();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -27,7 +21,7 @@ public class App {
             TestMappings path = new TestMappings();
             return path.testGet();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -38,7 +32,7 @@ public class App {
             TestMappings path = new TestMappings();
             return path.testPost();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -49,7 +43,7 @@ public class App {
             TestMappings path = new TestMappings();
             return path.testPatch();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -60,7 +54,7 @@ public class App {
             TestMappings path = new TestMappings();
             return path.testPut();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -71,7 +65,7 @@ public class App {
             TestMappings path = new TestMappings();
             return path.testDelete();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -82,7 +76,7 @@ public class App {
             TestMappingsWithRest path = new TestMappingsWithRest();
             return path.testRequest();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -93,7 +87,7 @@ public class App {
             TestMappingsWithRest path = new TestMappingsWithRest();
             return path.testGet();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -104,7 +98,7 @@ public class App {
             TestMappingsWithRest path = new TestMappingsWithRest();
             return path.testPost();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -115,7 +109,7 @@ public class App {
             TestMappingsWithRest path = new TestMappingsWithRest();
             return path.testPatch();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -126,7 +120,7 @@ public class App {
             TestMappingsWithRest path = new TestMappingsWithRest();
             return path.testPut();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
     }
@@ -137,8 +131,98 @@ public class App {
             TestMappingsWithRest path = new TestMappingsWithRest();
             return path.testDelete();
         } catch (RuntimeException caught) {
-            System.out.printf("Caught exception");
+            System.out.print("Caught exception");
         }
         return null;
+    }
+
+    @Trace(dispatcher = true)
+    public static void batchMappingWithRest() {
+        try {
+            new TestMappingsWithRest().testBatchMapping();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void mutationWithRest() {
+        try {
+            new TestMappingsWithRest().testMutation();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void queryWithRest() {
+        try {
+            new TestMappingsWithRest().testQuery();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void schemaMappingWithRest() {
+        try {
+            new TestMappingsWithRest().testSchemaMapping();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void subscriptionMappingWithRest() {
+        try {
+            new TestMappingsWithRest().testSubscriptionMapping();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void batchMapping() {
+        try {
+            new TestMappings().testBatchMapping();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void mutation() {
+        try {
+            new TestMappings().testMutation();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void query() {
+        try {
+            new TestMappings().testQuery();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void schemaMapping() {
+        try {
+            new TestMappings().testSchemaMapping();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
+    }
+
+    @Trace(dispatcher = true)
+    public static void subscriptionMapping() {
+        try {
+            new TestMappings().testSubscriptionMapping();
+        } catch (RuntimeException caught) {
+            System.out.print("Caught exception");
+        }
     }
 }

@@ -8,6 +8,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.springframework:spring-context:4.3.0.RELEASE")
     implementation("org.springframework:spring-web:4.3.0.RELEASE")
+    implementation("org.springframework.graphql:spring-graphql:1.0.0")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.20")
 }
 
@@ -19,7 +20,8 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.springframework:spring-web:[0,)'
+    passes 'org.springframework:spring-web:[0,)'
+    passes 'org.springframework.graphql:spring-graphql:[0,)'
 
     excludeRegex 'org.springframework:spring-web:.*(RC|SEC|M)[0-9]*$'
 }
