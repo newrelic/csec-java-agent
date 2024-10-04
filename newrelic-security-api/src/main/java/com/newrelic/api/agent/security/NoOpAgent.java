@@ -153,4 +153,19 @@ class NoOpAgent implements SecurityAgent {
 
     }
 
+    @Override
+    public void dispatcherTransactionStarted() {
+
+    }
+
+    @Override
+    public void dispatcherTransactionCancelled() {
+
+    }
+
+    @Override
+    public void dispatcherTransactionFinished() {
+
+    }
+
 }

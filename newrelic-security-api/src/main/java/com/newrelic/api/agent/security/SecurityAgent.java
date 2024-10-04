@@ -80,4 +80,10 @@ public interface SecurityAgent {
     boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception);
 
     void reportURLMapping();
+
+    void dispatcherTransactionStarted();
+
+    void dispatcherTransactionCancelled();
+
+    void dispatcherTransactionFinished();
 }
