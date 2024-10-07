@@ -11,7 +11,6 @@ import org.apache.commons.io.Charsets;
 import org.mule.util.IOUtils;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @Weave(originalName = "org.mule.module.http.internal.domain.ByteArrayHttpEntity")
 public class ByteArrayHttpEntity_Instrumentation {
@@ -36,9 +35,9 @@ public class ByteArrayHttpEntity_Instrumentation {
             String body = IOUtils.toString(content, encoding);
             
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (Objects.equals(securityMetaData.getCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.RESPONSE_ENTITY_STREAM), Integer.class), this.hashCode())) {
+            if (MuleHelper.preprocessStream(this.hashCode(), MuleHelper.RESPONSE_ENTITY_STREAM)) {
                 securityMetaData.getResponse().getResponseBody().append(body);
-            } else if (Objects.equals(securityMetaData.getCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.REQUEST_ENTITY_STREAM), Integer.class), this.hashCode())) {
+            } else if (MuleHelper.preprocessStream(this.hashCode(), MuleHelper.REQUEST_ENTITY_STREAM)) {
                 securityMetaData.getRequest().getBody().append(body);
             }
         }

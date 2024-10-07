@@ -34,7 +34,7 @@ public class HttpResponseBuilder_Instrumentation {
                 return;
             }
             if (body != null) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.getNrSecCustomAttribName(MuleHelper.RESPONSE_ENTITY_STREAM)), body.hashCode());
+                MuleHelper.registerStreamHashIfNeeded(body.hashCode(), MuleHelper.RESPONSE_ENTITY_STREAM);
             }
             com.newrelic.api.agent.security.schema.HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
 

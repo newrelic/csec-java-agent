@@ -27,13 +27,13 @@ public class MuleHelper {
     public static final String MULE_37 = "MULE-3.7";
     private static final String MULE_LOCK_CUSTOM_ATTRIB_NAME = "MULE_LOCK-";
     public static final String MULE_SERVER_PORT_ATTRIB_NAME = "MULE_SERVER_PORT";
-    private static final String RESPONSE_OUTPUTSTREAM_HASH = "RESPONSE_OUTPUTSTREAM_HASH";
+    public static final String RESPONSE_OUTPUTSTREAM_HASH = "RESPONSE_OUTPUTSTREAM_HASH";
     public static final String TRANSFORM_METHOD = "transform";
     public static final String HANDLE_REQUEST_METHOD = "handleRequest";
     private static final String EMPTY = "";
     public static final String LIBRARY_NAME = "MULE-SERVER";
     private static final Map<Integer, String> handlerMap = new HashMap<>();
-    private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
+    public static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
     public static final String RESPONSE_ENTITY_STREAM = "RESPONSE_ENTITY_STREAM";
     public static final String REQUEST_ENTITY_STREAM = "REQUEST_ENTITY_STREAM";
     public static final String MULE_ENCODING = "MULE_ENCODING";
@@ -134,26 +134,25 @@ public class MuleHelper {
         return handlerMap;
     }
 
-    public static void registerOutputStreamHashIfNeeded(int outputStreamHash){
+    public static void registerStreamHashIfNeeded(int streamHash, String key){
         try {
-            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Set.class);
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(key, Set.class);
             if (hashSet == null) {
                 hashSet = new HashSet<>();
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, hashSet);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(key, hashSet);
             }
-            hashSet.add(outputStreamHash);
+            hashSet.add(streamHash);
         } catch (Throwable ignored) {}
     }
 
-    public static void registerInputStreamHashIfNeeded(int inputStreamHash){
+    public static boolean preprocessStream(int streamHash, String key){
         try {
-            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Set.class);
-            if(hashSet == null){
-                hashSet = new HashSet<>();
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, hashSet);
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(key, Set.class);
+            if(hashSet != null && hashSet.contains(streamHash)){
+                return true;
             }
-            hashSet.add(inputStreamHash);
         } catch (Throwable ignored) {}
+        return false;
     }
 
     public static void processHttpResponseHeaders(com.newrelic.api.agent.security.schema.HttpResponse securityResponse, HttpResponse response){

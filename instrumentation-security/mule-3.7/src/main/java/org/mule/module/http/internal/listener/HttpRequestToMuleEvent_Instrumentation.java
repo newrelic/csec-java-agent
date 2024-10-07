@@ -59,7 +59,7 @@ public class HttpRequestToMuleEvent_Instrumentation {
 
             HttpRequest httpRequest = requestContext.getRequest();
             if (httpRequest.getEntity() != null) {
-                securityMetaData.addCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.REQUEST_ENTITY_STREAM), httpRequest.getEntity().hashCode());
+                MuleHelper.registerStreamHashIfNeeded(httpRequest.getEntity().hashCode(), MuleHelper.REQUEST_ENTITY_STREAM);
             }
             securityRequest.setMethod(httpRequest.getMethod());
             securityRequest.setClientIP(requestContext.getClientConnection().getRemoteHostAddress().toString());

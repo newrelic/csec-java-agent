@@ -3,6 +3,7 @@ package org.mule.module.http.internal.domain;
 import com.newrelic.agent.security.instrumentation.mule36.MuleHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -27,10 +28,13 @@ public class InputStreamHttpEntity_Instrumentation {
     private void extractResponseBody(InputStream stream) {
         if (NewRelicSecurity.isHookProcessingActive() && stream != null) {
             // check if it is an input or output stream
-            if (Objects.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.RESPONSE_ENTITY_STREAM), Integer.class), this.hashCode())) {
-                MuleHelper.registerOutputStreamHashIfNeeded(stream.hashCode());
-            } else if (Objects.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.getNrSecCustomAttribName(MuleHelper.REQUEST_ENTITY_STREAM), Integer.class), this.hashCode())) {
-                MuleHelper.registerInputStreamHashIfNeeded(stream.hashCode());
+            // outputBody stream
+            if (MuleHelper.preprocessStream(this.hashCode(), MuleHelper.RESPONSE_ENTITY_STREAM)) {
+                MuleHelper.registerStreamHashIfNeeded(stream.hashCode(), MuleHelper.RESPONSE_OUTPUTSTREAM_HASH);
+            }
+            // inputBody stream
+            else if (MuleHelper.preprocessStream(this.hashCode(), MuleHelper.REQUEST_ENTITY_STREAM)) {
+                MuleHelper.registerStreamHashIfNeeded(stream.hashCode(), MuleHelper.REQUEST_INPUTSTREAM_HASH);
             }
         }
     }
