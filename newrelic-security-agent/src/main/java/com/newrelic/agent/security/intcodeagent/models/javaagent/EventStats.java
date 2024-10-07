@@ -6,86 +6,64 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventStats {
 
-    private AtomicInteger processed;
+    private EventMetric eventSender = new EventMetric();
 
-    private AtomicInteger sent;
+    private EventMetric iastEvents = new EventMetric();
 
-    private AtomicInteger rejected;
+    private EventMetric dispatcher = new EventMetric();
 
-    private AtomicInteger errorCount;
+    private DroppedEvents droppedDueTo = new DroppedEvents();
+
+    private EventMetric lowSeverityEvents = new EventMetric();
+
+    private EventMetric exitEvents = new EventMetric();
 
     public EventStats() {
-        this.processed = new AtomicInteger(0);
-        this.sent = new AtomicInteger(0);
-        this.rejected = new AtomicInteger(0);
-        this.errorCount = new AtomicInteger(0);
     }
 
     public EventStats(EventStats eventStats) {
-        this.processed = new AtomicInteger(eventStats.processed.intValue());
-        this.sent = new AtomicInteger(eventStats.sent.intValue());
-        this.rejected = new AtomicInteger(eventStats.rejected.intValue());
-        this.errorCount = new AtomicInteger(eventStats.errorCount.intValue());
-    }
-
-    public AtomicInteger getProcessed() {
-        return processed;
-    }
-
-    public void setProcessed(AtomicInteger processed) {
-        this.processed = processed;
-    }
-
-    public AtomicInteger getSent() {
-        return sent;
-    }
-
-    public void setSent(AtomicInteger sent) {
-        this.sent = sent;
-    }
-
-    public AtomicInteger getRejected() {
-        return rejected;
-    }
-
-    public void setRejected(AtomicInteger rejected) {
-        this.rejected = rejected;
-    }
-
-    public int incrementRejectedCount(){
-        return this.rejected.incrementAndGet();
-    }
-
-    public int incrementSentCount(){
-        return this.sent.incrementAndGet();
-    }
-
-    public int incrementProcessedCount(){
-        return this.processed.incrementAndGet();
-    }
-
-    public int incrementErrorCount(){
-        return this.errorCount.incrementAndGet();
-    }
-
-    public AtomicInteger getErrorCount() {
-        return errorCount;
-    }
-
-    public void setErrorCount(AtomicInteger errorCount) {
-        this.errorCount = errorCount;
+        this.eventSender = new EventMetric(eventStats.eventSender);
+        this.iastEvents = new EventMetric(eventStats.iastEvents);
+        this.dispatcher = new EventMetric(eventStats.dispatcher);
+        this.droppedDueTo = new DroppedEvents(eventStats.droppedDueTo);
+        this.lowSeverityEvents = new EventMetric(eventStats.lowSeverityEvents);
+        this.exitEvents = new EventMetric(eventStats.exitEvents);
     }
 
     public void reset(){
-        this.processed.set(0);
-        this.sent.set(0);
-        this.errorCount.set(0);
-        this.rejected.set(0);
+        this.lowSeverityEvents.reset();
+        this.eventSender.reset();
+        this.iastEvents.reset();
+        this.dispatcher.reset();
+        this.exitEvents.reset();
+        this.droppedDueTo.reset();
     }
-
-
 
     public String toString() {
         return JsonConverter.toJSON(this);
+    }
+
+    public EventMetric getLowSeverityEvents() {
+        return lowSeverityEvents;
+    }
+
+    public EventMetric getEventSender() {
+        return eventSender;
+    }
+
+    public EventMetric getIastEvents() {
+        return iastEvents;
+    }
+
+    public EventMetric getDispatcher() {
+        return dispatcher;
+    }
+
+    public DroppedEvents getDroppedDueTo() {
+        return droppedDueTo;
+    }
+
+    public EventMetric getExitEvents() {
+        return exitEvents;
     }
 }

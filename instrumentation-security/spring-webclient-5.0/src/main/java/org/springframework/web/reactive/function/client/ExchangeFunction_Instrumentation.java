@@ -10,6 +10,7 @@ package org.springframework.web.reactive.function.client;
 import com.newrelic.agent.security.instrumentation.spring.client5.SpringWebClientHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -19,7 +20,7 @@ import reactor.core.publisher.Mono;
 public class ExchangeFunction_Instrumentation {
 
     public Mono<ClientResponse> exchange(ClientRequest request) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = SpringWebClientHelper.preprocessSecurityHook(request.url(), request.method(), this.getClass().getName(), SpringWebClientHelper.METHOD_EXECHANGE);
@@ -45,8 +46,8 @@ public class ExchangeFunction_Instrumentation {
     }
 
 
-    private boolean acquireLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(SpringWebClientHelper.getNrSecCustomAttribName());
+    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, SpringWebClientHelper.getNrSecCustomAttribName());
     }
 
 }

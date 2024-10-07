@@ -1,5 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.properties;
 
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+
 import java.time.Clock;
 
 public class BuildInfo {
@@ -47,5 +49,10 @@ public class BuildInfo {
 
     public void setBuildNumber(String buildNumber) {
         this.buildNumber = buildNumber;
+    }
+
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
     }
 }

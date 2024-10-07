@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.RouteSegment;
 import com.newrelic.api.agent.security.schema.RouteSegments;
@@ -27,6 +28,18 @@ public class URLMappingsHelper {
         add("org.apache.catalina.servlets.DefaultServlet");
         add("org.eclipse.jetty.servlet.DefaultServlet");
         add("grails.plugin.databasemigration.DbdocController");
+        add("org.springframework.web.servlet.DispatcherServlet");
+        add("org.eclipse.jetty.ee8.jsp.JettyJspServlet");
+        add("org.eclipse.jetty.ee8.servlet.DefaultServlet");
+        add("org.eclipse.jetty.servlet.NoJspServlet");
+        add("org.apache.cxf.transport.servlet.CXFServlet");
+        add("javax.faces.webapp.FacesServlet");
+        add("jakarta.faces.webapp.FacesServlet");
+        add("weblogic.servlet.JSPServlet");
+        add("weblogic.servlet.FileServlet");
+        add("weblogic.management.rest.JerseyServlet");
+        add("com.caucho.jsp.XtpServlet");
+        add("com.caucho.jsp.JspServlet");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
@@ -51,6 +64,7 @@ public class URLMappingsHelper {
         if (mapping.getHandler() != null){
             handlers.add(mapping.getHandler().hashCode());
         }
+        NewRelicSecurity.getAgent().reportURLMapping();
     }
 
     private synchronized static void generateRouteSegments(String endpoint) {

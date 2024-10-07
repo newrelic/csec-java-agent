@@ -31,9 +31,9 @@ public class CassandraUtils {
     public static final String NR_SEC_CASSANDRA_LOCK = "CASSANDRA_OPERATION_LOCK";
     public static final String CASSANDRA_DATASTAX_4 = "CASSANDRA-DATASTAX-4";
 
-    public static boolean acquireLockIfPossible(int hashCode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CASSANDRA_LOCK, hashCode);
+            return GenericHelper.acquireLockIfPossible(nosqlDbCommand, NR_SEC_CASSANDRA_LOCK, hashCode);
         } catch (Exception ignored){
         }
         return false;

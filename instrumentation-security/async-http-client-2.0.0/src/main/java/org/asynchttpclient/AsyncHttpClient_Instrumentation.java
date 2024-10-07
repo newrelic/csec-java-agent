@@ -9,6 +9,7 @@ package org.asynchttpclient;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -27,7 +28,7 @@ public abstract class AsyncHttpClient_Instrumentation {
 
     public <T> ListenableFuture<T> executeRequest(Request request, AsyncHandler<T> handler) {
         URI uri = null;
-        boolean isLockAcquired = AsynchttpHelper.acquireLockIfPossible();
+        boolean isLockAcquired = AsynchttpHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             try {

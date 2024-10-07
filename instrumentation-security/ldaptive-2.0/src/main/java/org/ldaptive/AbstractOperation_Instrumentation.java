@@ -3,6 +3,7 @@ package org.ldaptive;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -17,7 +18,7 @@ public abstract class AbstractOperation_Instrumentation<Q extends Request, S ext
 
     protected Q configureRequest(final Q request)
     {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
         AbstractOperation operation = null;
         if(isLockAcquired && request instanceof SearchRequest) {
             SearchRequest searchRequest = (SearchRequest) request;
@@ -77,9 +78,9 @@ public abstract class AbstractOperation_Instrumentation<Q extends Request, S ext
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType ldap) {
         try {
-            return GenericHelper.acquireLockIfPossible(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            return GenericHelper.acquireLockIfPossible(ldap, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         } catch (Throwable ignored) {}
         return false;
     }

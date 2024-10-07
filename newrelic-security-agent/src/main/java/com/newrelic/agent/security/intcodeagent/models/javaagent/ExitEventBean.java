@@ -7,8 +7,6 @@ public class ExitEventBean extends AgentBasicInfo {
     private String executionId;
     private String caseType;
     private String k2RequestIdentifier;
-    private String applicationUUID;
-
     public ExitEventBean() {
         super();
     }
@@ -17,7 +15,6 @@ public class ExitEventBean extends AgentBasicInfo {
         this();
         this.executionId = executionId;
         this.caseType = caseType;
-        this.applicationUUID = AgentInfo.getInstance().getApplicationUUID();
     }
 
     public String getExecutionId() {
@@ -42,14 +39,6 @@ public class ExitEventBean extends AgentBasicInfo {
 
     public void setK2RequestIdentifier(String k2RequestIdentifier) {
         this.k2RequestIdentifier = k2RequestIdentifier;
-    }
-
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
     }
 
     @Override

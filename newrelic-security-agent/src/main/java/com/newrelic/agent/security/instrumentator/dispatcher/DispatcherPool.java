@@ -83,19 +83,18 @@ public class DispatcherPool {
                         RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
                     }
                 }
-
+                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementRejected();
                 if(dispatcher.getSecurityMetaData() != null) {
                     if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
-                        AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
-                    } else {
-                        AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
+                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getIastEvents().incrementRejected();
+                    }
+                    if(dispatcher.getOperation()!= null && dispatcher.getOperation().isLowSeverityHook()) {
+                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getLowSeverityEvents().incrementRejected();
                     }
                 } else if (dispatcher.getExitEventBean() != null) {
-                    AgentInfo.getInstance().getJaHealthCheck().getExitEventStats().incrementRejectedCount();
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getExitEvents().incrementRejected();
                 }
             }
-            AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
-            AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
 			logger.log(LogLevel.FINEST,"Event Dispatch Task " + r.toString() + " rejected from  " + e.toString(), DispatcherPool.class.getName());
         }
     }
@@ -111,13 +110,35 @@ public class DispatcherPool {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 try {
-                    if( t != null) {
-                        AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
-                        AgentInfo.getInstance().getJaHealthCheck().incrementEventProcessingErrorCount();
-                        incrementCount(r, IUtilConstants.ERROR);
-                    } else {
-                        AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
-                        incrementCount(r, IUtilConstants.PROCESSED);
+                    if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
+                        Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
+                        AbstractOperation operation = dispatcher.getOperation();
+                        SecurityMetaData securityMetaData = dispatcher.getSecurityMetaData();
+                        if(t != null){
+                            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementError();
+                            if(operation != null) {
+                                if(securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+                                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getIastEvents().incrementError();
+                                }
+                                if (operation.isLowSeverityHook()) {
+                                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getLowSeverityEvents().incrementError();
+                                }
+                            } else if (dispatcher.getExitEventBean() != null) {
+                                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getExitEvents().incrementError();
+                            }
+                        } else {
+                            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementCompleted();
+                            if(operation != null) {
+                                if(securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+                                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getIastEvents().incrementCompleted();
+                                }
+                                if (operation.isLowSeverityHook()) {
+                                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getLowSeverityEvents().incrementCompleted();
+                                }
+                            } else if (dispatcher.getExitEventBean() != null) {
+                                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getExitEvents().incrementCompleted();
+                            }
+                        }
                     }
                 } catch (Throwable ignored) {
                     logger.log(LogLevel.FINEST, "Error while Dispatcher matric processing", ignored, DispatcherPool.class.getName());
@@ -145,41 +166,6 @@ public class DispatcherPool {
         });
     }
 
-    private void incrementCount(Runnable r, String type) {
-        EventStats eventStats = null;
-        if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
-            Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
-            if(dispatcher.getSecurityMetaData() != null) {
-                if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
-                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getIastEventStats();
-                } else {
-                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats();
-                }
-            } else if (dispatcher.getExitEventBean() != null) {
-                eventStats = AgentInfo.getInstance().getJaHealthCheck().getExitEventStats();
-            }
-        }
-        if(eventStats == null){
-            return;
-        }
-        switch (type){
-            case IUtilConstants.ERROR:
-                eventStats.incrementErrorCount();
-                break;
-            case IUtilConstants.PROCESSED:
-                eventStats.incrementProcessedCount();
-                break;
-            case IUtilConstants.SENT:
-                eventStats.incrementSentCount();
-                break;
-            case IUtilConstants.REJECTED:
-                eventStats.incrementRejectedCount();
-                break;
-            default:
-                logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), DispatcherPool.class.getName());
-        }
-    }
-
     private static final class InstanceHolder {
         static final DispatcherPool instance = new DispatcherPool();
     }
@@ -193,15 +179,14 @@ public class DispatcherPool {
 
 
     public void dispatchEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
-        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
 
         if (executor.isShutdown()) {
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementExecutorUnavailable();
             return;
         }
 
         if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && !AgentUsageMetric.isRASPProcessingActive()){
-            AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
-            AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementRaspProcessingDeactivated();
             return;
         }
 
@@ -233,6 +218,14 @@ public class DispatcherPool {
         securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
         securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
+        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementSubmitted();
+
+        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getIastEvents().incrementSubmitted();
+        }
+        if(operation.isLowSeverityHook()){
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getLowSeverityEvents().incrementSubmitted();
+        }
     }
 
     public void dispatchExitEvent(ExitEventBean exitEventBean) {
@@ -246,6 +239,8 @@ public class DispatcherPool {
         securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
         securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(exitEventBean));
+        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementSubmitted();
+        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getExitEvents().incrementSubmitted();
     }
 
     public static void shutDownPool() {
@@ -274,5 +269,6 @@ public class DispatcherPool {
 
     public void reset() {
         executor.getQueue().clear();
+        executor.purge();
     }
 }
