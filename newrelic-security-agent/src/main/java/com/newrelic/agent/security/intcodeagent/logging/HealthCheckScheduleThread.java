@@ -2,11 +2,11 @@ package com.newrelic.agent.security.intcodeagent.logging;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
-import com.newrelic.agent.security.instrumentator.httpclient.RestClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolActiveStat;
@@ -194,7 +194,7 @@ public class HealthCheckScheduleThread {
 
         serviceStatus.put("agentActiveStat", AgentInfo.getInstance().isAgentActive() ? "OK" : "Error");
 
-        serviceStatus.put("iastRestClient", RestClient.getInstance().isConnected() ? "OK" : "Error");
+        serviceStatus.put("iastRestClient", IastHttpClient.getInstance().isConnected() ? "OK" : "Error");
 
         return serviceStatus;
     }
