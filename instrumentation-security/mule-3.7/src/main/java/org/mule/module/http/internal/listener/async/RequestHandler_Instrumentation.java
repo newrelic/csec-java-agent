@@ -75,9 +75,6 @@ public class RequestHandler_Instrumentation {
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
             securityRequest.setContentType(MuleHelper.getContentType(httpRequest));
-
-            // TODO: need to update UserClassEntity
-            ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_3_7, ignored.getMessage()), ignored, HttpRequestToMuleEvent_Instrumentation.class.getName());

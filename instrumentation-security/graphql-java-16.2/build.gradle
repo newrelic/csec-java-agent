@@ -6,7 +6,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.graphql-java-16.2' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.graphql-java-16.2', 'Enabled': 'false' }
 }
 
 verifyInstrumentation {

@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -651,6 +652,10 @@ public class AgentUtils {
 
 
     public static void sendApplicationURLMappings() {
+        if (!WSUtils.isConnected()){
+            NewRelicSecurity.getAgent().reportURLMapping();
+            return;
+        }
         ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
         applicationURLMappings.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings), Agent.class.getName());
