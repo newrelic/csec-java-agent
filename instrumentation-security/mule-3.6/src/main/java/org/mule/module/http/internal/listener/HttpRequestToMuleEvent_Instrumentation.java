@@ -80,9 +80,6 @@ public class HttpRequestToMuleEvent_Instrumentation {
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
             securityRequest.setContentType(MuleHelper.getContentType(httpRequest));
-
-            // TODO: need to update UserClassEntity
-            ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_3_6, ignored.getMessage()), ignored, HttpRequestToMuleEvent_Instrumentation.class.getName());
@@ -91,8 +88,11 @@ public class HttpRequestToMuleEvent_Instrumentation {
 
     private static void postProcessSecurityHook() {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return;
+            }
+
+            if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
             ServletHelper.executeBeforeExitingTransaction();

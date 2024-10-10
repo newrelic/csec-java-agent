@@ -4,6 +4,7 @@ import com.mongodb.ReadPreference;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -33,9 +34,9 @@ public abstract class OperationExecutor_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(int hashCode) {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+            return GenericHelper.acquireLockIfPossible(nosqlDbCommand, MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {
         }
         return false;
@@ -44,7 +45,7 @@ public abstract class OperationExecutor_Instrumentation {
     public <T> T execute(ReadOperation<T> operation, ReadPreference readPreference) {
 
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.hashCode());
         if (isLockAcquired) {
             noSQLOperation = MongoUtil.getReadAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
@@ -62,7 +63,7 @@ public abstract class OperationExecutor_Instrumentation {
 
     public <T> T execute(WriteOperation<T> operation) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.hashCode());
         if (isLockAcquired) {
             noSQLOperation = MongoUtil.getWriteAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }

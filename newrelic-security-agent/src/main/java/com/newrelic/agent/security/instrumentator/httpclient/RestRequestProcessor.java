@@ -42,6 +42,9 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
     public static final String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
+    private static final String IAST_REQUEST_HAS_NO_ARGUMENTS = "IAST request has no arguments : %s";
+    public static final String AGENT_IS_NOT_ACTIVE = "Agent is not active";
+    public static final String WS_RECONNECTING = "Websocket reconnecting failing for control command id: %s";
     private IntCodeControlCommand controlCommand;
 
     private int repeatCount;
@@ -62,22 +65,19 @@ public class RestRequestProcessor implements Callable<Boolean> {
     @Override
     public Boolean call() throws InterruptedException {
         if (controlCommand.getArguments().size() < 2 ) {
+            logger.log(LogLevel.FINER, String.format(IAST_REQUEST_HAS_NO_ARGUMENTS, controlCommand.getId()), RestRequestProcessor.class.getSimpleName());
             return true;
         }
         if( !AgentInfo.getInstance().isAgentActive()) {
+            logger.log(LogLevel.FINER, AGENT_IS_NOT_ACTIVE, RestRequestProcessor.class.getSimpleName());
             return false;
         }
 
         FuzzRequestBean httpRequest = null;
         try {
             if (WSUtils.getInstance().isReconnecting()) {
-                   synchronized (WSUtils.getInstance()) {
-                    RestRequestThreadPool.getInstance().isWaiting().set(true);
-                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(true);
-                    WSUtils.getInstance().wait();
-                    RestRequestThreadPool.getInstance().isWaiting().set(false);
-                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(false);
-                }
+                logger.log(LogLevel.FINER, String.format(WS_RECONNECTING, controlCommand.getId()), RestRequestProcessor.class.getSimpleName());
+                return false;
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             req = StringUtils.replace(req, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED, CallbackUtils.urlEncode(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));

@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.google.gson.Gson;
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
@@ -754,6 +755,7 @@ public class Dispatcher implements Callable {
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
             VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
+        metaData.setSkipScanParameters(AgentConfig.getInstance().getAgentMode().getSkipScan().getParameters());
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);

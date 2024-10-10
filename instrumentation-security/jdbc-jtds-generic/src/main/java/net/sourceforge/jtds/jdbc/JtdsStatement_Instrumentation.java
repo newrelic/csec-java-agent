@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -70,10 +71,7 @@ public abstract class JtdsStatement_Instrumentation {
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
