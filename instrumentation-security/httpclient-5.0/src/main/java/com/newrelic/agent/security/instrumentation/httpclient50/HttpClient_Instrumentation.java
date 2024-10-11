@@ -10,6 +10,7 @@ package com.newrelic.agent.security.instrumentation.httpclient50;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -29,7 +30,7 @@ import java.net.URISyntaxException;
 public class HttpClient_Instrumentation {
 
     public HttpResponse execute(ClassicHttpRequest request) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -49,7 +50,7 @@ public class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(ClassicHttpRequest request, HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -69,7 +70,7 @@ public class HttpClient_Instrumentation {
     }
 
     public ClassicHttpResponse execute(HttpHost target, ClassicHttpRequest request) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -95,7 +96,7 @@ public class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(HttpHost target, ClassicHttpRequest request, HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -122,7 +123,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(ClassicHttpRequest request, HttpClientResponseHandler<? extends T> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -143,7 +144,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(ClassicHttpRequest request, HttpContext context, HttpClientResponseHandler<? extends T> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -164,7 +165,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(HttpHost target, ClassicHttpRequest request, HttpClientResponseHandler<? extends T> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -191,7 +192,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(HttpHost target, ClassicHttpRequest request, HttpContext context,
             HttpClientResponseHandler<? extends T> responseHandler) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -229,9 +230,9 @@ public class HttpClient_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
         try {
-            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;

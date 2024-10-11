@@ -10,6 +10,7 @@ package com.newrelic.agent.security.instrumentation.jersey2;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
@@ -28,7 +29,7 @@ public abstract class ContainerResponse_Instrumentation {
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
         }
 
-        if(response != null && response.getContext() != null && response.getContext().hasEntity()){
+        if(GenericHelper.isLockAcquired(HttpRequestHelper.getNrSecCustomAttribForPostProcessing()) && response != null && response.getContext() != null && response.getContext().hasEntity()){
             Object responseObject = response.getContext().getEntity();
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(String.valueOf(responseObject)));
         }
@@ -39,8 +40,8 @@ public abstract class ContainerResponse_Instrumentation {
     public void close() {
         boolean isLockAcquired = false;
         try {
-            isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_IS_OPERATION_LOCK);
-            if(isLockAcquired) {
+            isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SERVLET_GET_IS_OPERATION_LOCK);
+            if(isLockAcquired && GenericHelper.isLockAcquired(HttpRequestHelper.getNrSecCustomAttribForPostProcessing())) {
                 HttpRequestHelper.postProcessSecurityHook(this.getClass().getName(), getWrappedMessageContext());
             }
             Weaver.callOriginal();
