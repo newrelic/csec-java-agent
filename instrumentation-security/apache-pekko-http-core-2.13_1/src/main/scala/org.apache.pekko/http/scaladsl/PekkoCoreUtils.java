@@ -32,16 +32,16 @@ public class PekkoCoreUtils {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
 
-    public static final String QUESTION_MARK = "?";
+    private static final String QUESTION_MARK = "?";
 
-    public static boolean isServletLockAcquired() {
+    private static boolean isServletLockAcquired() {
         try {
             return GenericHelper.isLockAcquired(NR_SEC_CUSTOM_ATTRIB_HTTP_REQ);
         } catch (Throwable ignored) {}
         return false;
     }
 
-    public static void releaseServletLock() {
+    private static void releaseServletLock() {
         try {
             GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_HTTP_REQ);
         } catch (Throwable ignored){}
@@ -74,7 +74,6 @@ public class PekkoCoreUtils {
             }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            e.printStackTrace();
             if(e instanceof NewRelicSecurityException){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, PEKKO_HTTP_CORE_2_13_1, e.getMessage()), e, PekkoCoreUtils.class.getName());
                 throw e;
@@ -88,7 +87,7 @@ public class PekkoCoreUtils {
         }
     }
 
-    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest request, StringBuilder requestBody, Token token) {
+    public static void preProcessHttpRequest(Boolean isServletLockAcquired, HttpRequest request, StringBuilder requestBody, Token token) {
         if(!isServletLockAcquired) {
             return;
         }
@@ -104,8 +103,6 @@ public class PekkoCoreUtils {
             if (securityRequest.isRequestParsed()) {
                 return;
             }
-
-            AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
             securityRequest.setMethod(request.method().value());
             //TODO Client IP and PORT extraction is pending
@@ -135,7 +132,6 @@ public class PekkoCoreUtils {
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
-            ignored.printStackTrace();
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, PEKKO_HTTP_CORE_2_13_1, ignored.getMessage()), ignored, PekkoCoreUtils.class.getName());
         }
         finally {
@@ -155,7 +151,7 @@ public class PekkoCoreUtils {
         }
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = StringUtils.EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -166,7 +162,7 @@ public class PekkoCoreUtils {
         return data;
     }
 
-    public static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){
+    private static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){
         Iterator<HttpHeader> headers = request.getHeaders().iterator();
         while (headers.hasNext()) {
             boolean takeNextValue = false;
@@ -207,6 +203,5 @@ public class PekkoCoreUtils {
             }
             securityRequest.getHeaders().put(headerKey, headerFullValue);
         }
-
     }
 }
