@@ -8,10 +8,9 @@
 package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.intcodeagent.utils.ResourceUtils;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.net.ssl.SSLContext;
@@ -41,7 +40,7 @@ public class ApacheSSLManager {
                 sslContextBuilder.loadTrustMaterial(getKeyStore(caBundlePath), null);
             } else {
                 logger.log(LogLevel.INFO, "Using nr custom ca from agent resources", ApacheSSLManager.class.getName());
-                sslContextBuilder.loadTrustMaterial(getKeyStore(CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem")), null);
+                sslContextBuilder.loadTrustMaterial(getKeyStore(ResourceUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem")), null);
             }
             return sslContextBuilder.build();
         } catch (Exception e) {
