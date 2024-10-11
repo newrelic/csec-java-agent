@@ -121,7 +121,7 @@ public class Dispatcher implements Callable {
                 return null;
             }
 
-            if(!isReplayEndpointConfirmed()) {
+            if(!securityMetaData.getRequest().getIsGrpc() && !isReplayEndpointConfirmed()) {
                 IastHttpClient.getInstance().tryToEstablishApplicationEndpoint(securityMetaData.getRequest());
             }
 
