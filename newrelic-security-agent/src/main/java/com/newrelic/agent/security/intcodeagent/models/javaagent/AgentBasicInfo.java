@@ -5,6 +5,8 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.TraceMetadata;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -80,6 +82,9 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        linkingMetadata.put(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        linkingMetadata.put(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         setAppEntityGuid(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
