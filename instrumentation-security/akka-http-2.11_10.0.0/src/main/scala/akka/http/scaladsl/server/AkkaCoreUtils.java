@@ -65,7 +65,7 @@ public class AkkaCoreUtils {
         }
         try {
             token.linkAndExpire();
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))){
                 return;
             }
