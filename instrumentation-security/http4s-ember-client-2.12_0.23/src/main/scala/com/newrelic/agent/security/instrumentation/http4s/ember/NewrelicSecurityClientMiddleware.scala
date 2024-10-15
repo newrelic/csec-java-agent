@@ -3,10 +3,11 @@ package com.newrelic.agent.security.instrumentation.http4s.ember
 import cats.effect.kernel.Async
 import cats.effect.{Resource, Sync}
 import com.newrelic.api.agent.security.NewRelicSecurity
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper
+import com.newrelic.api.agent.security.instrumentation.helpers.{GenericHelper, ServletHelper}
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation
-import com.newrelic.api.agent.security.schema.{AbstractOperation, VulnerabilityCaseType}
+import com.newrelic.api.agent.security.schema.{AbstractOperation, StringUtils, VulnerabilityCaseType}
+import com.newrelic.api.agent.security.utils.SSRFUtils
 import com.newrelic.api.agent.security.utils.logging.LogLevel
 import org.http4s.Request
 import org.http4s.client.Client
@@ -32,11 +33,11 @@ object NewrelicSecurityClientMiddleware {
             }
             operation
           })
-
-        // TODO add Security Headers
+        // add Security Headers
+        request <- Resource.eval(construct {addSecurityHeaders(req, operation)})
 
         // original call
-        response <- client.run(req)
+        response <- client.run(request)
 
         // post process and register exit event
         newRes <- Resource.eval(construct{
@@ -84,6 +85,31 @@ object NewrelicSecurityClientMiddleware {
         NewRelicSecurity.getAgent.reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP4S_EMBER_CLIENT, e.getMessage), e, this.getClass.getName)
     }
     null
+  }
+
+  private def addSecurityHeaders[F[_] : Async](request: Request[F], operation: AbstractOperation): Request[F] = {
+    val outboundRequest = new OutboundRequest(request)
+    if (operation != null) {
+      val securityMetaData = NewRelicSecurity.getAgent.getSecurityMetaData
+      val iastHeader = NewRelicSecurity.getAgent.getSecurityMetaData.getFuzzRequestIdentifier.getRaw
+      if (iastHeader != null && !iastHeader.trim.isEmpty) {
+        outboundRequest.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader)
+      }
+      val csecParentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, classOf[String])
+      if (StringUtils.isNotBlank(csecParentId)) {
+        outboundRequest.setHeader(GenericHelper.CSEC_PARENT_ID, csecParentId)
+      }
+      try {
+        NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData.setFromJumpRequiredInStackTrace(Integer.valueOf(4))
+        NewRelicSecurity.getAgent.registerOperation(operation)
+      }
+      finally {
+        if (operation.getApiID != null && !operation.getApiID.trim.isEmpty && operation.getExecutionId != null && !operation.getExecutionId.trim.isEmpty) {
+          outboundRequest.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue, operation.getApiID, operation.getExecutionId, NewRelicSecurity.getAgent.getAgentUUID))
+        }
+      }
+    }
+    outboundRequest.getRequest
   }
 
   private def registerExitOperation(isProcessingAllowed: Boolean, operation: AbstractOperation): Unit = {
