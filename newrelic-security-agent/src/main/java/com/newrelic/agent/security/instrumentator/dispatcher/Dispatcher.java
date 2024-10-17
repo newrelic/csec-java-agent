@@ -335,12 +335,12 @@ public class Dispatcher implements Callable {
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
-        if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getResponseBody())) ||
+        if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getBody())) ||
                 (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             JSONArray params = new JSONArray();
             params.addAll(xssConstructs);
-            params.add(securityMetaData.getResponse().getResponseBody());
+            params.add(securityMetaData.getResponse().getBody());
             eventBean.setParameters(params);
             eventBean.setHttpResponse(securityMetaData.getResponse());
             eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());

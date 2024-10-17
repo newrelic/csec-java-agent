@@ -181,7 +181,8 @@ public class HttpServletHelper {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(response.getStatus());
+            JettyUtils.processResponseHeaders(response, NewRelicSecurity.getAgent().getSecurityMetaData().getResponse());
 //            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());

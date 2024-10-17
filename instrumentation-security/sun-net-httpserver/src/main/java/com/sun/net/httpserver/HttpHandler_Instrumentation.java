@@ -83,7 +83,7 @@ public class HttpHandler_Instrumentation {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(exchange.getResponseCode());
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(exchange.getResponseCode());
 //            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());

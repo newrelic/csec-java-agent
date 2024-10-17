@@ -31,6 +31,8 @@ public class AgentBasicInfo {
 
     public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
 
+    public static final String SEC_HTTP_RESPONSE = "sec_http_response";
+
     /**
      * Tool id for Language Agent.
      */
@@ -120,6 +122,9 @@ public class AgentBasicInfo {
         } else if (this instanceof ApplicationRuntimeError) {
             setJsonName(APPLICATION_RUNTIME_ERROR);
             setEventType(APPLICATION_RUNTIME_ERROR);
+        } else if (this instanceof HttpResponseEvent) {
+            setJsonName(SEC_HTTP_RESPONSE);
+            setEventType(SEC_HTTP_RESPONSE);
         }
     }
 

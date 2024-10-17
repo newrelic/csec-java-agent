@@ -6,11 +6,10 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class HttpServerHelper {
     public static final String SUN_NET_HTTPSERVER = "SUN NET HTTPSERVER";
@@ -133,5 +132,19 @@ public class HttpServerHelper {
             return HTTPS_PROTOCOL;
         }
         return HTTP_PROTOCOL;
+    }
+
+    public static Map<String, String> getHttpResponseHeaders(Headers responseHeaders) {
+        Map<String, String> headers = new HashMap<>();
+        if(responseHeaders == null || responseHeaders.isEmpty()){
+            return headers;
+        }
+        for (Map.Entry<String, List<String>> headerElement : responseHeaders.entrySet()) {
+            headers.put(headerElement.getKey(), String.join(";", headerElement.getValue()));
+            if(StringUtils.equalsAny(StringUtils.lowerCase(headerElement.getKey()), "content-type", "contenttype")){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(responseHeaders.getFirst(headerElement.getKey()));
+            }
+        }
+        return headers;
     }
 }

@@ -18,7 +18,7 @@ public class HttpResponseBuilder_Instrumentation {
     private ResponseStatus responseStatus = Weaver.callOriginal();
 
     public HttpResponse build() {
-        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseStatus.getStatusCode());
+        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(responseStatus.getStatusCode());
         return Weaver.callOriginal();
     }
 

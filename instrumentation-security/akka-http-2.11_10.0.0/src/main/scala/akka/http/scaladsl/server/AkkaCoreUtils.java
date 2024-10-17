@@ -16,6 +16,7 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -59,7 +60,7 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, String className, String methodName, Token token) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, HashMap<String, String> headers, String className, String methodName, Token token) {
         if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
             return;
         }
@@ -69,8 +70,9 @@ public class AkkaCoreUtils {
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))){
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(responseBody);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(contentType);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(headers);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(responseBody);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),

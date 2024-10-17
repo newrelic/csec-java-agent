@@ -77,7 +77,7 @@ public class OutputStreamTest {
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
 //        Assert.assertFalse("Empty response in security meta data", meta.getResponse().isEmpty());
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class OutputStreamTest {
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
 //        Assert.assertFalse("Empty response in security meta data", meta.getResponse().isEmpty());
-        Assert.assertEquals(DATA.substring(2, 27), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA.substring(2, 27), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -115,6 +115,6 @@ public class OutputStreamTest {
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
         Assert.assertTrue("Non-empty response in security meta data", meta.getResponse().isEmpty());
-        Assert.assertEquals("", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("", meta.getResponse().getBody().toString());
     }
 }
