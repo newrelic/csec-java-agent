@@ -31,6 +31,7 @@ object RequestProcessor {
         _ => for {
           _ <- preprocessHttpRequest(request)
           resp <- httpApp(request)
+          _ <- postProcessSecurityHook(resp)
         } yield resp
       )
     result
@@ -114,6 +115,41 @@ object RequestProcessor {
         }
       }
       securityRequest.getHeaders.put(headerKey.toLowerCase, headerValue)
+    })
+  }
+
+  private def postProcessSecurityHook[F[_]: Sync](response: Response[F]): F[Unit] = construct {
+    try {
+      if (NewRelicSecurity.isHookProcessingActive) {
+        val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
+        securityResponse.setResponseCode(response.status.code)
+        processResponseHeaders(response.headers, securityResponse)
+        securityResponse.setResponseContentType(BlazeUtils.getContentType(securityResponse.getHeaders))
+
+        // TODO extract response body
+
+        ServletHelper.executeBeforeExitingTransaction()
+        if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent.getSecurityMetaData.getResponse.getResponseContentType)) {
+          val rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent.getSecurityMetaData.getRequest, NewRelicSecurity.getAgent.getSecurityMetaData.getResponse, this.getClass.getName, METHOD_WITH_HTTP_APP)
+          NewRelicSecurity.getAgent.registerOperation(rxssOperation)
+        }
+      }
+    } catch {
+      case e: Throwable =>
+        if (e.isInstanceOf[NewRelicSecurityException]) {
+          NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
+          throw e
+        }
+        NewRelicSecurity.getAgent.log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
+        NewRelicSecurity.getAgent.reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
+    }
+  }
+
+  private def processResponseHeaders(headers: Headers, securityResp: HttpResponse): Unit = {
+    headers.foreach(header => {
+      if (header.name != null && header.name.isEmpty) {
+        securityResp.getHeaders.put(header.name.toString.toLowerCase, header.value)
+      }
     })
   }
 
