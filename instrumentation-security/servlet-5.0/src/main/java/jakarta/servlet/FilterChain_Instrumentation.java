@@ -92,18 +92,17 @@ public abstract class FilterChain_Instrumentation {
 
     private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
             }
             if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(httpServletResponse.getContentType());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(HttpServletHelper.getHttpResponseHeaders(httpServletResponse));
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

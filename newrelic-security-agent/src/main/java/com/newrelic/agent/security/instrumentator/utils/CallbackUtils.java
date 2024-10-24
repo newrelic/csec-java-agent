@@ -251,7 +251,7 @@ public class CallbackUtils {
     public static Set<String> decodeResponseData(HttpResponse httpResponse) {
         Set<String> processedData = new HashSet<>();
         String contentType = httpResponse.getResponseContentType();
-        String responseBody = httpResponse.getResponseBody().toString();
+        String responseBody = httpResponse.getBody().toString();
         String processedBody = responseBody;
 
 

@@ -5,6 +5,8 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.TraceMetadata;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -28,6 +30,8 @@ public class AgentBasicInfo {
     public static final String IAST_SCAN_FAILURE = "iast-scan-failure";
 
     public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
+
+    public static final String SEC_HTTP_RESPONSE = "sec_http_response";
 
     /**
      * Tool id for Language Agent.
@@ -80,6 +84,9 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        linkingMetadata.put(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        linkingMetadata.put(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         setAppEntityGuid(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
@@ -115,6 +122,9 @@ public class AgentBasicInfo {
         } else if (this instanceof ApplicationRuntimeError) {
             setJsonName(APPLICATION_RUNTIME_ERROR);
             setEventType(APPLICATION_RUNTIME_ERROR);
+        } else if (this instanceof HttpResponseEvent) {
+            setJsonName(SEC_HTTP_RESPONSE);
+            setEventType(SEC_HTTP_RESPONSE);
         }
     }
 

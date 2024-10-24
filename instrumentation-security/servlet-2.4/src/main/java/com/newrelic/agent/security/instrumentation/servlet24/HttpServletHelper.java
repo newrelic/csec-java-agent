@@ -11,7 +11,9 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
@@ -157,5 +159,14 @@ public class HttpServletHelper {
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
+    }
+
+    public static Map<String, String> getHttpResponseHeaders(HttpServletResponse response) {
+        Collection<String> headerNames = response.getHeaderNames();
+        Map<String, String> headers = new java.util.HashMap<>();
+        headerNames.forEach( headerName -> {
+            headers.put(headerName, response.getHeader(headerName));
+        });
+        return headers;
     }
 }

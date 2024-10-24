@@ -9,7 +9,6 @@ package com.newrelic.agent.security.instrumentation.jersey2;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -27,12 +26,12 @@ public abstract class ContainerResponse_Instrumentation {
 
     ContainerResponse_Instrumentation(final ContainerRequest requestContext, final OutboundJaxrsResponse response) {
         if(response != null) {
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(response.getStatus());
         }
 
         if(GenericHelper.isLockAcquired(HttpRequestHelper.getNrSecCustomAttribForPostProcessing()) && response != null && response.getContext() != null && response.getContext().hasEntity()){
             Object responseObject = response.getContext().getEntity();
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(String.valueOf(responseObject)));
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(new StringBuilder(String.valueOf(responseObject)));
         }
     }
 
