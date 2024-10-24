@@ -64,6 +64,7 @@ public class MongoUtil {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && command != null) {
                 operation = new NoSQLOperation(command.toJson(), typeOfOperation, klassName, methodName);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
