@@ -4,6 +4,9 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.operation.SolrDbOperation;
+import com.newrelic.security.test.marker.Java11IncompatibleTest;
+import com.newrelic.security.test.marker.Java8IncompatibleTest;
+import com.newrelic.security.test.marker.Java9IncompatibleTest;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -15,6 +18,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -29,6 +33,7 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.apache.solr.client.solrj.impl")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category({ Java8IncompatibleTest.class, Java9IncompatibleTest.class, Java11IncompatibleTest.class })
 public class SolrTest {
 
     private static GenericContainer<?> solrServer;

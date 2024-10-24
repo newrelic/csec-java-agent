@@ -28,6 +28,13 @@ java {
     }
 }
 
+test {
+    // These instrumentation tests only run on Java 17+ regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        !project.hasProperty('test8') && !project.hasProperty('test11')
+    }
+}
+
 verifyInstrumentation {
     passesOnly 'org.apache.solr:solr-core:[9.0.0,)'
     exclude 'org.apache.solr:solr-core:[8.0.0,9.0.0)'
