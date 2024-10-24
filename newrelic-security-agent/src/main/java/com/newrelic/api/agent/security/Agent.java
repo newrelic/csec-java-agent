@@ -368,6 +368,10 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if(operation instanceof RXSSOperation && NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            return;
+        }
+
         AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();

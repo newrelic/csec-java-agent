@@ -62,9 +62,7 @@ public class AkkaCoreUtils {
 
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, Map<String, String> headers, int responseCode, String className, String methodName, Token token) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
+
             token.linkAndExpire();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
@@ -73,6 +71,7 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(headers);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(responseBody);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(responseCode);
+
 //            ServletHelper.executeBeforeExitingTransaction();
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

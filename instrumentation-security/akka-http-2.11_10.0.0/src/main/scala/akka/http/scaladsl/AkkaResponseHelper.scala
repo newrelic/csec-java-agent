@@ -28,7 +28,7 @@ class AkkaResponseHelper extends AbstractFunction1[HttpResponse, HttpResponse] {
       stringResponse.append(httpResponse.entity.asInstanceOf[HttpEntity.Strict].getData().decodeString("utf-8"))
       val headers = new JavaHashMap[String, String]()
       httpResponse.headers.foreach(header => headers.put(header.name(), header.value()))
-      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), headers, this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
+      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), headers, httpResponse.status.intValue(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
     } catch {
       case t: NewRelicSecurityException =>
         NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_10_0_0, t.getMessage), t, classOf[AkkaCoreUtils].getName)

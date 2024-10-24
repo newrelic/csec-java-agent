@@ -83,9 +83,6 @@ public class RequestHandler_Instrumentation {
 
     private void postProcessSecurityHook() {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }

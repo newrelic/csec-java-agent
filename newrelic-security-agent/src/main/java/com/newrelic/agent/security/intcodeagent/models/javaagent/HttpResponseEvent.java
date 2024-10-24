@@ -16,7 +16,7 @@ public class HttpResponseEvent extends AgentBasicInfo {
 
     public HttpResponseEvent(HttpResponse httpResponse, boolean isIastRequest) {
         super();
-        this.httpResponse = httpResponse;
+        this.httpResponse = new HttpResponse(httpResponse);
         this.isIastRequest = isIastRequest;
         this.traceId = getLinkingMetadata().get(IAgentConstants.NR_APM_TRACE_ID);
     }
@@ -61,7 +61,7 @@ public class HttpResponseEvent extends AgentBasicInfo {
     }
 
     public boolean isEmpty() {
-        return traceId == null || httpResponse == null || httpResponse.isEmpty();
+        return traceId == null || httpResponse == null || httpResponse.getStatusCode() > 0;
     }
 
     @Override

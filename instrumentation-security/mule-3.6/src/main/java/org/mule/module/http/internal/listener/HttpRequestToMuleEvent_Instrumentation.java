@@ -88,10 +88,6 @@ public class HttpRequestToMuleEvent_Instrumentation {
 
     private static void postProcessSecurityHook() {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
-
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
