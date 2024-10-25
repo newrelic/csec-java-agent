@@ -41,7 +41,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(c);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(c);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -66,7 +66,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(csq);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(csq);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -91,7 +91,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(csq, start, end);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(csq, start, end);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -117,7 +117,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(b);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(b);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -140,7 +140,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(c);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(c);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -163,7 +163,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(i);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(i);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -186,7 +186,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(l);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(l);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -209,7 +209,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(f);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(f);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -232,7 +232,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(d);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(d);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -255,7 +255,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(s);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(s);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -278,7 +278,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(s);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(s);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -301,7 +301,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(obj);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(obj);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -324,7 +324,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -347,8 +347,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -370,8 +370,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -393,8 +393,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -416,8 +416,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -439,8 +439,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -462,8 +462,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -485,8 +485,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -508,8 +508,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
                 ignored.printStackTrace(System.out);
             }
@@ -531,8 +531,8 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(x);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(IOStreamHelper.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(x);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(IOStreamHelper.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -555,7 +555,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(s, off, len);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(s, off, len);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -577,7 +577,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(s);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(s);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -599,7 +599,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(buf);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(buf);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -621,7 +621,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(buf, off, len);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(buf, off, len);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -643,7 +643,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(c);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(c);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -666,7 +666,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(String.format(format, args));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(String.format(format, args));
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -691,7 +691,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(String.format(l, format, args));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(String.format(l, format, args));
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -715,7 +715,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(String.format(format, args));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(String.format(format, args));
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -740,7 +740,7 @@ public abstract class PrintWriter_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(String.format(l, format, args));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(String.format(l, format, args));
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }

@@ -30,7 +30,7 @@ public abstract class ServletResponse_Instrumentation {
             obj = Weaver.callOriginal();
             if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
                 ServletResponseCallback.registerOutputStreamHashIfNeeded(obj.hashCode());
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(getContentType());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(getContentType());
             }
         } finally {
             if(isLockAcquired) {
@@ -49,7 +49,7 @@ public abstract class ServletResponse_Instrumentation {
             obj = Weaver.callOriginal();
             if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
                 ServletResponseCallback.registerWriterHashIfNeeded(obj.hashCode());
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(getContentType());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(getContentType());
             }
         } finally {
             if(isLockAcquired) {

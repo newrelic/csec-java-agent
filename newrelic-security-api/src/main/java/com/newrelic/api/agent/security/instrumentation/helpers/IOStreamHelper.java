@@ -1,10 +1,8 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class IOStreamHelper {
@@ -66,7 +64,7 @@ public class IOStreamHelper {
                     data[y] = (char) dataBuffer[i];
                 }
 //                        System.out.println("Writing from IS 2" + this.hashCode() + " : " + String.valueOf(data));
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(data);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(data);
             }
         } catch(Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(ERROR_WHILE_READING_STREAM, JAVA_IO_STREAM, ignored.getMessage()), ignored, IOStreamHelper.class.getName());

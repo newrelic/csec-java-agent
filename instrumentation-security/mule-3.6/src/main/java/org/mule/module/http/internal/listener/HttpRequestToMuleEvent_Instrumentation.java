@@ -88,14 +88,10 @@ public class HttpRequestToMuleEvent_Instrumentation {
 
     private static void postProcessSecurityHook() {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
-
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

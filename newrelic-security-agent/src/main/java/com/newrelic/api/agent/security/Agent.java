@@ -368,6 +368,10 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if(operation instanceof RXSSOperation && NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            return;
+        }
+
         AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
@@ -384,7 +388,7 @@ public class Agent implements SecurityAgent {
                 if (securityMetaData != null && securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-                    securityMetaData.getResponse().setResponseBody(
+                    securityMetaData.getResponse().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
@@ -416,7 +420,7 @@ public class Agent implements SecurityAgent {
                 if (securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-                    securityMetaData.getResponse().setResponseBody(
+                    securityMetaData.getResponse().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
@@ -1080,7 +1084,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
-        int responseCode = securityMetaData.getResponse().getResponseCode();
+        int responseCode = securityMetaData.getResponse().getStatusCode();
         String route = securityMetaData.getRequest().getUrl();
         //TODO turn on after api endpoint route detection is merged.
 //        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
@@ -1098,6 +1102,45 @@ public class Agent implements SecurityAgent {
     @Override
     public void reportURLMapping() {
         SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
+    }
+
+    @Override
+    public void dispatcherTransactionStarted() {
+        try {
+            Transaction transaction = NewRelic.getAgent().getTransaction();
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                logger.log(LogLevel.FINEST, "Transaction started with token: " + transaction.getToken().toString(), Agent.class.getName());
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction started event", e, Agent.class.getName());
+        }
+    }
+
+    @Override
+    public void dispatcherTransactionCancelled() {
+        try {
+            Transaction transaction = NewRelic.getAgent().getTransaction();
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                logger.log(LogLevel.FINEST, "Transaction cancelled with token: " + transaction.getSecurityMetaData().toString(), Agent.class.getName());
+                TransactionUtils.executeBeforeExitingTransaction();
+                TransactionUtils.reportHttpResponse();
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction cancelled event", e, Agent.class.getName());
+        }
+    }
+
+    @Override
+    public void dispatcherTransactionFinished() {
+        try {
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                logger.log(LogLevel.FINEST, "Transaction finished with token: " + NewRelic.getAgent().getTransaction().getSecurityMetaData().toString(), Agent.class.getName());
+                TransactionUtils.executeBeforeExitingTransaction();
+                TransactionUtils.reportHttpResponse();
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction finished event", e, Agent.class.getName());
+        }
     }
 
 }

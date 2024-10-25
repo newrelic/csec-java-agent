@@ -82,13 +82,10 @@ public class RequestHandler_Instrumentation {
 
     private void postProcessSecurityHook() {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
