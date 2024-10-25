@@ -25,7 +25,7 @@ public class HttpResponseEvent extends AgentBasicInfo {
         this.traceId = httpResponseEvent.getTraceId();
         this.httpResponse = new HttpResponse(httpResponseEvent.getHttpResponse());
         this.httpRequest = new HttpRequest(httpResponseEvent.getHttpRequest());
-        this.isIastRequest = httpResponseEvent.isIastRequest();
+        this.isIastRequest = httpResponseEvent.getIsIASTRequest();
     }
 
     public String getTraceId() {
@@ -52,11 +52,11 @@ public class HttpResponseEvent extends AgentBasicInfo {
         this.httpRequest = httpRequest;
     }
 
-    public boolean isIastRequest() {
+    public boolean getIsIASTRequest() {
         return isIastRequest;
     }
 
-    public void setIastRequest(boolean iastRequest) {
+    public void setIsIASTRequest(boolean iastRequest) {
         isIastRequest = iastRequest;
     }
 
