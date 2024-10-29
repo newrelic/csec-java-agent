@@ -12,7 +12,11 @@ public class StringUtils {
     public static final String LF = "\n";
     public static final int INDEX_NOT_FOUND = -1;
     public static final String COMMA_DELIMETER = ",";
+
+    public static final String DOT_DELIMITER = ".";
+
     public static final String SEPARATOR = "/";
+
 
     /**
      * <p>Checks if a CharSequence is not empty (""), not null and not whitespace only.</p>
@@ -1377,5 +1381,68 @@ public class StringUtils {
         return false;
     }
 
+    /**
+     * Removes a char only if it is at the beginning of a source string,
+     * otherwise returns the source string.
+     *
+     * <p>A {@code null} source string will return {@code null}.
+     * An empty ("") source string will return the empty string.
+     * A {@code null} search char will return the source string.</p>
+     *
+     * <pre>
+     * StringUtils.removeStart(null, *)      = null
+     * StringUtils.removeStart("", *)        = ""
+     * StringUtils.removeStart(*, null)      = *
+     * StringUtils.removeStart("/path", '/') = "path"
+     * StringUtils.removeStart("path", '/')  = "path"
+     * StringUtils.removeStart("path", 0)    = "path"
+     * </pre>
+     *
+     * @param str  the source String to search, may be null.
+     * @param remove  the char to search for and remove.
+     * @return the substring with the char removed if found,
+     *  {@code null} if null String input.
+     * @since 3.13.0
+     */
+    public static String removeStart(final String str, final char remove) {
+        if (isEmpty(str)) {
+            return str;
+        }
+        return str.charAt(0) == remove ? str.substring(1) : str;
+    }
+
+    /**
+     * Removes a substring only if it is at the beginning of a source string,
+     * otherwise returns the source string.
+     *
+     * <p>A {@code null} source string will return {@code null}.
+     * An empty ("") source string will return the empty string.
+     * A {@code null} search string will return the source string.</p>
+     *
+     * <pre>
+     * StringUtils.removeStart(null, *)      = null
+     * StringUtils.removeStart("", *)        = ""
+     * StringUtils.removeStart(*, null)      = *
+     * StringUtils.removeStart("www.domain.com", "www.")   = "domain.com"
+     * StringUtils.removeStart("domain.com", "www.")       = "domain.com"
+     * StringUtils.removeStart("www.domain.com", "domain") = "www.domain.com"
+     * StringUtils.removeStart("abc", "")    = "abc"
+     * </pre>
+     *
+     * @param str  the source String to search, may be null
+     * @param remove  the String to search for and remove, may be null
+     * @return the substring with the string removed if found,
+     *  {@code null} if null String input
+     * @since 2.1
+     */
+    public static String removeStart(final String str, final String remove) {
+        if (isEmpty(str) || isEmpty(remove)) {
+            return str;
+        }
+        if (str.startsWith(remove)) {
+            return str.substring(remove.length());
+        }
+        return str;
+    }
 
 }

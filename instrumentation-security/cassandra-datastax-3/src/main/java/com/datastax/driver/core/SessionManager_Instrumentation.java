@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentation.cassandra3.CassandraUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -16,7 +17,7 @@ abstract class SessionManager_Instrumentation {
     abstract Configuration configuration();
 
     public ResultSetFuture executeAsync(Statement statement) {
-        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(statement.hashCode());
+        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, statement.hashCode());
         ResultSetFuture result = null;
         AbstractOperation cqlOperation = null;
 

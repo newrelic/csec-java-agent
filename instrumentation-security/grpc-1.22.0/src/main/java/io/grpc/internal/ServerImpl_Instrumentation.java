@@ -8,8 +8,13 @@
 package io.grpc.internal;
 
 import com.newrelic.agent.security.instrumentation.grpc1220.GrpcServerUtils;
+import com.newrelic.agent.security.instrumentation.grpc1220.GrpcUtils;
 import com.newrelic.agent.security.instrumentation.grpc1220.processor.MonitorGrpcRequestQueueThread;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.schema.Framework;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.grpc.Context;
@@ -29,6 +34,14 @@ public class ServerImpl_Instrumentation {
             stream.tokenForCsec = NewRelic.getAgent().getTransaction().getToken();
             MonitorGrpcRequestQueueThread.submitNewTask();
             boolean isLockAcquired = GrpcServerUtils.acquireLockIfPossible();
+            try {
+                if (NewRelicSecurity.isHookProcessingActive()){
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(methodDef.getMethodDescriptor().getFullMethodName());
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.GRPC);
+                }
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, GrpcUtils.GRPC_1_22_0, e.getMessage()), e, this.getClass().getName());
+            }
             if (isLockAcquired) {
                 GrpcServerUtils.preprocessSecurityHook(stream, methodDef, headers, this.getClass().getName());
             }

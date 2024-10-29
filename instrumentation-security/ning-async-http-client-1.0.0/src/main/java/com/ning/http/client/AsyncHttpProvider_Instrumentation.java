@@ -6,6 +6,7 @@ import com.newrelic.api.agent.Segment;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -20,7 +21,7 @@ import java.util.concurrent.Future;
 public class AsyncHttpProvider_Instrumentation {
 
     public <T> Future<T> execute(Request request, AsyncHandler<T> handler) throws IOException {
-        boolean isLockAcquired = NingHelper.acquireLockIfPossible(this.hashCode());
+        boolean isLockAcquired = NingHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, this.hashCode());
         AbstractOperation operation = null;
         URI uri = null;
         Future<T> returnObj = null;

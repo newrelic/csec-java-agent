@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -20,7 +21,7 @@ import javax.naming.NamingException;
 public abstract class DirContext_Instrumentation implements Context {
 
     public NamingEnumeration<SearchResult> search(Name name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(name.toString(), filterExpr);
@@ -39,7 +40,7 @@ public abstract class DirContext_Instrumentation implements Context {
     }
 
     public NamingEnumeration<SearchResult> search(String name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(name, filterExpr);
@@ -58,7 +59,7 @@ public abstract class DirContext_Instrumentation implements Context {
     }
 
     public NamingEnumeration<SearchResult> search(String name, String filter, SearchControls cons) throws NamingException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(name, filter);
@@ -82,7 +83,7 @@ public abstract class DirContext_Instrumentation implements Context {
            SearchControls cons)
             throws NamingException {
 
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(name.toString(), filter);
@@ -139,9 +140,9 @@ public abstract class DirContext_Instrumentation implements Context {
         }
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType ldap) {
         try {
-            return GenericHelper.acquireLockIfPossible(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            return GenericHelper.acquireLockIfPossible(ldap, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         } catch (Throwable ignored) {
         }
         return false;

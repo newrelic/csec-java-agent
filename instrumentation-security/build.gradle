@@ -23,6 +23,7 @@ subprojects {
     }
 
     jar {
+        archiveBaseName = "csec-${archiveBaseName.getOrNull()}"
         manifest {
             attributes 'Implementation-Vendor': 'New Relic', 'Implementation-Version': project.version
         }

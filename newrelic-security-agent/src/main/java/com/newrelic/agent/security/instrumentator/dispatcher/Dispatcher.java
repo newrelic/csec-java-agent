@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.google.gson.Gson;
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
@@ -186,7 +187,7 @@ public class Dispatcher implements Callable {
                     eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
                     break;
                 case SECURE_COOKIE:
-                    SecureCookieOperation secureCookieOperationalBean = (SecureCookieOperation) operation;
+                    SecureCookieOperationSet secureCookieOperationalBean = (SecureCookieOperationSet) operation;
                     eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
                     break;
                 case TRUSTBOUNDARY:
@@ -221,6 +222,10 @@ public class Dispatcher implements Callable {
                         eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
                     }
                     break;
+                case SOLR_DB_REQUEST:
+                    SolrDbOperation solrDbOperation = (SolrDbOperation) operation;
+                    eventBean = prepareSolrDbRequestEvent(eventBean, solrDbOperation);
+                    break;
                 default:
 
             }
@@ -250,6 +255,20 @@ public class Dispatcher implements Callable {
                     this.getClass().getName());
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareSolrDbRequestEvent(JavaAgentEventBean eventBean, SolrDbOperation solrDbOperation) {
+        JSONArray params = new JSONArray();
+        JSONObject request = new JSONObject();
+        request.put("collection", solrDbOperation.getCollection());
+        request.put("method", solrDbOperation.getMethod());
+        request.put("connectionURL", solrDbOperation.getConnectionURL());
+        request.put("path", solrDbOperation.getPath());
+        request.put("params", solrDbOperation.getParams());
+        request.put("documents", solrDbOperation.getDocuments());
+        params.add(request);
+        eventBean.setParameters(params);
+        return eventBean;
     }
 
     private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
@@ -312,6 +331,7 @@ public class Dispatcher implements Callable {
      */
     private void processReflectedXSSEvent(JavaAgentEventBean eventBean) {
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RXSS_ENABLED, true)) {
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementRxssDetectionDeactivated();
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
@@ -454,16 +474,17 @@ public class Dispatcher implements Callable {
     }
 
     private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
-            SecureCookieOperation secureCookieOperationalBean) {
+            SecureCookieOperationSet secureCookieOperationalBean) {
         JSONArray params = new JSONArray();
-        params.add(secureCookieOperationalBean.getValue());
-        JSONObject cookie = new JSONObject();
-        cookie.put(COOKIE_VALUE, secureCookieOperationalBean.getCookie());
-        cookie.put(COOKIE_IS_SECURE, secureCookieOperationalBean.isSecure());
-        cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperationalBean.isHttpOnly());
-        cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperationalBean.isSameSiteStrict());
-        params.add(cookie);
-
+        for (SecureCookieOperationSet.SecureCookieOperation secureCookieOperation : secureCookieOperationalBean.getOperations()) {
+            JSONObject cookie = new JSONObject();
+            cookie.put(COOKIE_NAME, secureCookieOperation.getName());
+            cookie.put(COOKIE_VALUE, secureCookieOperation.getValue());
+            cookie.put(COOKIE_IS_SECURE, secureCookieOperation.isSecure());
+            cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperation.isHttpOnly());
+            cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperation.isSameSiteStrict());
+            params.add(cookie);
+        }
         eventBean.setParameters(params);
         return eventBean;
     }
@@ -720,6 +741,7 @@ public class Dispatcher implements Callable {
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
             VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
+        metaData.setSkipScanParameters(AgentConfig.getInstance().getAgentMode().getSkipScan().getParameters());
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);

@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,7 +23,7 @@ public abstract class File_Instrumentation {
     public abstract String getAbsolutePath();
 
     public boolean exists() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
 
         AbstractOperation operation = null;
@@ -43,19 +44,12 @@ public abstract class File_Instrumentation {
         return returnVal;
     }
 
-    private static boolean acquireFileLockIfPossible() {
-        try {
-            return FileHelper.acquireFileLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
+    private static boolean acquireFileLockIfPossible(VulnerabilityCaseType fileOperation) {
+        return GenericHelper.acquireLockIfPossible(fileOperation, FileHelper.getNrSecCustomAttribName());
     }
 
     private static void releaseFileLock() {
-        try {
-            FileHelper.releaseFileLock();
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(FileHelper.getNrSecCustomAttribName());
     }
 
 

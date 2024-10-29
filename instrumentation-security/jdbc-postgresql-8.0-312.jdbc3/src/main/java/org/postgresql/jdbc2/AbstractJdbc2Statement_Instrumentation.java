@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -73,16 +74,11 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            JdbcHelper.releaseLock();
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public AbstractJdbc2Statement_Instrumentation(AbstractJdbc2Connection connection, String sql, boolean isCallable, int rsType, int rsConcurrency) throws SQLException {
