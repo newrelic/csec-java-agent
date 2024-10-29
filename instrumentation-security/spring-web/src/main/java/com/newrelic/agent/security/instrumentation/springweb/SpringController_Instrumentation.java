@@ -26,8 +26,9 @@ public class SpringController_Instrumentation {
     })
     @WeaveIntoAllMethods
     private static void requestMapping() {
+        ServletHelper.setFoundAnnotatedUserLevelServiceMethod(false);
         ServletHelper.registerUserLevelCode("spring-annotation");
-        ServletHelper.setFoundAnnotedUserLevelServiceMethod();
+        ServletHelper.setFoundAnnotatedUserLevelServiceMethod(true);
     }
 
 }
