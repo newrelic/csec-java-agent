@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -67,33 +68,15 @@ public class GrpcClientUtils {
 
 
     public static void releaseLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(getNrSecCustomAttrName());
     }
 
     private static String getNrSecCustomAttrName() {
         return GrpcClientUtils.NR_SEC_CUSTOM_ATTRIB_NAME+Thread.currentThread().getId();
     }
 
-    public static boolean acquireLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired(getNrSecCustomAttrName())) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, getNrSecCustomAttrName());
     }
 
-    private static boolean isLockAcquired(String nrSecCustomAttrName) {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(nrSecCustomAttrName, Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
 }

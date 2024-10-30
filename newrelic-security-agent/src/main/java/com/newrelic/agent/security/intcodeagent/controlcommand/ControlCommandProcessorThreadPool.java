@@ -27,6 +27,12 @@ public class ControlCommandProcessorThreadPool {
     private final boolean allowCoreThreadTimeOut = false;
     private static Object mutex = new Object();
 
+    private long scanStartTime = 0;
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
+
     /**
      * A handler for rejected tasks that throws a
      * {@code RejectedExecutionException}.
@@ -115,6 +121,20 @@ public class ControlCommandProcessorThreadPool {
         return instance;
     }
 
+    public static void clearAllTasks() {
+        if (instance != null) {
+            instance.clearAllTasks(true);
+        }
+    }
+
+    private void clearAllTasks(boolean force) {
+        executor.getQueue().clear();
+        executor.purge();
+        if(force) {
+
+        }
+    }
+
     public static void shutDownPool() {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
@@ -139,4 +159,11 @@ public class ControlCommandProcessorThreadPool {
         }
     }
 
+    public long getScanStartTime() {
+        return scanStartTime;
+    }
+
+    public void setScanStartTime(long scanStartTime) {
+        this.scanStartTime = scanStartTime;
+    }
 }

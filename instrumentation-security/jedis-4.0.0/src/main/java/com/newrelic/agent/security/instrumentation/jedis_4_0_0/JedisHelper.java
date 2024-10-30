@@ -3,6 +3,7 @@ package com.newrelic.agent.security.instrumentation.jedis_4_0_0;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RedisOperation;
 
@@ -43,9 +44,9 @@ public class JedisHelper {
         } catch (Throwable ignored) {}
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType cachingDataStore, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_LOCK_ATTRIB_NAME, hashCode);
+            return GenericHelper.acquireLockIfPossible(cachingDataStore, NR_SEC_LOCK_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {}
         return false;
     }

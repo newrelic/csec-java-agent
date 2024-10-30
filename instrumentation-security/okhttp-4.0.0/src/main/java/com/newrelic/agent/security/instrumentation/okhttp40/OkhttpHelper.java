@@ -27,35 +27,7 @@ public class OkhttpHelper {
         return false;
     }
 
-    public static boolean isLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    public static boolean acquireLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
-    }
-
-    public static void releaseLock() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private static String getNrSecCustomAttribName() {
+    public static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 

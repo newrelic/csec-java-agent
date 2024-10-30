@@ -74,6 +74,9 @@ public class HttpHandler_Instrumentation {
     }
     private void postProcessSecurityHook(HttpExchange exchange) {
         try {
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return;
+            }
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }

@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -23,7 +24,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
     private String hostHeader() { return Weaver.callOriginal();}
 
     public void end(Buffer chunk) {
-        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible();
+        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             String uri = getAbsoluteUri(ssl, hostHeader(), uri());
@@ -41,7 +42,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
     }
 
     public void end() {
-        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible();
+        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             String uri = getAbsoluteUri(ssl, hostHeader(), uri());

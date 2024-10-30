@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,7 +36,10 @@ public class JNDIUtils {
                 NewRelicSecurity.getAgent().registerOperation(operation);
                 return operation;
             }
-        } catch (Exception ignored) {
+        } catch (URISyntaxException ignored) {
+            // Ignoring URISyntaxException
+        }
+        catch (Exception ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JAVAX_JNDI, ignored.getMessage()), ignored, JNDIUtils.class.getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JAVAX_JNDI, ignored.getMessage()), ignored, JNDIUtils.class.getName());
         }
