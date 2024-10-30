@@ -62,6 +62,6 @@ public class BlazeUtils {
     }
 
     private static String getNrSecCustomAttribName() {
-        return "HTTP4S-EMBER-REQUEST_LOCK" + Thread.currentThread().getId();
+        return "HTTP4S-BLAZE-REQUEST_LOCK" + Thread.currentThread().getId();
     }
 }
