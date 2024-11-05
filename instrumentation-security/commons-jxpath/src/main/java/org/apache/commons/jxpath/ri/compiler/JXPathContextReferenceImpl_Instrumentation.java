@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -18,7 +19,7 @@ import java.util.Iterator;
 public class JXPathContextReferenceImpl_Instrumentation {
 
     public Object getValue(String xpath, Expression expr) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(xpath, XPATHUtils.METHOD_GETVALUE);
@@ -37,7 +38,7 @@ public class JXPathContextReferenceImpl_Instrumentation {
     }
 
     public Iterator iterate(String xpath, Expression expr) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(xpath, XPATHUtils.METHOD_ITERATE);
@@ -56,7 +57,7 @@ public class JXPathContextReferenceImpl_Instrumentation {
     }
 
     public void removePath(String xpath, Expression expr) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(xpath, XPATHUtils.METHOD_REMOVE_PATH);
@@ -73,7 +74,7 @@ public class JXPathContextReferenceImpl_Instrumentation {
     }
 
     public void removeAll(String xpath, Expression expr) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(xpath, XPATHUtils.METHOD_REMOVE_ALL);
@@ -129,9 +130,9 @@ public class JXPathContextReferenceImpl_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
         try {
-            return GenericHelper.acquireLockIfPossible(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            return GenericHelper.acquireLockIfPossible(xpath, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         } catch (Throwable ignored) {}
         return false;
     }

@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
@@ -96,20 +97,15 @@ public abstract class PreparedStatement_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            JdbcHelper.releaseLock();
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
-    private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible(VulnerabilityCaseType sqlDbCommand) {
+        return GenericHelper.acquireLockIfPossible(sqlDbCommand, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public ResultSet executeQuery() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(preparedSql == null){
@@ -130,7 +126,7 @@ public abstract class PreparedStatement_Instrumentation {
     }
 
     public int executeUpdate() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(preparedSql == null){
@@ -151,7 +147,7 @@ public abstract class PreparedStatement_Instrumentation {
     }
 
     public boolean execute() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             if(preparedSql == null){
@@ -395,7 +391,7 @@ public abstract class PreparedStatement_Instrumentation {
         objectParams.put(String.valueOf(index), data);
     }
     public void addBatch() throws SQLException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         SQLOperation sqlOperation = null;
         if(isLockAcquired) {
             sqlOperation = new SQLOperation(this.getClass().getName(), JdbcHelper.METHOD_EXECUTE_BATCH);

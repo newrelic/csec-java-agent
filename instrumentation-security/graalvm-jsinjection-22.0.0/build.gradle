@@ -13,6 +13,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'org.graalvm.js:js:[22.0.0,)'
+    exclude('org.graalvm.js:js:24.1.0')
 //    excludeRegex '.*-rc[0-9]+'
 }
 

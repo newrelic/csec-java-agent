@@ -1,18 +1,19 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -29,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -70,6 +72,8 @@ public class ControlCommandProcessor implements Runnable {
 
     private long receiveTimestamp;
 
+    private static Instant iastReplayRequestMsgReceiveTime = Instant.now();
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public ControlCommandProcessor(String controlCommandMessage, long receiveTimestamp) {
@@ -107,13 +111,15 @@ public class ControlCommandProcessor implements Runnable {
         switch (controlCommand.getControlCommand()) {
 
             case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
-                InstrumentationUtils.shutdownLogic(true);
+                InstrumentationUtils.shutdownLogic();
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
+                NewRelic.noticeError("Incompatible New Relic Security Agent: " + controlCommand.getArguments().get(0), true);
                 System.err.println(controlCommand.getArguments().get(0));
-                InstrumentationUtils.shutdownLogic(true);
+                NewRelic.getAgent().getLogger().log(Level.SEVERE, controlCommand.getArguments().get(0));
+                InstrumentationUtils.shutdownLogic();
                 break;
 
             case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
@@ -165,10 +171,16 @@ public class ControlCommandProcessor implements Runnable {
                 }
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementReceivedControlCommands();
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
+                iastReplayRequestMsgReceiveTime = Instant.now();
                 IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
                 RestRequestProcessor.processControlCommand(controlCommand);
+                if(ControlCommandProcessorThreadPool.getInstance().getScanStartTime() <= 0) {
+                    ControlCommandProcessorThreadPool.getInstance().setScanStartTime(Instant.now().toEpochMilli());
+                    AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(ControlCommandProcessorThreadPool.getInstance().getScanStartTime());
+                }
                 break;
 
             case IntCodeControlCommand.STARTUP_WELCOME_MSG:
@@ -213,28 +225,10 @@ public class ControlCommandProcessor implements Runnable {
                  * Post reconnect: reset 'reconnecting phase' in WSClient.
                  */
                 try {
+                    AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementReceivedReconnectAtWill();
+                    WSUtils.getInstance().setReconnecting(true);
                     //TODO no need for draining IAST since last leg has complete ledger.
                     logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
-                    if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                            NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
-                    ) {
-                        WSUtils.getInstance().setReconnecting(true);
-                        while (EventSendPool.getInstance().getExecutor().getActiveCount() > 0 && !EventSendPool.getInstance().isWaiting().get()) {
-                            Thread.sleep(100);
-                        }
-                        logger.log(LogLevel.FINER, WS_RECONNECT_EVENT_SEND_POOL_DRAINED, this.getClass().getName());
-
-                        while (RestRequestThreadPool.getInstance().getExecutor().getActiveCount() > 0 && !RestRequestThreadPool.getInstance().isWaiting().get()) {
-                            Thread.sleep(100);
-                        }
-                        logger.log(LogLevel.FINER, String.format("Request = %s, in process = %s", GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size(), GrpcClientRequestReplayHelper.getInstance().getInProcessRequestQueue().size()), this.getClass().getName());
-                        while (GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size() > 0 && GrpcClientRequestReplayHelper.getInstance().getInProcessRequestQueue().size() > 0 && !GrpcClientRequestReplayHelper.getInstance().isWaiting().get()) {
-                            Thread.sleep(100);
-                        }
-                        logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
-                    }
-//                    RestRequestThreadPool.getInstance().resetIASTProcessing();
-//                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
                     WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
@@ -271,5 +265,9 @@ public class ControlCommandProcessor implements Runnable {
     public static void processControlCommand(String controlCommandMessage, long receiveTimestamp) {
         ControlCommandProcessorThreadPool.getInstance().executor
                 .submit(new ControlCommandProcessor(controlCommandMessage, receiveTimestamp));
+    }
+
+    public static Instant getIastReplayRequestMsgReceiveTime() {
+        return iastReplayRequestMsgReceiveTime;
     }
 }

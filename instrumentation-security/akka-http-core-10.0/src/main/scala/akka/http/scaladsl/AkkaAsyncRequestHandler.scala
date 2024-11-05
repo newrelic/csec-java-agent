@@ -8,7 +8,7 @@
 package akka.http.scaladsl
 
 import akka.Done
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
@@ -26,11 +26,14 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
     val body: lang.StringBuilder = new lang.StringBuilder();
     val dataBytes: Source[ByteString, AnyRef] = param.entity.getDataBytes()
     val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
-    val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
-      val chunk = byteString.utf8String
-      body.append(chunk)
+    if (!param.entity.isInstanceOf[HttpEntity.Chunked]) {
+      val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
+        val chunk = byteString.utf8String
+        body.append(chunk)
+      }
+      val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
     }
-    val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
+
     AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body, NewRelic.getAgent.getTransaction.getToken);
     val futureResponse: Future[HttpResponse] = handler.apply(param)
     futureResponse.flatMap(ResponseFutureHelper.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))

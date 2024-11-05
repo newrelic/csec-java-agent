@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -20,7 +21,7 @@ import static com.newrelic.agent.security.instrumentation.graalvm22.JSEngineUtil
 final class PolyglotContextImpl_Instrumentation {
 
     public Value eval(String languageId, org.graalvm.polyglot.Source source) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.JAVASCRIPT_INJECTION);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(languageId, source, JSEngineUtils.METHOD_EVAL);
@@ -78,9 +79,9 @@ final class PolyglotContextImpl_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType javascriptInjection) {
         try {
-            return GenericHelper.acquireLockIfPossible(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         } catch (Throwable ignored) {}
         return false;
     }

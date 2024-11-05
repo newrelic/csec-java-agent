@@ -35,8 +35,6 @@ public class GrpcRequestThreadPool {
     private final boolean allowCoreThreadTimeOut = false;
     private static final Object mutex = new Object();
 
-    private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
-
     private GrpcRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
         // load the settings
@@ -134,10 +132,6 @@ public class GrpcRequestThreadPool {
 
     public BlockingQueue<Runnable> getQueue() {
         return this.executor.getQueue();
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public ThreadPoolExecutor getExecutor() {

@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -20,7 +21,7 @@ public abstract class BaseXPath_Instrumentation {
     private String exprText = Weaver.callOriginal();
 
     public List selectNodes(Object node) throws JaxenException {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(this.exprText, XPATHUtils.METHOD_SELECT_NODES);
@@ -78,9 +79,9 @@ public abstract class BaseXPath_Instrumentation {
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
         try {
-            return GenericHelper.acquireLockIfPossible(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            return GenericHelper.acquireLockIfPossible(xpath, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         } catch (Throwable ignored) {}
         return false;
     }

@@ -48,7 +48,7 @@ public class AgentInfo {
 
     private BuildInfo buildInfo = new BuildInfo();
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static FileLoggerThreadPool logger;
     private boolean processProtected = false;
 
     private AgentInfo() {
@@ -117,6 +117,10 @@ public class AgentInfo {
 
     public void setBuildInfo(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
+    }
+
+    public static void initialiseLogger() {
+        logger = FileLoggerThreadPool.getInstance();
     }
 
     public ApplicationInfoBean generateAppInfo(CollectorConfig config) {

@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -36,15 +37,8 @@ public class AsynchttpHelper {
         return false;
     }
 
-    public static boolean acquireLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, getNrSecCustomAttribName());
     }
 
     public static void releaseLock() {
