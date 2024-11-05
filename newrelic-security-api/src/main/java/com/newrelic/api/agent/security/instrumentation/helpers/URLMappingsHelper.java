@@ -115,4 +115,10 @@ public class URLMappingsHelper {
         }
         return i;
     }
+
+    public static void removeApplicationURLMapping(String method, String path) {
+        if (!mappings.isEmpty()) {
+            mappings.remove(new ApplicationURLMapping(method, path));
+        }
+    }
 }
