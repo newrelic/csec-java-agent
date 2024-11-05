@@ -111,7 +111,7 @@ public class AgentConfig {
     public long triggerIAST() throws RestrictionModeException {
         try {
             if(agentMode.getScanSchedule().getNextScanTime() != null) {
-                logger.log(LogLevel.INFO, "Security Agent scan time is set to : " + agentMode.getScanSchedule().getNextScanTime(), AgentConfig.class.getName());
+                logger.log(LogLevel.FINER, "Security Agent scan time is set to : " + agentMode.getScanSchedule().getNextScanTime(), AgentConfig.class.getName());
                 long delay =  agentMode.getScanSchedule().getNextScanTime().getTime() - Instant.now().toEpochMilli();
                 return (delay > 0)? delay : 0;
             }
