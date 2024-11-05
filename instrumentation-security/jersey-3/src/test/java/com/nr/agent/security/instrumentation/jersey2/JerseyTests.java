@@ -55,7 +55,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.jersey2", "org.glassfish.jersey"})
+@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.jersey2"})
 @Category({Java8IncompatibleTest.class, Java11IncompatibleTest.class})
 public class JerseyTests {
 
@@ -203,6 +203,7 @@ public class JerseyTests {
         assertEquals(MediaType.TEXT_HTML, response.getResponseContentType());
         assertEquals(2, responseBody.length);
         assertEquals(responseBody[0], response.getResponseBody().toString());
+        assertFalse(hashCode.isEmpty());
         assertEquals(Collections.singleton(Integer.parseInt(responseBody[1])), hashCode);
     }
     private static void getRandomPort()

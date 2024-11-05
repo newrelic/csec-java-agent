@@ -4,6 +4,95 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2024-9-25
+### New features
+- Json Version bump to 1.2.9.
+- [PR-327](https://github.com/newrelic/csec-java-agent/pull/327) Application endpoint detection for gRPC Server [NR-303616](https://new-relic.atlassian.net/browse/NR-303616)
+- [PR-326](https://github.com/newrelic/csec-java-agent/pull/326) Add IAST Scan start time and Traffic Start Time in Health Check [NR-308822](https://new-relic.atlassian.net/browse/NR-308822)
+- [PR-320](https://github.com/newrelic/csec-java-agent/pull/320) Add feature to allow IAST Scan Scheduling. [NR-301534](https://new-relic.atlassian.net/browse/NR-301534)
+  Configuration via yaml:
+  ```yaml
+  security:
+      scan_schedule:
+        # The delay field specifies the delay in minutes before the IAST scan starts. This allows to schedule the scan to start at a later time.
+        delay: 0        #In minutes, default is 0 min
+    
+        # The duration field specifies the duration of the IAST scan in minutes. This determines how long the scan will run.
+        duration: 0      #In minutes, default is forever
+  
+        # The schedule field specifies a cron expression that defines when the IAST scan should start.
+        #schedule: ""   #By default, schedule is inactive
+  
+        # Allow continuously sample collection of IAST events
+        always_sample_traces: false # Default is false
+  ```
+- [PR-320](https://github.com/newrelic/csec-java-agent/pull/320) Add feature to ignore IAST Scan of certain APIs, categories, or parameters. [NR-301856](https://new-relic.atlassian.net/browse/NR-301856)
+  Configuration via yaml:
+  ```yaml
+  security:
+     # The exclude_from_iast_scan configuration allows to specify APIs, parameters, and categories that should not be scanned by Security Agents.
+    exclude_from_iast_scan:
+      # The api field specifies list of APIs using regular expression (regex) patterns that follow the syntax of Perl 5. The regex pattern should provide a complete match for the URL without the endpoint.
+      # Example:
+      #   api:
+      #    - .*account.*
+      #    - .*/\api\/v1\/.*?\/login
+      api: []
+
+      # The parameters configuration allows users to specify headers, query parameters, and body keys that should be excluded from IAST scans.
+      # Example:
+      #   http_request_parameters:
+      #    header:
+      #      - X-Forwarded-For
+      #    query:
+      #      - username
+      #      - password
+      #    body:
+      #      - account.email
+      #      - account.contact
+      http_request_parameters:
+        # A list of HTTP header keys. If a request includes any headers with these keys, the corresponding IAST scan will be skipped.
+        header: []
+        # A list of query parameter keys. The presence of these parameters in the request's query string will lead to skipping the IAST scan.
+        query: []
+        # A list of keys within the request body. If these keys are found in the body content, the IAST scan will be omitted.
+        body: []
+
+      # The iast_detection_category configuration allows to specify which categories of vulnerabilities should not be detected by Security Agents.
+      # If any of these categories are set to true, Security Agents will not generate events or flag vulnerabilities for that category.
+      iast_detection_category:
+        insecure_settings: false
+        invalid_file_access: false
+        sql_injection: false
+        nosql_injection: false
+        ldap_injection: false
+        javascript_injection: false
+        command_injection: false
+        xpath_injection: false
+        ssrf: false
+        rxss: false
+  ```
+- [PR-321](https://github.com/newrelic/csec-java-agent/pull/321) Add feature to rate limit the IAST replay requests. [NR-304574](https://new-relic.atlassian.net/browse/NR-304574)
+  ```yaml
+  security:
+    scan_controllers:
+      # The scan_request_rate_limit configuration allows to specify maximum number of replay request played per minute.
+      iast_scan_request_rate_limit: 3600 # Number of IAST replay request played per minute, Default is 3600
+  ```
+- [PR-315](https://github.com/newrelic/csec-java-agent/pull/315) GraphQL Support : The security agent now also supports GraphQL Version 16.0.0 and above, default is disabled. [NR-299885](https://new-relic.atlassian.net/browse/NR-299885)
+
+### Fixes
+- [PR-322](https://github.com/newrelic/csec-java-agent/pull/322) Report Application endpoints immediately upon detecting new endpoints. [NR-287324](https://new-relic.atlassian.net/browse/NR-287324)
+- [PR-323](https://github.com/newrelic/csec-java-agent/pull/323) Extract Server Configuration to resolve IAST localhost connection with application for WebSphere Liberty server [NR-303483](https://new-relic.atlassian.net/browse/NR-303483)
+- [PR-327](https://github.com/newrelic/csec-java-agent/pull/327) Fix for User Class Detection in gRPC Server [NR-303616](https://new-relic.atlassian.net/browse/NR-303616)
+- [PR-328](https://github.com/newrelic/csec-java-agent/pull/328) Fix for multiple Reflected Events observed in Jersey Framework [NR-307644](https://new-relic.atlassian.net/browse/NR-307644)
+- [PR-325](https://github.com/newrelic/csec-java-agent/pull/325) Fix for incorrect Application endpoints detected for Servlet Framework [NR-303615](https://new-relic.atlassian.net/browse/NR-303615)
+- [PR-320](https://github.com/newrelic/csec-java-agent/pull/320) Report only uncaught exceptions in IAST Error inbox. [NR-313412](https://new-relic.atlassian.net/browse/NR-313412)
+
+### Deprecations
+- Status File Used for Debugging: This feature has been deprecated. All debugging capabilities have been moved to either Init Logging or [Error Inbox](https://docs.newrelic.com/docs/errors-inbox/errors-inbox/) and will be removed in a future agent release. [NR-293966](https://new-relic.atlassian.net/browse/NR-293966)
+
+
 ## [1.4.1] - 2024-8-14
 ### Adds
 - [PR-296](https://github.com/newrelic/csec-java-agent/pull/296) Apache Solr Support: The security agent now also supports Apache Solr Version 4.0.0 and above. [NR-288599](https://new-relic.atlassian.net/browse/NR-288599)
