@@ -9,17 +9,14 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.mule.module.http.internal.domain.request.HttpRequest;
 import org.mule.module.http.internal.domain.request.HttpRequestContext;
-import org.mule.module.http.internal.listener.HttpRequestToMuleEvent_Instrumentation;
 
 @Weave(type = MatchType.Interface, originalName = "org.mule.module.http.internal.listener.async.RequestHandler")
 public class RequestHandler_Instrumentation {
-
     public void handleRequest(HttpRequestContext requestContext, HttpResponseReadyCallback responseCallback) {
         boolean isLockAcquired = acquireLockIfPossible(requestContext.hashCode());
         if (isLockAcquired) {
@@ -52,14 +49,15 @@ public class RequestHandler_Instrumentation {
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
             HttpRequest httpRequest = requestContext.getRequest();
+            if (httpRequest.getEntity() != null) {
+                MuleHelper.registerStreamHashIfNeeded(httpRequest.getEntity().hashCode(), MuleHelper.REQUEST_ENTITY_STREAM);
+            }
             securityRequest.setMethod(httpRequest.getMethod());
             securityRequest.setClientIP(requestContext.getClientConnection().getRemoteHostAddress().toString());
-            securityRequest.setServerPort(
-                    NewRelicSecurity
-                            .getAgent()
-                            .getSecurityMetaData()
-                            .getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class)
-            );
+
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class) != null) {
+                securityRequest.setServerPort(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class));
+            }
 
             if (securityRequest.getClientIP() != null && !securityRequest.getClientIP().trim().isEmpty()) {
                 securityAgentMetaData.getIps().add(securityRequest.getClientIP());
@@ -74,21 +72,16 @@ public class RequestHandler_Instrumentation {
 
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
-            securityRequest.setContentType(MuleHelper.getContentType(httpRequest));
+            securityRequest.setContentType(MuleHelper.getContentType(securityRequest.getHeaders()));
 
             // TODO: need to update UserClassEntity
             ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_3_7, ignored.getMessage()), ignored, HttpRequestToMuleEvent_Instrumentation.class.getName());
-        }
+        } catch (Throwable ignored){}
     }
 
     private void postProcessSecurityHook() {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
@@ -108,24 +101,22 @@ public class RequestHandler_Instrumentation {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MuleHelper.MULE_3_7, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
+                e.printStackTrace();
                 throw e;
             }
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_3_7, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_3_7, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
         }
     }
 
     private boolean acquireLockIfPossible(int hashcode) {
         try {
-            return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName(hashcode));
+            return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName());
         } catch (Throwable ignored) {}
         return false;
     }
 
     private void releaseLock(int hashcode) {
         try {
-            GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName(hashcode));
+            GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName());
         } catch (Throwable e) {}
     }
 }

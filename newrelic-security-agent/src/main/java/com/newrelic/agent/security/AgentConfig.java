@@ -91,8 +91,6 @@ public class AgentConfig {
         groupName = applyRequiredGroup();
         Agent.getCustomNoticeErrorParameters().put(IUtilConstants.SECURITY_MODE, groupName);
         // Enable low severity hooks
-        // Set required LogLevel
-        logLevel = applyRequiredLogLevel();
 
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
@@ -101,6 +99,8 @@ public class AgentConfig {
         //Do not repeat this task
         logger.initialiseLogger();
 
+        // Set required LogLevel
+        logLevel = applyRequiredLogLevel();
 
         if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT) instanceof Integer) {
             scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT));

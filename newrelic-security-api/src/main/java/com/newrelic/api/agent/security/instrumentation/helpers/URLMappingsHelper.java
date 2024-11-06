@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.RouteSegment;
 import com.newrelic.api.agent.security.schema.RouteSegments;
@@ -16,9 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class URLMappingsHelper {
     public static final String SEPARATOR = "/";
+
     public static final String WILDCARD = "*";
+
     public static final String subResourceSegment = "/*";
+
     private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
+
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
         add("org.eclipse.jetty.servlet.ServletHandler$Default404Servlet");
@@ -39,6 +44,9 @@ public class URLMappingsHelper {
         add("weblogic.management.rest.JerseyServlet");
         add("com.caucho.jsp.XtpServlet");
         add("com.caucho.jsp.JspServlet");
+        add("org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet");
+        add("org.codehaus.groovy.grails.web.pages.GroovyPagesServlet");
+        add("org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
@@ -46,7 +54,9 @@ public class URLMappingsHelper {
     }
 
     private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+
     private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
+
     public static Set<Integer> getHandlersHash() {
         return handlers;
     }
@@ -63,6 +73,7 @@ public class URLMappingsHelper {
         if (mapping.getHandler() != null){
             handlers.add(mapping.getHandler().hashCode());
         }
+        NewRelicSecurity.getAgent().reportURLMapping();
     }
 
     private synchronized static void generateRouteSegments(String endpoint) {
@@ -88,6 +99,7 @@ public class URLMappingsHelper {
                 StringUtils.equals(path,"*") ||
                 (StringUtils.startsWith(path, "{") && StringUtils.endsWith(path, "}"));
     }
+
     private static boolean allowMultiSegments(String path) {
         return StringUtils.equals(path, "*");
     }
@@ -104,6 +116,7 @@ public class URLMappingsHelper {
         }
         return segments;
     }
+
     public static int getSegmentCount(String path){
         Path normalizedPath = Paths.get(StringUtils.prependIfMissing(StringUtils.removeEnd(path, StringUtils.SEPARATOR), StringUtils.SEPARATOR)).normalize();
         int i = 0;
@@ -112,5 +125,11 @@ public class URLMappingsHelper {
             i++;
         }
         return i;
+    }
+
+    public static void removeApplicationURLMapping(String method, String path) {
+        if (!mappings.isEmpty()) {
+            mappings.remove(new ApplicationURLMapping(method, path));
+        }
     }
 }

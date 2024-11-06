@@ -218,4 +218,9 @@ public class Agent implements SecurityAgent {
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
         return false;
     }
+
+    @Override
+    public void reportURLMapping() {
+
+    }
 }
