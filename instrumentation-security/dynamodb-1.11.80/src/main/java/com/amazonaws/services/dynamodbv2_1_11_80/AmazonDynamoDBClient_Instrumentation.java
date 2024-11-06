@@ -15,7 +15,11 @@ import com.amazonaws.Request;
 import com.amazonaws.Response;
 import com.amazonaws.http.ExecutionContext;
 import com.amazonaws.http.HttpResponseHandler;
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.dynamodb_1_11_80.DynamoDBUtil;
@@ -29,6 +33,11 @@ public abstract class AmazonDynamoDBClient_Instrumentation extends AmazonWebServ
 
     public AmazonDynamoDBClient_Instrumentation(ClientConfiguration clientConfiguration) {
         super(clientConfiguration);
+        try {
+            NewRelicSecurity.getAgent().recordExternalConnection(endpoint.getHost(), endpoint.getPort(), null, clientConfiguration.getLocalAddress().getHostAddress(), ExternalConnectionType.DATABASE_CONNECTION.name(), DynamoDBUtil.DYNAMODB_1_11_80);
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_DETECTING_CONNECTION_STATS, DynamoDBUtil.DYNAMODB_1_11_80, e.getMessage()), this.getClass().getName());
+        }
     }
 
     //    private <X, Y extends AmazonWebServiceRequest> Response<X> invoke(Request<Y> request, HttpResponseHandler<AmazonWebServiceResponse<X>> responseHandler, ExecutionContext executionContext) {

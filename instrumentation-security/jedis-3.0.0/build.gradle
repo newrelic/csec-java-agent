@@ -12,6 +12,7 @@ dependencies {
 
 verifyInstrumentation {
     passes 'redis.clients:jedis:[3.0.0,4.0.0)'
+    excludeRegex(".*(rc|beta|RC).*")
 }
 
 site {

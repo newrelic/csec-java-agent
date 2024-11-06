@@ -4,6 +4,8 @@ import com.newrelic.agent.security.instrumentation.jedis_1_4_0.JedisHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ExternalConnectionType;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -13,6 +15,19 @@ import java.util.List;
 
 @Weave(type = MatchType.BaseClass, originalName = "redis.clients.jedis.Connection")
 public abstract class Connection_Instrumentation {
+
+    public abstract int getPort();
+    public abstract String getHost();
+
+    public void connect() {
+        Weaver.callOriginal();
+        try {
+            NewRelicSecurity.getAgent().recordExternalConnection(getHost(), getPort(), null, null, ExternalConnectionType.DATABASE_CONNECTION.name(), "JEDIS-1.4.0");
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_DETECTING_CONNECTION_STATS, "JEDIS-1.4.0", e.getMessage()), this.getClass().getName());
+        }
+    }
+
     protected Connection sendCommand(final Protocol.Command cmd, final byte[]... args) {
         boolean isLockAcquired = JedisHelper.acquireLockIfPossible(cmd.hashCode());
         AbstractOperation operation = null;
