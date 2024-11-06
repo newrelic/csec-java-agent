@@ -24,6 +24,7 @@ public class GenericHelper {
     public static final String ERROR_WHILE_GETTING_APP_ENDPOINTS = "Instrumentation library: %s , error while getting application API endpoints : %s";
     public static final String ERROR_WHILE_REMOVING_APP_ENDPOINTS = "Instrumentation library: %s , error while removing application API endpoints : %s";
     public static final String ERROR_PARSING_HTTP_RESPONSE = "Instrumentation library: %s , error while parsing HTTP Response data : %s";
+    public static final String ERROR_PARSING_HTTP_RESPONSE_BODY = "Instrumentation library: %s , error while parsing HTTP Response body : %s";
     public static final String ERROR_WHILE_DETECTING_USER_CLASS = "Instrumentation library: %s error while detecting user class";
     public static final String ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST = "Instrumentation library: %s , error while getting route for incoming request : %s";
 
