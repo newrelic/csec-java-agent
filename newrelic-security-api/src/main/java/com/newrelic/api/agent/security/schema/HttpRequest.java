@@ -44,16 +44,16 @@ public class HttpRequest {
     private Map<String, String> customDataType;
 
     @JsonIgnore
-    private List<String> pathParameters;
+    private Set<String> pathParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> queryParameters;
+    private Map<String, Set<String>> queryParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> requestHeaderParameters;
+    private Map<String, Set<String>> requestHeaderParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> requestBodyParameters;
+    private Map<String, Set<String>> requestBodyParameters;
 
     @JsonIgnore
     private boolean isRequestParametersParsed = false;
@@ -260,35 +260,35 @@ public class HttpRequest {
         }
     }
 
-    public List<String> getPathParameters() {
+    public Set<String> getPathParameters() {
         return pathParameters;
     }
 
-    public void setPathParameters(List<String> pathParameters) {
+    public void setPathParameters(Set<String> pathParameters) {
         this.pathParameters = pathParameters;
     }
 
-    public Map<String, List<String>> getQueryParameters() {
+    public Map<String, Set<String>> getQueryParameters() {
         return queryParameters;
     }
 
-    public void setQueryParameters(Map<String, List<String>> queryParameters) {
+    public void setQueryParameters(Map<String, Set<String>> queryParameters) {
         this.queryParameters = queryParameters;
     }
 
-    public Map<String, List<String>> getRequestHeaderParameters() {
+    public Map<String, Set<String>> getRequestHeaderParameters() {
         return requestHeaderParameters;
     }
 
-    public void setRequestHeaderParameters(Map<String, List<String>> requestHeaderParameters) {
+    public void setRequestHeaderParameters(Map<String, Set<String>> requestHeaderParameters) {
         this.requestHeaderParameters = requestHeaderParameters;
     }
 
-    public Map<String, List<String>> getRequestBodyParameters() {
+    public Map<String, Set<String>> getRequestBodyParameters() {
         return requestBodyParameters;
     }
 
-    public void setRequestBodyParameters(Map<String, List<String>> requestBodyParameters) {
+    public void setRequestBodyParameters(Map<String, Set<String>> requestBodyParameters) {
         this.requestBodyParameters = requestBodyParameters;
     }
 
