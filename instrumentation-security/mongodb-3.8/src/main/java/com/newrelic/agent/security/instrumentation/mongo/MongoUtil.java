@@ -235,6 +235,9 @@ public class MongoUtil {
         AbstractOperation noSQLOperation = null;
         try {
             List<BsonDocument> operations;
+            if (NewRelicSecurity.isHookProcessingActive()){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
+            }
             if (operation instanceof AggregateOperation) {
                 AggregateOperation aggregateOperation = (AggregateOperation) operation;
                 noSQLOperation = recordMongoOperation(aggregateOperation.getPipeline(), MongoUtil.OP_AGGREGATE, className, methodName);
