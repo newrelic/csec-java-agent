@@ -102,11 +102,13 @@ public class AgentConfig {
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
 
-        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT) instanceof Integer) {
-            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT));
-        } else {
+        try {
+            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT, 0));
+        } catch (NumberFormatException | ClassCastException e){
+            logger.log(LogLevel.FINEST, String.format("Error while reading IAST_SCAN_INSTANCE_COUNT %s , setting to default", NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT)), AgentConfig.class.getName());
             scanControllers.setScanInstanceCount(0);
         }
+
         //Always set IAST Test Identifier after IAST_SCAN_INSTANCE_COUNT
         if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER) instanceof String) {
             scanControllers.setIastTestIdentifier(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER));
