@@ -15,6 +15,7 @@ public class InvokerMessageProcessor_Instrumentation {
             Weaver.callOriginal();
         } finally {
             MuleHelper.getHandlerMap().put(hashCode(), object.getClass().getName());
+            URLMappingsHelper.getHandlersHash().add(object.getClass().getName().hashCode());
         }
     }
 }
