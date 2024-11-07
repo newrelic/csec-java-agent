@@ -121,7 +121,7 @@ task relocatedShadowJar(type: ShadowJar) {
             "org.json", "com.fasterxml", "org.java_websocket", "com.google", "org.unbescape",
             "org.apache.commons", "okio", "okhttp3", "org.slf4j", "net.openhft", "oshi", "com.sun.jna",
             "kotlin", "com.damnhandy", "org.joda", "io.opentelemetry", "org.everit", "org.jetbrains", "org.intellij",
-            "org.junit", "org.hamcrest", "org.yaml", "junit"
+            "org.junit", "org.hamcrest", "org.yaml", "junit", "org.apache.http"
     ].each {
         relocate(it, "com.newrelic.agent.security.deps.$it")
     }

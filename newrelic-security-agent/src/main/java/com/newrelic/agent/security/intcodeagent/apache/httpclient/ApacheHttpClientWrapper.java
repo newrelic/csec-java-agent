@@ -9,7 +9,6 @@ package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.http.ReadResult;
