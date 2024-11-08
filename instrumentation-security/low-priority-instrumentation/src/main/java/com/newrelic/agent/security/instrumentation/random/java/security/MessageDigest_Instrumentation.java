@@ -21,8 +21,10 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm) {
         AbstractOperation operation = null;
+        System.out.println("Hook for MessageDigest intercepted");
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            System.out.println("Going for MessageDigest event preparation");
             operation = preprocessSecurityHook(algorithm, StringUtils.EMPTY, MessageDigest.class.getName(), "getInstance");
         }
         MessageDigest returnValue = null;
@@ -38,8 +40,10 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm, String provider) {
         AbstractOperation operation = null;
+        System.out.println("Hook for MessageDigest intercepted");
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            System.out.println("Going for MessageDigest event preparation");
             operation = preprocessSecurityHook(algorithm, provider, MessageDigest.class.getName(), "getInstance");
         }
         MessageDigest returnValue = null;
@@ -55,8 +59,10 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm, Provider provider) {
         AbstractOperation operation = null;
+        System.out.println("Hook for MessageDigest intercepted");
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            System.out.println("Going for MessageDigest event preparation");
             operation = preprocessSecurityHook(algorithm, provider.getClass().getSimpleName(), MessageDigest.class.getName(), "getInstance");
         }
         MessageDigest returnValue = null;

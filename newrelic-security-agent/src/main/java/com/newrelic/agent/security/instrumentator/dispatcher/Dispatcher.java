@@ -200,6 +200,7 @@ public class Dispatcher implements Callable {
                     break;
                 case HASH:
                     HashCryptoOperation hashOperationalBean = (HashCryptoOperation) operation;
+                    System.out.println("Hash event being prepared");
                     eventBean = prepareHashEvent(eventBean, hashOperationalBean);
                     break;
                 case JAVASCRIPT_INJECTION:
