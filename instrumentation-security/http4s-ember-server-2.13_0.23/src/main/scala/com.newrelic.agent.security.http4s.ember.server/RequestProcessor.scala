@@ -30,16 +30,16 @@ object RequestProcessor {
     val result = construct((): Unit)
       .redeemWith(_ => httpApp(request),
         _ => for {
-          _ <- preprocessHttpRequest(request)
+          isLockAcquired <- preprocessHttpRequest(request)
           resp <- httpApp(request)
-          _ <- postProcessSecurityHook(resp)
+          _ <- postProcessSecurityHook(isLockAcquired, resp)
         } yield resp
       )
     result
   }
 
-  private def preprocessHttpRequest[F[_]: Sync](request: Request[F]): F[Unit] = construct {
-    val isLockAcquired = EmberUtils.acquireLockIfPossible()
+  private def preprocessHttpRequest[F[_]: Sync](request: Request[F]): F[Boolean] = construct {
+    val isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP4S-EMBER-REQUEST_LOCK", request.hashCode())
     try {
       if (NewRelicSecurity.isHookProcessingActive && isLockAcquired && !NewRelicSecurity.getAgent.getSecurityMetaData.getRequest.isRequestParsed){
 
@@ -50,7 +50,11 @@ object RequestProcessor {
         securityRequest.setMethod(request.method.name)
         securityRequest.setServerPort((request.serverPort).get.asInstanceOf[Port].value)
         securityRequest.setClientIP(request.remoteAddr.get.toString)
-        securityRequest.setProtocol(EmberUtils.getProtocol(request.isSecure.get))
+        if(request.isSecure.get){
+          securityRequest.setProtocol("https")
+        } else {
+          securityRequest.setProtocol("http")
+        }
         securityRequest.setUrl(request.uri.toString)
 
         if (securityRequest.getClientIP != null && securityRequest.getClientIP.trim.nonEmpty) {
@@ -59,8 +63,8 @@ object RequestProcessor {
         }
 
         processRequestHeaders(request.headers, securityRequest)
-        securityMetaData.setTracingHeaderValue(EmberUtils.getTraceHeader(securityRequest.getHeaders))
-        securityRequest.setContentType(EmberUtils.getContentType(securityRequest.getHeaders))
+        securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders))
+        securityRequest.setContentType(getContentType(securityRequest.getHeaders))
 
         // TODO extract request body & user class detection
 
@@ -71,20 +75,17 @@ object RequestProcessor {
 
     } catch {
       case e: Throwable => NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HTTP_4S_EMBER_SERVER_2_13_0_23, e.getMessage), e, this.getClass.getName)
-    } finally {
-      if (isLockAcquired) {
-        EmberUtils.releaseLock()
-      }
     }
+    isLockAcquired
   }
 
-  private def postProcessSecurityHook[F[_]: Sync](response: Response[F]): F[Unit] = construct {
+  private def postProcessSecurityHook[F[_]: Sync](isLockAcquired: Boolean, response: Response[F]): F[Unit] = construct {
     try {
-      if (NewRelicSecurity.isHookProcessingActive) {
+      if (isLockAcquired && NewRelicSecurity.isHookProcessingActive) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
         securityResponse.setResponseCode(response.status.code)
         processResponseHeaders(response.headers, securityResponse)
-        securityResponse.setResponseContentType(EmberUtils.getContentType(securityResponse.getHeaders))
+        securityResponse.setResponseContentType(getContentType(securityResponse.getHeaders))
 
         // TODO extract response body
 
@@ -152,6 +153,21 @@ object RequestProcessor {
         securityResp.getHeaders.put(header.name.toString.toLowerCase, header.value)
       }
     })
+  }
+
+  private def getContentType(headers: util.Map[String, String]): String = {
+    var contentType = StringUtils.EMPTY
+    if (headers.containsKey("content-type")) contentType = headers.get("content-type")
+    contentType
+  }
+
+  private def getTraceHeader(headers: util.Map[String, String]): String = {
+    var data = StringUtils.EMPTY
+    if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase)) {
+      data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)
+      if (data == null || data.trim.isEmpty) data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase)
+    }
+    data
   }
 
   private def construct[F[_] : Sync, T](t: => T): F[T] = Sync[F].delay(t)
