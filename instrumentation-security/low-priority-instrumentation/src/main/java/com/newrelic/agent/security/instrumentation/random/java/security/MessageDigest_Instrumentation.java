@@ -21,11 +21,17 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm) {
         AbstractOperation operation = null;
-        System.out.println("Hook for MessageDigest intercepted");
+        System.out.println("Hook for "+ algorithm +" MessageDigest intercepted owasp processing required: "+LowSeverityHelper.isOwaspHookProcessingNeeded());
+        boolean isHit = benchamrkTest(algorithm);
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
+        if(isHit) {
+            System.out.println("MessageDigest owasp hook enabled: "+isOwaspHookEnabled + "Processing needed : "+LowSeverityHelper.isOwaspHookProcessingNeeded());
+        }
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
-            System.out.println("Going for MessageDigest event preparation");
             operation = preprocessSecurityHook(algorithm, StringUtils.EMPTY, MessageDigest.class.getName(), "getInstance");
+            if(isHit) {
+                System.out.println("Going for MessageDigest event preparation with operation : "+operation);
+            }
         }
         MessageDigest returnValue = null;
         try {
@@ -38,13 +44,28 @@ public class MessageDigest_Instrumentation {
         return returnValue;
     }
 
+    private static boolean benchamrkTest(String algorithm) {
+        for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+            if(stackTraceElement.getClassName().contains("BenchmarkTest00005") && stackTraceElement.getLineNumber() == 59) {
+                System.out.println("BenchmarkTest00005 message digest hit for line 59 with: "+algorithm);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static MessageDigest getInstance(String algorithm, String provider) {
         AbstractOperation operation = null;
-        System.out.println("Hook for MessageDigest intercepted");
+        boolean isHit = benchamrkTest(algorithm);
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
+        if(isHit) {
+            System.out.println("MessageDigest owasp hook enabled: "+isOwaspHookEnabled + "Processing needed : "+LowSeverityHelper.isOwaspHookProcessingNeeded());
+        }
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
-            System.out.println("Going for MessageDigest event preparation");
             operation = preprocessSecurityHook(algorithm, provider, MessageDigest.class.getName(), "getInstance");
+            if(isHit) {
+                System.out.println("Going for MessageDigest event preparation with operation : "+operation);
+            }
         }
         MessageDigest returnValue = null;
         try {
@@ -59,11 +80,16 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm, Provider provider) {
         AbstractOperation operation = null;
-        System.out.println("Hook for MessageDigest intercepted");
+        boolean isHit = benchamrkTest(algorithm);
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
+        if(isHit) {
+            System.out.println("MessageDigest owasp hook enabled: "+isOwaspHookEnabled + "Processing needed : "+LowSeverityHelper.isOwaspHookProcessingNeeded());
+        }
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
-            System.out.println("Going for MessageDigest event preparation");
             operation = preprocessSecurityHook(algorithm, provider.getClass().getSimpleName(), MessageDigest.class.getName(), "getInstance");
+            if(isHit) {
+                System.out.println("Going for MessageDigest event preparation with operation : "+operation);
+            }
         }
         MessageDigest returnValue = null;
         try {

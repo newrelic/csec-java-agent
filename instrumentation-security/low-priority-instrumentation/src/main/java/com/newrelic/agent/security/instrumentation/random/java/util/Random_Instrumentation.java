@@ -198,6 +198,7 @@ public class Random_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String className, String methodName) {
         try {
+            System.out.println("Hook being processed for random");
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
             ) {
@@ -248,6 +249,7 @@ public class Random_Instrumentation {
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType random, int hashCode) {
+        System.out.println("Hook for random intercepted");
         try {
             return GenericHelper.acquireLockIfPossible(random, RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {
