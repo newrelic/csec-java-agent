@@ -4,7 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.1] - TBD
+## [1.5.1] - 2024-11-9
 ### New features
 - [PR-350](https://github.com/newrelic/csec-java-agent/pull/350) IAST support for CI/CD.
   Configuration via yaml:
