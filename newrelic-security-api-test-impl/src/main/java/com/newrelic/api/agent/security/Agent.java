@@ -2,7 +2,6 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
@@ -222,5 +221,17 @@ public class Agent implements SecurityAgent {
     @Override
     public void reportURLMapping() {
 
+    }
+
+    @Override
+    public void dispatcherTransactionStarted() {
+    }
+
+    @Override
+    public void dispatcherTransactionCancelled() {
+    }
+
+    @Override
+    public void dispatcherTransactionFinished() {
     }
 }

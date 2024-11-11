@@ -73,7 +73,7 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(responseBody);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

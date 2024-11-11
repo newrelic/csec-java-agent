@@ -193,7 +193,7 @@ public class NettyUtils {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(((FullHttpResponse) msg).getStatus().code());
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

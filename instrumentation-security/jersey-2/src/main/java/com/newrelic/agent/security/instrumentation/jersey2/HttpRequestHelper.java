@@ -83,7 +83,7 @@ public class HttpRequestHelper {
             if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(getHeaders(wrappedMessageContext));
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());

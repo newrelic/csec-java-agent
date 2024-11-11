@@ -86,7 +86,7 @@ public class Filter_Instrumentation {
             HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);
             securityResponse.setResponseContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
 
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
