@@ -328,7 +328,7 @@ public class WSClient extends WebSocketClient {
         }
         if (this.isOpen()) {
             logger.log(LogLevel.FINER, SENDING_EVENT + text, WSClient.class.getName());
-            super.send(text);
+//            super.send(text);
             AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesSent();
         } else {
             logger.log(LogLevel.FINER, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
