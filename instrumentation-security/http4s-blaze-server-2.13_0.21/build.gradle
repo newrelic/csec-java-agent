@@ -8,6 +8,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.scala-lang:scala-library:2.13.3")
     implementation('org.http4s:http4s-blaze-server_2.13:0.21.24')
+    testImplementation("org.http4s:http4s-dsl_2.13:0.21.24")
 }
 
 jar {
