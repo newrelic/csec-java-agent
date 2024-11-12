@@ -170,9 +170,9 @@ public class FileLoggerThreadPool {
         if (!isInitLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
-        if(!isLoggingToStdOut) {
-            executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
-        }
+//        if(!isLoggingToStdOut) {
+//            executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
+//        }
         log(logLevel, event, throwableEvent, logSourceClassName);
     }
 
