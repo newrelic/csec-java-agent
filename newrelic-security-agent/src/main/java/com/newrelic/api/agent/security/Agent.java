@@ -255,7 +255,7 @@ public class Agent implements SecurityAgent {
         SchedulerHelper.getInstance().scheduleApplicationRuntimeErrorPosting(RuntimeErrorReporter.getInstance()::reportApplicationRuntimeError,
                 30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
-        logger.logInit(
+        logger.log(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
                 Agent.class.getName()
@@ -263,7 +263,7 @@ public class Agent implements SecurityAgent {
         WSReconnectionST.getInstance().submitNewTaskSchedule(0);
         EventSendPool.getInstance();
         ControlCommandProcessorThreadPool.getInstance();
-        logger.logInit(
+        logger.log(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
                 Agent.class.getName()
@@ -273,7 +273,7 @@ public class Agent implements SecurityAgent {
         if (config.getAgentMode().getIastScan().getEnabled()) {
             IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
                     config.getAgentMode().getIastScan().getProbing().getInterval(), TimeUnit.SECONDS);
-            logger.logInit(
+            logger.log(
                     LogLevel.INFO,
                     String.format(STARTED_MODULE_LOG, AgentServices.IASTDataPullService.name()),
                     Agent.class.getName()

@@ -69,7 +69,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         } else {
             this.iastDataRequestTime = Instant.now().toEpochMilli();
         }
-        logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
+        logger.log(LogLevel.FINE, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
@@ -90,7 +90,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.csecActivationTime = jaHealthCheck.getCsecActivationTime();
         this.iastDataRequestTime = jaHealthCheck.getIastDataRequestTime();
         this.scanActive = jaHealthCheck.getScanActive();
-        logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
+        logger.log(LogLevel.FINE, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
     public IdentifierEnvs getKind() {

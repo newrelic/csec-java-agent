@@ -78,7 +78,7 @@ public class HealthCheckScheduleThread {
                     return;
                 }
 
-                logger.log(LogLevel.INFO, String.format("Pending CCs to be processed : %s", RestRequestThreadPool.getInstance().getQueueSize()), this.getClass().getName());
+                logger.log(LogLevel.FINE, String.format("Pending CCs to be processed : %s", RestRequestThreadPool.getInstance().getQueueSize()), this.getClass().getName());
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(RestRequestThreadPool.getInstance().getQueueSize());
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
                 AgentUtils.getInstance().addStatusLogMostRecentHCs(AgentInfo.getInstance().getJaHealthCheck().toString());

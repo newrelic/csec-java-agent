@@ -202,8 +202,8 @@ public class ApplicationInfoUtils {
      */
     public static ApplicationInfoBean createApplicationInfoBean(Identifier identifier, Integer vmpid, String applicationUUID, CollectorConfig config) {
         // log appinfo create started
-        logger.logInit(
-                LogLevel.INFO,
+        logger.log(
+                LogLevel.FINE,
                 APP_INFO_GATHERING_STARTED,
                 ApplicationInfoUtils.class.getName()
         );

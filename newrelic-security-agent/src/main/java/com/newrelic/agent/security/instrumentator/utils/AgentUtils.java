@@ -415,7 +415,7 @@ public class AgentUtils {
      * On startup, Instantiating collector policy with default values.
      */
     public static void instantiateDefaultPolicy() {
-        logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", AgentUtils.class.getName());
+        logger.log(LogLevel.FINE, "Instantiating collector policy with default!!!", AgentUtils.class.getName());
         applyPolicy(AgentUtils.getInstance().getDefaultAgentPolicy());
     }
 

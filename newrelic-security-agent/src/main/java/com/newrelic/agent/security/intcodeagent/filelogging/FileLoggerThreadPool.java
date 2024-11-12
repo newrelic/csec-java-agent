@@ -155,13 +155,13 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, String logSourceClassName) {
-        postLogMessage(logLevel, event, null, logSourceClassName);
+//        postLogMessage(logLevel, event, null, logSourceClassName);
         if (!isInitLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
-        if(!isLoggingToStdOut) {
-            executor.submit(new InitLogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
-        }
+//        if(!isLoggingToStdOut) {
+//            executor.submit(new InitLogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
+//        }
         log(logLevel, event, logSourceClassName);
     }
 

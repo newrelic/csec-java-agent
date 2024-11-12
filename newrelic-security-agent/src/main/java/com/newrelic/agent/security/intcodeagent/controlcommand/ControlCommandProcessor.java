@@ -130,7 +130,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentPolicyParameters parameters = JsonConverter.getObjectMapper()
                             .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
                     AgentUtils.getInstance().setAgentPolicyParameters(parameters);
-                    logger.logInit(LogLevel.INFO,
+                    logger.logInit(LogLevel.FINE,
                             String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicyParameters()),
                             ControlCommandProcessor.class.getName());
                 } catch (JsonProcessingException e) {
@@ -198,7 +198,7 @@ public class ControlCommandProcessor implements Runnable {
                 }
                 try {
                     AgentPolicy policy = JsonConverter.getObjectMapper().convertValue(controlCommand.getData(), AgentPolicy.class);
-                    logger.logInit(LogLevel.INFO,
+                    logger.log(LogLevel.FINE,
                             String.format(IAgentConstants.RECEIVED_AGENT_POLICY, JsonConverter.toJSON(policy)),
                             AgentUtils.class.getName());
                     AgentUtils.getInstance().setDefaultAgentPolicy(policy);

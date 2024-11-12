@@ -127,7 +127,7 @@ public class AgentInfo {
         applicationInfo = ApplicationInfoUtils.createApplicationInfoBean(identifier, getVMPID(), applicationUUID, config);
         if (applicationInfo == null) {
             // TODO raise exception
-            logger.logInit(
+            logger.log(
                     LogLevel.SEVERE,
                     APP_INFO_BEAN_NOT_CREATED,
                     AgentInfo.class.getName()

@@ -232,7 +232,7 @@ public class WSClient extends WebSocketClient {
             printValue = StringUtils.substring(value, 0,4) + "-******-" +
                     StringUtils.substring(value, value.length()-7);
         }
-        logger.log(LogLevel.INFO, String.format("Adding WS connection header: %s -> %s", key, printValue),
+        logger.log(LogLevel.FINE, String.format("Adding WS connection header: %s -> %s", key, printValue),
                 WSClient.class.getName());
         super.addHeader(key, value);
     }
@@ -253,9 +253,9 @@ public class WSClient extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementConnectionReconnected();
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.log(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
+        logger.log(LogLevel.FINE, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
@@ -263,7 +263,7 @@ public class WSClient extends WebSocketClient {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
+        logger.log(LogLevel.FINE, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
     private static void cleanIASTState() {
@@ -312,7 +312,7 @@ public class WSClient extends WebSocketClient {
     public void onError(Exception ex) {
         AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementConnectionFailure();
         NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
-        logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
+        logger.log(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
                 WSClient.class.getName());

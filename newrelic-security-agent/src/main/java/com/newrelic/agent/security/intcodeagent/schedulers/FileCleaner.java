@@ -35,7 +35,7 @@ public class FileCleaner {
         public void run() {
             AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementIastFileCleaner();
             long delay = Instant.now().toEpochMilli() - TimeUnit.MINUTES.toMillis(2);
-            logger.log(LogLevel.INFO, FILE_CLEANER_INVOKED_INITIATING_TEMP_FILE_DIRECTORY_CLEANUP, FileCleaner.class.getName());
+            logger.log(LogLevel.FINE, FILE_CLEANER_INVOKED_INITIATING_TEMP_FILE_DIRECTORY_CLEANUP, FileCleaner.class.getName());
             if(StringUtils.isBlank(osVariables.getTmpDirectory())) {
                 return;
             }
