@@ -257,6 +257,7 @@ public class Agent implements SecurityAgent {
                 30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         SchedulerHelper.getInstance().scheduleSampling(IastMonitoring::sampleData, 0, 5, TimeUnit.SECONDS);
+        SchedulerHelper.getInstance().scheduleSampling(IastMonitoring::resetEventSampler, 0, 6, TimeUnit.HOURS);
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
@@ -452,6 +453,12 @@ public class Agent implements SecurityAgent {
                     operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
                 }
                 processStackTrace(operation);
+
+                IastMonitoring.registerTraceHarvested(operation.getApiID());
+                if(IastMonitoring.eventQuotaReached(operation.getApiID())){
+                    return;
+                }
+
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
                 HttpRequest request = securityMetaData.getRequest();

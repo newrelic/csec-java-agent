@@ -104,49 +104,6 @@ public class HashGenerator {
         return stringBuffer.toString();
     }
 
-    public static void updateShaAndSize(DeployedApplication deployedApplication) {
-        File deplyementDirFile = new File(deployedApplication.getDeployedPath());
-        if (StringUtils.isBlank(deployedApplication.getDeployedPath())) {
-            logger.log(LogLevel.WARNING, "Empty deployed path detected. Not calculating SHA256 & size.", HashGenerator.class.getName());
-            return;
-        }
-        if (deplyementDirFile.isFile()) {
-            deployedApplication.setSha256(getChecksum(deplyementDirFile));
-            deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(deplyementDirFile)));
-        } else {
-            deployedApplication.setSha256(getSHA256ForDirectory(deplyementDirFile.getAbsolutePath()));
-            deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOfDirectory(deplyementDirFile)));
-        }
-    }
-
-    public static String getSHA256ForDirectory(String file) {
-        try {
-            File dir = new File(file);
-            if (dir.isDirectory()) {
-                List<String> sha256s = new ArrayList<>();
-                Collection<File> allFiles = FileUtils.listFiles(dir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-                List<File> sortedFiles = new ArrayList<>(allFiles);
-                Collections.sort(sortedFiles);
-                for (File tempFile : sortedFiles) {
-                    String extension = FilenameUtils.getExtension(tempFile.getName());
-                    if (OTHER_CRITICAL_FILE_EXT.contains(extension)
-                            || JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
-                        sha256s.add(getChecksum(tempFile));
-                    }
-                }
-                return getSHA256HexDigest(sha256s);
-            }
-        } catch (Exception e) {
-            logger.log(LogLevel.SEVERE, ERROR, e, HashGenerator.class.getName());
-        }
-        return null;
-    }
-
-    public static String getSHA256HexDigest(List<String> data) {
-        data.removeAll(Collections.singletonList(null));
-        String input = StringUtils.join(data);
-        return getChecksum(input);
-    }
     public static String getSHA256HexDigest(String data) {
         String input = StringUtils.join(data);
         return getChecksum(input);
