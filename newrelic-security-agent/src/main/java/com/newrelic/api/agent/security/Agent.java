@@ -1123,7 +1123,8 @@ public class Agent implements SecurityAgent {
         }
 
         if( AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoring()
-                && !AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().get()) {
+                && !AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().get()
+                && IastMonitoring.getInstance().getHarvestActive()) {
             AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().set(true);
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("HARVEST", true);
             logger.log(LogLevel.FINEST, "Harvesting started", Agent.class.getName());
