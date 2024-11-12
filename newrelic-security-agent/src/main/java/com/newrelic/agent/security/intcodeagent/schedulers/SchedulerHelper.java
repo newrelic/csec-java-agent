@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.util.IUtilConstants;
@@ -102,5 +103,12 @@ public class SchedulerHelper {
         }
         ScheduledFuture<?> future = commonExecutor.schedule(runnable, 60, TimeUnit.SECONDS);
         scheduledFutureMap.put(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING, future);
+    }
+
+    public void scheduleSampling(Runnable runnable, long initialDelay, long delay, TimeUnit unit) {
+        if(AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoring()) {
+            ScheduledFuture<?> future = commonExecutor.scheduleAtFixedRate(runnable, initialDelay, delay, unit);
+            scheduledFutureMap.put("sampling", future);
+        }
     }
 }

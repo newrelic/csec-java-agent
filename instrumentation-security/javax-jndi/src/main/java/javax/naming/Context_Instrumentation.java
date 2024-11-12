@@ -93,7 +93,7 @@ public abstract class Context_Instrumentation {
     private void registerExitOperation(boolean isLockAcquired, List<AbstractOperation> operations) {
         try {
             if(operations == null || operations.isEmpty() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExitEvent()) {
                 return;
             }
 
@@ -108,7 +108,7 @@ public abstract class Context_Instrumentation {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExitEvent()
             ) {
                 return;
             }

@@ -18,7 +18,7 @@ public class R2dbcHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper.skipExitEvent()
             ) {
                 return;
             }
@@ -56,7 +56,7 @@ public class R2dbcHelper {
         return null;
     }
 
-    public static boolean skipExistsEvent() {
+    public static boolean skipExitEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             return true;

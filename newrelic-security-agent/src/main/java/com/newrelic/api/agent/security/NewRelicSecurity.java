@@ -7,7 +7,10 @@
 
 package com.newrelic.api.agent.security;
 
+import com.newrelic.agent.security.AgentConfig;
+import com.newrelic.agent.security.intcodeagent.iast.monitoring.IastMonitoring;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ThreadLocalLockHelper;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
  * objects offering additional capabilities.
  */
 public final class NewRelicSecurity {
-    private static boolean isAgentInitComplete = false;
 
     /**
      * Returns the root of the New Relic Security Java Agent API object hierarchy.
@@ -35,21 +37,15 @@ public final class NewRelicSecurity {
      * {@code false} otherwise.
      */
     public static boolean isHookProcessingActive(){
-        return !ThreadLocalLockHelper.isLockHeldByCurrentThread() && isAgentInitComplete && Agent.getInstance().isSecurityActive() && !isInternalThread()
+        return AgentConfig.getInstance().isNRSecurityEnabled() && Agent.getInstance().isSecurityActive() && !ThreadLocalLockHelper.isLockHeldByCurrentThread() && !isInternalThread()
                 && NewRelic.getAgent().getTransaction() != null
-                && NewRelic.getAgent().getTransaction().getSecurityMetaData() instanceof SecurityMetaData;
+                && NewRelic.getAgent().getTransaction().getSecurityMetaData() instanceof SecurityMetaData
+                && IastMonitoring.shouldProcessInterception();
 //                (Agent.getInstance().getSecurityMetaData() != null);
     }
 
     public static boolean isInternalThread(){
         return StringUtils.startsWithAny(Thread.currentThread().getName(),
                 "NR-CSEC", "New Relic", "NewRelic", "Newrelic");
-    }
-
-    /**
-     *  Marks the end of agent init. Hooks can now be processed.
-     */
-    public static void markAgentAsInitialised(){
-        isAgentInitComplete = true;
     }
 }

@@ -27,7 +27,7 @@ public abstract class File_Instrumentation {
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
 
         AbstractOperation operation = null;
-        if (isOwaspHookEnabled && isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName()) && LowSeverityHelper.isOwaspHookProcessingNeeded()) {
+        if (isOwaspHookEnabled && isFileLockAcquired && !FileHelper.skipExitEvent(this.getName()) && LowSeverityHelper.isOwaspHookProcessingNeeded()) {
             operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, true, this);
         }
         boolean returnVal = false;

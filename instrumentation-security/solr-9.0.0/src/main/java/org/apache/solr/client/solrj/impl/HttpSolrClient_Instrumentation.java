@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.apache.solr.client.solrj.impl.HttpSolrClient")
 public abstract class HttpSolrClient_Instrumentation {
@@ -63,7 +62,7 @@ public abstract class HttpSolrClient_Instrumentation {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExitEvent()
             ) {
                 return;
             }

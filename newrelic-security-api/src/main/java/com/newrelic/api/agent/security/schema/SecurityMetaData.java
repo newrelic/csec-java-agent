@@ -95,6 +95,10 @@ public class SecurityMetaData {
         this.fuzzRequestIdentifier = fuzzRequestIdentifier;
     }
 
+    public boolean customAttributeContainsKey(String key){
+        return customData.containsKey(key);
+    }
+
     public void addCustomAttribute(String key, Object value) {
         if(value != null) {
             this.customData.put(key, value);

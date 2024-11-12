@@ -74,7 +74,7 @@ public class VertxClientHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExitEvent()
             ) {
                 return;
             }
@@ -84,7 +84,7 @@ public class VertxClientHelper {
         }
     }
 
-    public static boolean skipExistsEvent() {
+    public static boolean skipExitEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             return true;

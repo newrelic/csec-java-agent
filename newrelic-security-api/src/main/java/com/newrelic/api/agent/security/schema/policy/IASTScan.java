@@ -8,7 +8,9 @@ public class IASTScan {
     private Boolean enabled = true;
     private Probing probing = new Probing();
     private Boolean restricted = false;
+    private Boolean monitoring = false;
     private RestrictionCriteria restrictionCriteria = new RestrictionCriteria();
+    private MonitoringMode monitoringMode = new MonitoringMode();
 
     /**
      * No args constructor for use in serialization
@@ -54,5 +56,21 @@ public class IASTScan {
 
     public void setRestrictionCriteria(RestrictionCriteria restrictionCriteria) {
         this.restrictionCriteria = restrictionCriteria;
+    }
+
+    public Boolean getMonitoring() {
+        return monitoring;
+    }
+
+    public void setMonitoring(Boolean monitoring) {
+        this.monitoring = monitoring;
+    }
+
+    public MonitoringMode getMonitoringMode() {
+        return monitoringMode;
+    }
+
+    public void setMonitoringMode(MonitoringMode monitoringMode) {
+        this.monitoringMode = monitoringMode;
     }
 }

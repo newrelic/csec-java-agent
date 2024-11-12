@@ -20,7 +20,7 @@ public class AsynchttpHelper {
     public static final String METHOD_EXECUTE = "executeRequest";
     public static final String ASYNC_HTTP_CLIENT_2_0_0 = "ASYNC_HTTP_CLIENT_2.0.0";
 
-    public static boolean skipExistsEvent() {
+    public static boolean skipExitEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             return true;
@@ -81,7 +81,7 @@ public class AsynchttpHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExitEvent()
             ) {
                 return;
             }

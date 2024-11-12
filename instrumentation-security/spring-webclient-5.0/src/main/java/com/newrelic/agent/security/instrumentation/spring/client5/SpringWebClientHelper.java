@@ -14,7 +14,6 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 
 public class SpringWebClientHelper {
 
@@ -61,7 +60,7 @@ public class SpringWebClientHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExitEvent()
             ) {
                 return;
             }
@@ -71,7 +70,7 @@ public class SpringWebClientHelper {
         }
     }
 
-    public static boolean skipExistsEvent() {
+    public static boolean skipExitEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             return true;

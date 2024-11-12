@@ -137,7 +137,7 @@ public class CassandraUtils {
     public static void registerExitOperation(boolean isLockAcquired, AbstractOperation operation) {
         try {
             if(operation == null || !isLockAcquired || !NewRelicSecurity.isHookProcessingActive()
-                    || GenericHelper.skipExistsEvent()) {
+                    || GenericHelper.skipExitEvent()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);

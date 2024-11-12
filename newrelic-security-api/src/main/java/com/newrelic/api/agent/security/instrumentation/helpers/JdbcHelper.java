@@ -56,7 +56,7 @@ public class JdbcHelper {
         return null;
     }
 
-    public static boolean skipExistsEvent() {
+    public static boolean skipExitEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             return true;

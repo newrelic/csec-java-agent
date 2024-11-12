@@ -160,6 +160,9 @@ public class AgentConfig {
                     throw e;
                 }
                 break;
+            case "IAST_MONITORING":
+                readIastMonitoringConfig();
+                break;
             default:
                 //this is default case which requires no changes
                 break;
@@ -177,6 +180,13 @@ public class AgentConfig {
             throw e;
         }
         logger.log(LogLevel.INFO, String.format("Security Agent Modes and Config :  %s", agentMode), AgentConfig.class.getName());
+    }
+
+    private void readIastMonitoringConfig() {
+        this.agentMode.getIastScan().setEnabled(false);
+        this.agentMode.getRaspScan().setEnabled(false);
+        this.agentMode.getIastScan().setRestricted(false);
+        this.agentMode.getIastScan().setMonitoring(true);
     }
 
     private void readSkipScan() throws RestrictionModeException {

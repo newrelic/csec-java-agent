@@ -65,7 +65,7 @@ public class FileHelper {
     public static final String METHOD_NAME_EXISTS = "exists";
     public static final String FILE_OPERATION = "FILE_OPERATION";
 
-    public static boolean skipExistsEvent(String filename) {
+    public static boolean skipExitEvent(String filename) {
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
         try {
             if(lockAcquired) {

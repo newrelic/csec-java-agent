@@ -15,6 +15,7 @@ import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandPro
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
+import com.newrelic.agent.security.intcodeagent.iast.monitoring.IastMonitoring;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.*;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
@@ -255,6 +256,7 @@ public class Agent implements SecurityAgent {
         SchedulerHelper.getInstance().scheduleApplicationRuntimeErrorPosting(RuntimeErrorReporter.getInstance()::reportApplicationRuntimeError,
                 30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
+        SchedulerHelper.getInstance().scheduleSampling(IastMonitoring::sampleData, 0, 5, TimeUnit.SECONDS);
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
@@ -1104,6 +1106,9 @@ public class Agent implements SecurityAgent {
     public void dispatcherTransactionStarted() {
         try {
             Transaction transaction = NewRelic.getAgent().getTransaction();
+
+            startHarvest(transaction);
+
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
                 logger.log(LogLevel.FINEST, "Transaction started with token: " + transaction.getToken().toString(), Agent.class.getName());
             }
@@ -1112,9 +1117,27 @@ public class Agent implements SecurityAgent {
         }
     }
 
+    private void startHarvest(Transaction transaction) {
+        if(transaction == null || !(transaction.getSecurityMetaData() instanceof SecurityMetaData)) {
+            return;
+        }
+
+        if( AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoring()
+                && !AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().get()) {
+            AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().set(true);
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("HARVEST", true);
+            logger.log(LogLevel.FINEST, "Harvesting started", Agent.class.getName());
+        } else {
+            NewRelicSecurity.getAgent().getSecurityMetaData().removeCustomAttribute("HARVEST");
+            logger.log(LogLevel.FINEST, "Harvesting disabled for the transaction", Agent.class.getName());
+        }
+
+    }
+
     @Override
     public void dispatcherTransactionCancelled() {
         try {
+            IastMonitoring.collectSampleIfHarvested();
             Transaction transaction = NewRelic.getAgent().getTransaction();
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
                 logger.log(LogLevel.FINEST, "Transaction cancelled with token: " + transaction.getSecurityMetaData().toString(), Agent.class.getName());
@@ -1128,6 +1151,7 @@ public class Agent implements SecurityAgent {
     @Override
     public void dispatcherTransactionFinished() {
         try {
+            IastMonitoring.collectSampleIfHarvested();
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
                 logger.log(LogLevel.FINEST, "Transaction finished with token: " + NewRelic.getAgent().getTransaction().getSecurityMetaData().toString(), Agent.class.getName());
                 ServletHelper.executeBeforeExitingTransaction();
