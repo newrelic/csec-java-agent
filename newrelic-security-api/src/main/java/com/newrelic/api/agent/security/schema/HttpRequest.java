@@ -10,6 +10,8 @@ public class HttpRequest {
 
     @JsonIgnore
     public static final int MAX_ALLOWED_REQUEST_BODY_LENGTH = 500000;
+    @JsonIgnore
+    public static final String QUESTION_MARK = "?";
 
     private StringBuilder body;
 
@@ -40,20 +42,21 @@ public class HttpRequest {
     private boolean isGrpc;
 
     private String route;
+    private String requestURI;
 
     private Map<String, String> customDataType;
 
     @JsonIgnore
-    private List<String> pathParameters;
+    private Set<String> pathParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> queryParameters;
+    private Map<String, Set<String>> queryParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> requestHeaderParameters;
+    private Map<String, Set<String>> requestHeaderParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> requestBodyParameters;
+    private Map<String, Set<String>> requestBodyParameters;
 
     @JsonIgnore
     private boolean isRequestParametersParsed = false;
@@ -73,6 +76,7 @@ public class HttpRequest {
         this.isRequestParsed = false;
         this.isGrpc = false;
         this.route = StringUtils.EMPTY;
+        this.requestURI = StringUtils.EMPTY;
         this.customDataType = new HashMap<>();
     }
 
@@ -91,6 +95,7 @@ public class HttpRequest {
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
+        this.requestURI = servletInfo.requestURI;
         this.pathParameterMap = servletInfo.pathParameterMap;
         this.queryParameters = servletInfo.queryParameters;
         this.requestHeaderParameters = servletInfo.requestHeaderParameters;
@@ -113,6 +118,7 @@ public class HttpRequest {
 
     public void setUrl(String url) {
         this.url = url;
+        this.requestURI = StringUtils.substringBefore(url, QUESTION_MARK);
     }
 
     public Map<String, String> getHeaders() {
@@ -249,6 +255,14 @@ public class HttpRequest {
         this.route = StringUtils.removeEnd(StringUtils.prependIfMissing(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
     }
 
+    public String getRequestURI() {
+        return requestURI;
+    }
+
+    public void setRequestURI(String requestURI) {
+        this.requestURI = requestURI;
+    }
+
     public void setRoute(String segment, boolean isAlreadyServlet) {
         // remove servlet detected route if another framework detected;
         if (isAlreadyServlet) {
@@ -260,35 +274,35 @@ public class HttpRequest {
         }
     }
 
-    public List<String> getPathParameters() {
+    public Set<String> getPathParameters() {
         return pathParameters;
     }
 
-    public void setPathParameters(List<String> pathParameters) {
+    public void setPathParameters(Set<String> pathParameters) {
         this.pathParameters = pathParameters;
     }
 
-    public Map<String, List<String>> getQueryParameters() {
+    public Map<String, Set<String>> getQueryParameters() {
         return queryParameters;
     }
 
-    public void setQueryParameters(Map<String, List<String>> queryParameters) {
+    public void setQueryParameters(Map<String, Set<String>> queryParameters) {
         this.queryParameters = queryParameters;
     }
 
-    public Map<String, List<String>> getRequestHeaderParameters() {
+    public Map<String, Set<String>> getRequestHeaderParameters() {
         return requestHeaderParameters;
     }
 
-    public void setRequestHeaderParameters(Map<String, List<String>> requestHeaderParameters) {
+    public void setRequestHeaderParameters(Map<String, Set<String>> requestHeaderParameters) {
         this.requestHeaderParameters = requestHeaderParameters;
     }
 
-    public Map<String, List<String>> getRequestBodyParameters() {
+    public Map<String, Set<String>> getRequestBodyParameters() {
         return requestBodyParameters;
     }
 
-    public void setRequestBodyParameters(Map<String, List<String>> requestBodyParameters) {
+    public void setRequestBodyParameters(Map<String, Set<String>> requestBodyParameters) {
         this.requestBodyParameters = requestBodyParameters;
     }
 

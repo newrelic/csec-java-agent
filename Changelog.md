@@ -4,6 +4,34 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2024-11-9
+### New features
+- [PR-350](https://github.com/newrelic/csec-java-agent/pull/350) IAST support for CI/CD.
+  Configuration via yaml:
+  ```yaml
+  security:
+    # This configuration allows users to specify a unique test identifier when running IAST Scan with CI/CD
+    iast_test_identifier: 'run-id'
+  
+    scan_controllers:
+      # This configuration allows users to the number of application instances for a specific entity where IAST analysis is performed.
+      scan_instance_count:  0 # Values are 1 or 0, 0 signifies run on all application instances
+  ```
+- [PR-297](https://github.com/newrelic/csec-java-agent/pull/297), [PR-294](https://github.com/newrelic/csec-java-agent/pull/294), [PR-337](https://github.com/newrelic/csec-java-agent/pull/337) Detect route of an incoming request for Sun-Net-Httpserver, Netty Reactor, Apache Struts2 and Grails Framework. [NR-277771](https://new-relic.atlassian.net/browse/NR-277771), [NR-283914](https://new-relic.atlassian.net/browse/NR-283914), [NR-313390](https://new-relic.atlassian.net/browse/NR-313390), [NR-313392](https://new-relic.atlassian.net/browse/NR-313392)
+- [PR-297](https://github.com/newrelic/csec-java-agent/pull/297), [PR-298](https://github.com/newrelic/csec-java-agent/pull/298) HTTP Response Detection in sun-net-httpserver and mule server [NR-277771](https://new-relic.atlassian.net/browse/NR-277771), [NR-277770](https://new-relic.atlassian.net/browse/NR-277770)
+- [PR-335](https://github.com/newrelic/csec-java-agent/pull/335) Added request URI to application runtime error event, enhancing error logging and debugging capabilities. [NR-315194](https://new-relic.atlassian.net/browse/NR-315194)
+- [PR-342](https://github.com/newrelic/csec-java-agent/pull/342) Report APM's trace.id and span.id in all outgoing events. [NR-321827](https://new-relic.atlassian.net/browse/NR-321827)
+- [PR-347](https://github.com/newrelic/csec-java-agent/pull/347) Limiting the supported version range for GraalVM.JS, due to the new version release on Sep 17, 2024. [NR-332546](https://new-relic.atlassian.net/browse/NR-332546)
+- [PR-347](https://github.com/newrelic/csec-java-agent/pull/347) Limiting the supported version range for Lettuce, due to the new version release on Oct 31, 2024. [NR-332546](https://new-relic.atlassian.net/browse/NR-332546)
+
+### Fixes
+- [PR-340](https://github.com/newrelic/csec-java-agent/pull/340) Detect correct user class in GraphQL [NR-319863](https://new-relic.atlassian.net/browse/NR-319863)
+- [PR-339](https://github.com/newrelic/csec-java-agent/pull/339) Fix minor bug with exclude_from_iast_scan.header while parsing of header. [NR-319858](https://new-relic.atlassian.net/browse/NR-319858)
+
+### Deprecations
+- Status File Used for Debugging: This feature has been deprecated. All debugging capabilities have been moved to either Init Logging or [Error Inbox](https://docs.newrelic.com/docs/errors-inbox/errors-inbox/) and will be removed in a future agent release. [NR-293966](https://new-relic.atlassian.net/browse/NR-293966)
+
+
 ## [1.5.0] - 2024-9-25
 ### New features
 - Json Version bump to 1.2.9.
