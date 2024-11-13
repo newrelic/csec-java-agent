@@ -1125,7 +1125,8 @@ public class Agent implements SecurityAgent {
     }
 
     private void startHarvest(Transaction transaction) {
-        if(transaction == null || !(transaction.getSecurityMetaData() instanceof SecurityMetaData)) {
+
+        if(!IastMonitoring.transactionSelected() || transaction == null || !(transaction.getSecurityMetaData() instanceof SecurityMetaData)) {
             return;
         }
 

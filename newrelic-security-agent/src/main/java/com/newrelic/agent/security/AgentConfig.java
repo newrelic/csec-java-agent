@@ -187,6 +187,7 @@ public class AgentConfig {
         this.agentMode.getRaspScan().setEnabled(false);
         this.agentMode.getIastScan().setRestricted(false);
         this.agentMode.getIastScan().setMonitoring(true);
+        this.agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(true);
     }
 
     private void readSkipScan() throws RestrictionModeException {

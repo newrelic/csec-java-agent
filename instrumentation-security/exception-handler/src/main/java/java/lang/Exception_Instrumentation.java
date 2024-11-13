@@ -1,6 +1,7 @@
 package java.lang;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.WeaveAllConstructors;
@@ -10,7 +11,7 @@ public class Exception_Instrumentation extends Throwable {
 
     @WeaveAllConstructors
     public Exception_Instrumentation() {
-        if (NewRelicSecurity.isHookProcessingActive()) {
+        if (!StringUtils.equals(NewRelicSecurity.getSecurityMode(), "IAST_MONITORING") && NewRelicSecurity.isHookProcessingActive()) {
             Boolean skipException = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SKIP_EXCEPTION_HANDLER", Boolean.class);
             if (skipException == null || !skipException) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("ENDMOST_EXCEPTION", this);

@@ -40,4 +40,8 @@ public final class NewRelicSecurity {
      *  Marks the end of agent init. Hooks can now be processed.
      */
     public static void markAgentAsInitialised(){}
+
+    public static String getSecurityMode(){
+        return "IAST";
+    }
 }

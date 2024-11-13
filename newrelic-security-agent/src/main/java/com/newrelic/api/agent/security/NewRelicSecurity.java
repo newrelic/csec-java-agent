@@ -48,4 +48,8 @@ public final class NewRelicSecurity {
         return StringUtils.startsWithAny(Thread.currentThread().getName(),
                 "NR-CSEC", "New Relic", "NewRelic", "Newrelic");
     }
+
+    public static String getSecurityMode() {
+        return AgentConfig.getInstance().getAgentMode().getMode();
+    }
 }

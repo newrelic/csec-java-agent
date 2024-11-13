@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,7 +23,14 @@ public class IastMonitoring {
     private final AtomicInteger remainingHarvestRequests = new AtomicInteger();
     private final AtomicInteger requestHarvested = new AtomicInteger();
 
-    private Map<String, Integer> harvestedTraceId = new ConcurrentHashMap<>();
+    private final Map<String, Integer> harvestedTraceId = new ConcurrentHashMap<>();
+    private static final SecureRandom secureRandom = new SecureRandom();
+
+
+    public static boolean transactionSelected() {
+        int randomNumber = secureRandom.nextInt(5);
+        return randomNumber == 0;
+    }
 
 
     private static final class InstanceHolder {
@@ -85,7 +93,6 @@ public class IastMonitoring {
     }
 
     public static void sampleData() {
-        logger.log( LogLevel.FINEST, String.format("following are the harvested APIs in last harvest cycle : %s", IastMonitoring.getInstance().getHarvestedAPI()), IastMonitoring.class.getName());
         if(IastMonitoring.getInstance().getHarvestCycleCount() % 12 == 0){
             IastMonitoring.getInstance().setRemainingHarvestRequests(0);
         }

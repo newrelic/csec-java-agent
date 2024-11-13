@@ -240,7 +240,7 @@ public class ServletHelper {
         }
 
         int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
-        if(responseCode >= 500){
+        if(responseCode >= 500 && !StringUtils.equals(NewRelicSecurity.getSecurityMode(), "IAST_MONITORING")){
             Exception exception = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("ENDMOST_EXCEPTION", Exception.class);
             NewRelicSecurity.getAgent().recordExceptions(NewRelicSecurity.getAgent().getSecurityMetaData(), exception);
         }
