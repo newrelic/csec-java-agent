@@ -23,7 +23,6 @@ public class IastMonitoring {
     private final AtomicInteger requestHarvested = new AtomicInteger();
 
     private Map<String, Integer> harvestedTraceId = new ConcurrentHashMap<>();
-    private Map<String, Integer> harvestedAPI = new ConcurrentHashMap<>();
 
 
     private static final class InstanceHolder {
@@ -85,14 +84,6 @@ public class IastMonitoring {
         harvestedTraceId.put(traceId, harvestedTraceId.getOrDefault(traceId, 0) + 1);
     }
 
-    public Map<String, Integer> getHarvestedAPI() {
-        return harvestedAPI;
-    }
-
-    public void incrementHarvestedAPI(String api) {
-        harvestedAPI.put(api, harvestedAPI.getOrDefault(api, 0) + 1);
-    }
-
     public static void sampleData() {
         logger.log( LogLevel.FINEST, String.format("following are the harvested APIs in last harvest cycle : %s", IastMonitoring.getInstance().getHarvestedAPI()), IastMonitoring.class.getName());
         if(IastMonitoring.getInstance().getHarvestCycleCount() % 12 == 0){
@@ -102,13 +93,11 @@ public class IastMonitoring {
         IastMonitoring.getInstance().setRemainingHarvestRequests(IastMonitoring.getInstance().getRemainingHarvestRequests() + 5);
         IastMonitoring.getInstance().setRequestHarvested(0);
         IastMonitoring.getInstance().incrementHarvestCycleCount();
-        IastMonitoring.getInstance().getHarvestedAPI().clear();
         logger.log( LogLevel.FINEST, String.format("IAST Monitoring: Sampling of Data Started for cycle %s can harvest %s requests", IastMonitoring.getInstance().getHarvestCycleCount(), IastMonitoring.getInstance().getRemainingHarvestRequests()), IastMonitoring.class.getName());
     }
 
     public static void resetEventSampler() {
         IastMonitoring.getInstance().setRemainingHarvestRequests(0);
-        IastMonitoring.getInstance().getHarvestedAPI().clear();
         IastMonitoring.getInstance().getHarvestedTraceId().clear();
         logger.log( LogLevel.FINEST, String.format("IAST Monitoring: Sampling of Data Stopped for cycle %s", IastMonitoring.getInstance().getHarvestCycleCount()), IastMonitoring.class.getName());
     }
@@ -116,13 +105,6 @@ public class IastMonitoring {
 
     public static void collectSampleIfHarvested() {
         if(AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().get()) {
-
-            if(NewRelicSecurity.getAgent().getSecurityMetaData() != null) {
-                SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                if(StringUtils.isNotBlank(securityMetaData.getRequest().getUrl())){
-                    IastMonitoring.getInstance().incrementHarvestedAPI(securityMetaData.getRequest().getUrl());
-                }
-            }
 
             AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().set(false);
             NewRelicSecurity.getAgent().getSecurityMetaData().removeCustomAttribute("HARVEST");
