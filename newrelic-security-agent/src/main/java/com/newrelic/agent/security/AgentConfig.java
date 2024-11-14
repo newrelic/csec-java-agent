@@ -78,6 +78,7 @@ public class AgentConfig {
     private ScanControllers scanControllers = new ScanControllers();
 
     private AgentConfig(){
+        this.agentMode = new AgentMode();
     }
 
     public long instantiate() throws RestrictionModeException {
