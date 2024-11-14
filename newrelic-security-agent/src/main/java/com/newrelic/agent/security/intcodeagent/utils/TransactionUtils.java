@@ -5,6 +5,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpResponseEve
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ public class TransactionUtils {
                     && securityMetaData.getFuzzRequestIdentifier().getK2Request()
                     && StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getNextStage().getStatus(), IAgentConstants.VULNERABLE)
                     && !securityMetaData.getResponse().isEmpty()) {
+                trimResponseBody(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse());
                 HttpResponseEvent httpResponseEvent = new HttpResponseEvent(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(), true);
                 if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                     httpResponseEvent.getHttpResponse().setBody(new StringBuilder(StringUtils.EMPTY));
@@ -32,6 +34,16 @@ public class TransactionUtils {
                 }
             }
         }
+    }
+
+    private static boolean trimResponseBody(HttpResponse response) {
+        if(response.getBody().length() > HttpResponse.MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
+            response.setBody(new StringBuilder(response.getBody().substring(0, HttpResponse.MAX_ALLOWED_RESPONSE_BODY_LENGTH)));
+            response.setBody(new StringBuilder(response.getBody().append("...")));
+            response.setDataTruncated(true);
+            return true;
+        }
+        return false;
     }
 
     public static void executeBeforeExitingTransaction() {

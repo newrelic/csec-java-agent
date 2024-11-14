@@ -1,9 +1,14 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpResponse {
+
+    @JsonIgnore
+    public static final int MAX_ALLOWED_RESPONSE_BODY_LENGTH = 500000;
 
     private Map<String, String> headers;
 
@@ -13,10 +18,13 @@ public class HttpResponse {
 
     private int statusCode;
 
+    private boolean dataTruncated;
+
     public HttpResponse() {
         this.headers = new ConcurrentHashMap<>();
         this.body = new StringBuilder();
         this.contentType = StringUtils.EMPTY;
+        this.dataTruncated = false;
     }
 
     public HttpResponse(HttpResponse httpResponse) {
@@ -24,6 +32,7 @@ public class HttpResponse {
         this.body = new StringBuilder(httpResponse.body);
         this.contentType = httpResponse.contentType.trim();
         this.statusCode = httpResponse.statusCode;
+        this.dataTruncated = httpResponse.dataTruncated;
     }
 
     public Map<String, String> getHeaders() {
@@ -64,6 +73,14 @@ public class HttpResponse {
         } else {
             this.contentType = StringUtils.EMPTY;
         }
+    }
+
+    public boolean isDataTruncated() {
+        return dataTruncated;
+    }
+
+    public void setDataTruncated(boolean dataTruncated) {
+        this.dataTruncated = dataTruncated;
     }
 
     public boolean isEmpty() {
