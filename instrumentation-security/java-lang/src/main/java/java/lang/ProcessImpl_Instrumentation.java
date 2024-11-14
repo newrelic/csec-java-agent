@@ -53,7 +53,7 @@ abstract class ProcessImpl_Instrumentation {
 
     private static AbstractOperation preprocessSecurityHook(String[] cmdarray, Map<String, String> environment) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
                 || cmdarray == null || cmdarray.length == 0
             ) {
                 return null;

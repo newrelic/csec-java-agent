@@ -107,7 +107,7 @@ public abstract class Context_Instrumentation {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
@@ -120,8 +120,7 @@ public abstract class Context_Instrumentation {
 
     private List<AbstractOperation> preprocessSecurityHook (Enumeration<String> names, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
                     names == null || !names.hasMoreElements()){
                 return null;
             }
@@ -140,8 +139,7 @@ public abstract class Context_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String name, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
                     StringUtils.isBlank(name)){
                 return null;
             }

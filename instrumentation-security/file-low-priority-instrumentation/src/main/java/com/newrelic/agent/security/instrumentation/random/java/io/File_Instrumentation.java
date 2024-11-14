@@ -23,33 +23,27 @@ public abstract class File_Instrumentation {
     public abstract String getAbsolutePath();
 
     public boolean exists() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
+        boolean isFileLockAcquired = false;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
 
         AbstractOperation operation = null;
-        if (isOwaspHookEnabled && isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName()) && LowSeverityHelper.isOwaspHookProcessingNeeded()) {
-            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, true, this);
+        if (isOwaspHookEnabled && !FileHelper.skipExistsEvent(this.getName()) && LowSeverityHelper.isOwaspHookProcessingNeeded()) {
+            isFileLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.FILE_OPERATION, FileHelper.getNrSecCustomAttribName());
+            if (isFileLockAcquired)
+                operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, true, this);
         }
         boolean returnVal = false;
         try {
             returnVal = Weaver.callOriginal();
         } finally {
-            if (isOwaspHookEnabled) {
-                registerExitOperation(isFileLockAcquired, operation);
-            }
             if (isFileLockAcquired) {
-                releaseFileLock();
+                GenericHelper.releaseLock(FileHelper.getNrSecCustomAttribName());
             }
         }
+        if (isOwaspHookEnabled) {
+            registerExitOperation(isFileLockAcquired, operation);
+        }
         return returnVal;
-    }
-
-    private static boolean acquireFileLockIfPossible(VulnerabilityCaseType fileOperation) {
-        return GenericHelper.acquireLockIfPossible(fileOperation, FileHelper.getNrSecCustomAttribName());
-    }
-
-    private static void releaseFileLock() {
-        GenericHelper.releaseLock(FileHelper.getNrSecCustomAttribName());
     }
 
 
@@ -71,10 +65,7 @@ public abstract class File_Instrumentation {
     private static AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, boolean isLowSeverityHook,
                                                             File_Instrumentation... files) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || files == null || files.length == 0
-            ) {
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || files == null || files.length == 0) {
                 return null;
             }
             List<String> fileNames = new ArrayList<>(files.length);

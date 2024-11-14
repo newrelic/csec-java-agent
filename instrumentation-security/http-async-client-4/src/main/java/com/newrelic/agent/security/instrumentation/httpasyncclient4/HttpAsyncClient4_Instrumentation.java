@@ -40,7 +40,7 @@ import static com.newrelic.agent.security.instrumentation.httpasyncclient4.Secur
 public class HttpAsyncClient4_Instrumentation {
 
     public <T> Future<T> execute(HttpAsyncRequestProducer requestProducer, HttpAsyncResponseConsumer<T> responseConsumer, HttpContext context, FutureCallback<T> callback) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -66,7 +66,7 @@ public class HttpAsyncClient4_Instrumentation {
     }
 
     public <T> Future<T> execute(HttpAsyncRequestProducer requestProducer, HttpAsyncResponseConsumer<T> responseConsumer, FutureCallback<T> callback) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -92,7 +92,7 @@ public class HttpAsyncClient4_Instrumentation {
     }
 
     public Future<HttpResponse> execute(HttpHost target, HttpRequest request, HttpContext context, FutureCallback<HttpResponse> callback) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
 
         // Preprocess Phase
@@ -120,7 +120,7 @@ public class HttpAsyncClient4_Instrumentation {
     }
 
     public Future<HttpResponse> execute(HttpHost target, HttpRequest request, FutureCallback<HttpResponse> callback) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
 
         // Preprocess Phase
@@ -148,7 +148,7 @@ public class HttpAsyncClient4_Instrumentation {
     }
 
     public Future<HttpResponse> execute(HttpUriRequest request, HttpContext context, FutureCallback<HttpResponse> callback) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -168,7 +168,7 @@ public class HttpAsyncClient4_Instrumentation {
     }
 
     public Future<HttpResponse> execute(HttpUriRequest request, FutureCallback<HttpResponse> callback) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -210,8 +210,7 @@ public class HttpAsyncClient4_Instrumentation {
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
+            if (securityMetaData.getRequest().isEmpty()) {
                 return null;
             }
 
@@ -256,9 +255,9 @@ public class HttpAsyncClient4_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+    private boolean acquireLockIfPossible() {
         try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;

@@ -21,7 +21,7 @@ public abstract class BaseXPath_Instrumentation {
     private final String exprText = Weaver.callOriginal();
 
     public List selectNodes(Object node) throws JaxenException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(this.exprText, XPATHUtils.METHOD_SELECT_NODES);
@@ -41,7 +41,7 @@ public abstract class BaseXPath_Instrumentation {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
@@ -54,9 +54,7 @@ public abstract class BaseXPath_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String patternString, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(patternString)){
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || StringUtils.isBlank(patternString)){
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(patternString, this.getClass().getName(), methodName);
@@ -74,15 +72,10 @@ public abstract class BaseXPath_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
-        try {
-            return GenericHelper.acquireLockIfPossible(xpath, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.XPATH, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

@@ -39,7 +39,7 @@ final class HttpClientImpl_Instrumentation {
     @Trace
     private <T> CompletableFuture<HttpResponse<T>>
     sendAsync(HttpRequest request, HttpResponse.BodyHandler<T> responseHandler, HttpResponse.PushPromiseHandler<T> pushPromiseHandler, Executor exchangeExecutor) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -64,8 +64,7 @@ final class HttpClientImpl_Instrumentation {
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
+            if (securityMetaData.getRequest().isEmpty()) {
                 return null;
             }
 
@@ -92,9 +91,9 @@ final class HttpClientImpl_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+    private boolean acquireLockIfPossible() {
         try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;

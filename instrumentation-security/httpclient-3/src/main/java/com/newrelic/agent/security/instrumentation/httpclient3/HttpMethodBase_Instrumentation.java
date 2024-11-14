@@ -31,7 +31,7 @@ public abstract class HttpMethodBase_Instrumentation {
     public abstract void setRequestHeader(String headerName, String headerValue);
 
     public int execute(HttpState state, HttpConnection conn) throws HttpException, IOException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -65,8 +65,7 @@ public abstract class HttpMethodBase_Instrumentation {
     private AbstractOperation preprocessSecurityHook(HttpConnection conn, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
+            if (securityMetaData.getRequest().isEmpty()) {
                 return null;
             }
 
@@ -151,9 +150,9 @@ public abstract class HttpMethodBase_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+    private boolean acquireLockIfPossible() {
         try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;

@@ -35,7 +35,7 @@ import java.net.URISyntaxException;
 public abstract class HttpClient_Instrumentation {
 
     public HttpResponse execute(HttpUriRequest request) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -55,7 +55,7 @@ public abstract class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(HttpUriRequest request, HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -75,7 +75,7 @@ public abstract class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(HttpHost target, HttpRequest request) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
 
         // Preprocess Phase
@@ -103,7 +103,7 @@ public abstract class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
 
         // Preprocess Phase
@@ -132,7 +132,7 @@ public abstract class HttpClient_Instrumentation {
 
     public <T, R extends T> T execute(HttpUriRequest request, ResponseHandler<R> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -153,7 +153,7 @@ public abstract class HttpClient_Instrumentation {
 
     public <T, R extends T> T execute(HttpUriRequest request, ResponseHandler<R> responseHandler, HttpContext context)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -174,7 +174,7 @@ public abstract class HttpClient_Instrumentation {
 
     public <T, R extends T> T execute(HttpHost target, HttpRequest request, ResponseHandler<R> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
 
         // Preprocess Phase
@@ -203,7 +203,7 @@ public abstract class HttpClient_Instrumentation {
 
     public <T, R extends T> T execute(HttpHost target, HttpRequest request, ResponseHandler<R> responseHandler,
                                       HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
 
         // Preprocess Phase
@@ -251,8 +251,7 @@ public abstract class HttpClient_Instrumentation {
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
+            if (securityMetaData.getRequest().isEmpty()) {
                 return null;
             }
 
@@ -305,9 +304,9 @@ public abstract class HttpClient_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+    private boolean acquireLockIfPossible() {
         try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;

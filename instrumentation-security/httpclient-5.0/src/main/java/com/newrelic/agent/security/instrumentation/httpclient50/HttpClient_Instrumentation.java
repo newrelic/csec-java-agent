@@ -30,7 +30,7 @@ import java.net.URISyntaxException;
 public class HttpClient_Instrumentation {
 
     public HttpResponse execute(ClassicHttpRequest request) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -50,7 +50,7 @@ public class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(ClassicHttpRequest request, HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -70,7 +70,7 @@ public class HttpClient_Instrumentation {
     }
 
     public ClassicHttpResponse execute(HttpHost target, ClassicHttpRequest request) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -96,7 +96,7 @@ public class HttpClient_Instrumentation {
     }
 
     public HttpResponse execute(HttpHost target, ClassicHttpRequest request, HttpContext context) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -123,7 +123,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(ClassicHttpRequest request, HttpClientResponseHandler<? extends T> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -144,7 +144,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(ClassicHttpRequest request, HttpContext context, HttpClientResponseHandler<? extends T> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -165,7 +165,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(HttpHost target, ClassicHttpRequest request, HttpClientResponseHandler<? extends T> responseHandler)
             throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -192,7 +192,7 @@ public class HttpClient_Instrumentation {
 
     public <T> T execute(HttpHost target, ClassicHttpRequest request, HttpContext context,
             HttpClientResponseHandler<? extends T> responseHandler) throws Exception {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -230,9 +230,9 @@ public class HttpClient_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+    private boolean acquireLockIfPossible() {
         try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;
