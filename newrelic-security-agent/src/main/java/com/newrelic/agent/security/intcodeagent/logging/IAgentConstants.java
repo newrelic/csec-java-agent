@@ -580,4 +580,5 @@ public interface IAgentConstants {
     String FAILURE_WHILE_GRPC_REQUEST_BODY_CONVERSION = "Failure while processing gRPC Request body, body : %s ";
     String REQUEST_FAILURE_FOR_S_WITH_RESPONSE_CODE = "Request failure for : %s, with response : %s and response body : %s";
 
+    String JDK_INTERNAL = "jdk.internal";
 }
