@@ -15,7 +15,6 @@ public class OsVariablesInstance {
     public static final String LANGUAGE_AGENT = "language-agent";
 
     public static final String TMP = "tmp";
-    public static final String SNAPSHOTS = "snapshots";
 
     private static OsVariablesInstance instance;
 
