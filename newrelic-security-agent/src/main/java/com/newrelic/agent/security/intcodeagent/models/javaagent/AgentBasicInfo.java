@@ -31,7 +31,7 @@ public class AgentBasicInfo {
 
     public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
 
-    public static final String SEC_HTTP_RESPONSE = "sec_http_response";
+    public static final String SEC_HTTP_RESPONSE = "sec-http-response";
 
     /**
      * Tool id for Language Agent.

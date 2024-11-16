@@ -36,7 +36,7 @@ public class TransactionUtils {
         }
     }
 
-    private static boolean trimResponseBody(HttpResponse response) {
+    public static boolean trimResponseBody(HttpResponse response) {
         if(response.getBody().length() > HttpResponse.MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
             response.setBody(new StringBuilder(response.getBody().substring(0, HttpResponse.MAX_ALLOWED_RESPONSE_BODY_LENGTH)));
             response.setBody(new StringBuilder(response.getBody().append("...")));
