@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.utils.IastExclusionUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -41,7 +42,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
     public static final String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
-    private static final String IAST_REQUEST_HAS_NO_ARGUMENTS = "IAST request has no arguments : %s";
+    private static final String IAST_REQUEST_HAS_NO_ARGUMENTS = "IAST request has incomplete arguments : %s";
     public static final String AGENT_IS_NOT_ACTIVE = "Agent is not active";
     public static final String WS_RECONNECTING = "Websocket reconnecting failing for control command id: %s";
     private IntCodeControlCommand controlCommand;
@@ -70,6 +71,12 @@ public class RestRequestProcessor implements Callable<Boolean> {
         if( !AgentInfo.getInstance().isAgentActive()) {
             logger.log(LogLevel.FINER, AGENT_IS_NOT_ACTIVE, RestRequestProcessor.class.getSimpleName());
             return false;
+        }
+
+        //Skip if API ID is registered under skip list
+        if(IastExclusionUtils.getInstance().skipTraceApi(controlCommand.getApiId())) {
+            logger.log(LogLevel.FINER, String.format("Skip the control command %s, the record already exist under Skip list.", controlCommand.getId()), RestRequestProcessor.class.getSimpleName());
+            return true;
         }
 
         FuzzRequestBean httpRequest = null;

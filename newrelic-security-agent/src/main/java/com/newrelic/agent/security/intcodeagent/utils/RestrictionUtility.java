@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
@@ -42,19 +43,29 @@ public class RestrictionUtility {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static boolean skippedApiDetected(SkipScan skipScan, HttpRequest httpRequest) {
-        if (skipScan == null) {
-            return false;
-        }
+
         if (httpRequest == null) {
             return false;
         }
 
-        if(skipScan.getApiRoutes().isEmpty()) {
+        return skippedApiDetected(skipScan, httpRequest.getUrl());
+    }
+
+    public static boolean skippedApiDetected(SkipScan skipScan, String url) {
+
+        String uri = StringUtils.substringBefore(url, SEPARATOR_CHARS_QUESTION_MARK);
+
+        if (skipScan == null || skipScan.getApiRoutes().isEmpty()) {
             return false;
         }
 
+        if(IastExclusionUtils.getInstance().skippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId())) {
+            logger.log(LogLevel.FINER, String.format("Skipping the scan for url %s due to traceId %s", uri, NewRelic.getAgent().getTraceMetadata().getTraceId()), RestrictionUtility.class.getName());
+            return true;
+        }
+
         for (Pattern pattern : skipScan.getApiRoutes()) {
-            if (pattern.matcher(httpRequest.getUrl()).matches()) {
+            if (pattern.matcher(uri).matches()) {
                 return true;
             }
         }
