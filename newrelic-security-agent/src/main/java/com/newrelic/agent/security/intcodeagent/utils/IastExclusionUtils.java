@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,12 +54,14 @@ public class IastExclusionUtils {
         Set<String> operationApiIds = encounteredTraces.get(traceId);
         if (operationApiIds != null) {
             skippedTraceApis.addAll(operationApiIds);
+            logger.log(LogLevel.FINER, "Skipped trace apis: " + skippedTraceApis, IastExclusionUtils.class.getName());
         }
     }
 
     private void updateSkippedTraceApis(String traceId, String operationApiId) {
         if (skippedTraces.containsKey(traceId)) {
             skippedTraceApis.add(operationApiId);
+            logger.log(LogLevel.FINER, "Skipped trace apis: " + skippedTraceApis, IastExclusionUtils.class.getName());
         }
     }
 
