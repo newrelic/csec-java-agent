@@ -11,7 +11,7 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy
 import com.newrelic.api.agent.security.utils.logging.LogLevel
-import org.http4s.{Headers, Request, Response}
+import org.http4s.{Headers, Message, Request, Response}
 
 import java.util
 
@@ -30,18 +30,20 @@ object RequestProcessor {
     val result = construct((): Unit)
       .redeemWith(_ => httpApp(request),
         _ => for {
-          isLockAcquired <- preprocessHttpRequest(request)
+          requestBody <- extractBody(request)
+          isLockAcquired <- preprocessHttpRequest(request, requestBody)
           resp <- httpApp(request)
-          _ <- postProcessSecurityHook(isLockAcquired, resp)
+          responseBody <- extractBody(resp)
+          _ <- postProcessSecurityHook(isLockAcquired, resp, responseBody)
         } yield resp
       )
     result
   }
 
-  private def preprocessHttpRequest[F[_]: Sync](request: Request[F]): F[Boolean] = construct {
+  private def preprocessHttpRequest[F[_]: Sync](request: Request[F], body: String): F[Boolean] = construct {
     val isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP4S-EMBER-REQUEST_LOCK", request.hashCode())
     try {
-      if (NewRelicSecurity.isHookProcessingActive && isLockAcquired && !NewRelicSecurity.getAgent.getSecurityMetaData.getRequest.isRequestParsed){
+      if (isLockAcquired && !NewRelicSecurity.getAgent.getSecurityMetaData.getRequest.isRequestParsed){
 
         val securityMetaData: SecurityMetaData = NewRelicSecurity.getAgent.getSecurityMetaData
         val securityRequest: HttpRequest = securityMetaData.getRequest
@@ -66,7 +68,7 @@ object RequestProcessor {
         securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders))
         securityRequest.setContentType(getContentType(securityRequest.getHeaders))
 
-        // TODO extract request body & user class detection
+        securityRequest.getBody.append(body)
 
         val trace: Array[StackTraceElement] = Thread.currentThread.getStackTrace
         securityMetaData.getMetaData.setServiceTrace(util.Arrays.copyOfRange(trace, 1, trace.length))
@@ -79,7 +81,11 @@ object RequestProcessor {
     isLockAcquired
   }
 
-  private def postProcessSecurityHook[F[_]: Sync](isLockAcquired: Boolean, response: Response[F]): F[Unit] = construct {
+  private def extractBody[F[_]: Sync](msg: Message[F]): F[String] = {
+    msg.bodyText.compile.string
+  }
+
+  private def postProcessSecurityHook[F[_]: Sync](isLockAcquired: Boolean, response: Response[F], body: String): F[Unit] = construct {
     try {
       if (isLockAcquired && NewRelicSecurity.isHookProcessingActive) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
@@ -87,7 +93,7 @@ object RequestProcessor {
         processResponseHeaders(response.headers, securityResponse)
         securityResponse.setResponseContentType(getContentType(securityResponse.getHeaders))
 
-        // TODO extract response body
+        securityResponse.getResponseBody.append(body)
 
         ServletHelper.executeBeforeExitingTransaction()
         if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent.getSecurityMetaData.getResponse.getResponseContentType)) {
