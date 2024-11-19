@@ -54,14 +54,14 @@ public class IastExclusionUtils {
         Set<String> operationApiIds = encounteredTraces.get(traceId);
         if (operationApiIds != null) {
             skippedTraceApis.addAll(operationApiIds);
-            logger.log(LogLevel.FINER, "Skipped trace apis: " + skippedTraceApis, IastExclusionUtils.class.getName());
+            logger.log(LogLevel.FINER, String.format("Adding trace to skip list: %s with following api ids: %s", skippedTraceApis, operationApiIds), IastExclusionUtils.class.getName());
         }
     }
 
     private void updateSkippedTraceApis(String traceId, String operationApiId) {
         if (skippedTraces.containsKey(traceId)) {
             skippedTraceApis.add(operationApiId);
-            logger.log(LogLevel.FINER, "Skipped trace apis: " + skippedTraceApis, IastExclusionUtils.class.getName());
+            logger.log(LogLevel.FINER, "Adding api id to skip list: " + skippedTraceApis, IastExclusionUtils.class.getName());
         }
     }
 
