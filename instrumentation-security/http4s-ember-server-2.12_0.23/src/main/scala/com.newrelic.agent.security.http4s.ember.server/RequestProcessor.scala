@@ -11,6 +11,8 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy
 import com.newrelic.api.agent.security.utils.logging.LogLevel
+import fs2.text.decodeWithCharset
+import org.http4s.Charset.`UTF-8`
 import org.http4s.{Headers, Message, Request, Response}
 
 import java.util
@@ -109,7 +111,12 @@ object RequestProcessor {
   }
 
   private def extractBody[F[_]: Sync](msg: Message[F]): F[String] = {
-    msg.bodyText.compile.string
+    if (msg.contentType.nonEmpty && msg.contentType.get.charset.nonEmpty) {
+      val charset = msg.contentType.get.charset.get;
+      msg.body.through(decodeWithCharset(charset.nioCharset)).compile.string
+    } else {
+      msg.bodyText.compile.string
+    }
   }
 
   private def processRequestHeaders(headers: Headers, securityRequest: HttpRequest): Unit = {
