@@ -41,7 +41,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
 
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
-    public static final String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
     private static final String IAST_REQUEST_HAS_NO_ARGUMENTS = "IAST request has no arguments : %s";
     public static final String AGENT_IS_NOT_ACTIVE = "Agent is not active";
     public static final String WS_RECONNECTING = "Websocket reconnecting failing for control command id: %s";

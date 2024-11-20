@@ -101,6 +101,9 @@ public class ApacheHttpClientWrapper {
         this.httpClient = HttpClientBuilder.create()
                 .disableDefaultUserAgent()
                 .disableContentCompression()
+                .disableCookieManagement()
+                .disableAuthCaching()
+                .disableConnectionState()
                 .setSSLHostnameVerifier(new DefaultHostnameVerifier())
                 .setDefaultRequestConfig(RequestConfig.custom()
                         // Timeout in millis until a connection is established.

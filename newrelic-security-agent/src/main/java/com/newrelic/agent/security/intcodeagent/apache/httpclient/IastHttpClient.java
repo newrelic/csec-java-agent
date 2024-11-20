@@ -9,6 +9,8 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.http.ReadResult;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -75,11 +77,10 @@ public class IastHttpClient {
                 try {
                     ReadResult result = httpClient.execute(request, endpoint.getValue(), true);
                     if(result.getStatusCode() >= 200 && result.getStatusCode() <= 500) {
-                        ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(serverPort, endpoint.getKey());
+                        ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(serverPort, endpoint.getKey(), endpoint.getValue(), true);
                         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
                         appServerInfo.getConnectionConfiguration().put(serverPort, serverConnectionConfiguration);
-                        serverConnectionConfiguration.setEndpoint(endpoint.getValue());
-                        serverConnectionConfiguration.setConfirmed(true);
+                        logger.log(LogLevel.FINER, String.format("setting up new connection configuration for port %s : %s", serverPort, serverConnectionConfiguration.getEndpoint()), IastHttpClient.class.getName());
                         return;
                     }
                 } catch (ApacheHttpExceptionWrapper | IOException | URISyntaxException e) {
