@@ -1,10 +1,3 @@
-/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
-
 package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -26,7 +19,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.logging.Level;
 
 public class ApacheSSLManager {
 
