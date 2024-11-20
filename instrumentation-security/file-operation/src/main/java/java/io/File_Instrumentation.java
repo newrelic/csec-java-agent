@@ -372,8 +372,7 @@ public abstract class File_Instrumentation {
     private static AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, boolean isLowSeverityHook,
             File_Instrumentation... files) {
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || files == null || files.length == 0
+            if (files == null || files.length == 0
             ) {
                 return null;
             }

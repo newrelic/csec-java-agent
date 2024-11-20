@@ -43,7 +43,7 @@ public abstract class ContainerResponse_Instrumentation {
     public void close() {
         boolean isLockAcquired = false;
         try {
-            isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SERVLET_GET_IS_OPERATION_LOCK);
+            isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_IS_OPERATION_LOCK);
             if(isLockAcquired && GenericHelper.isLockAcquired(HttpRequestHelper.getNrSecCustomAttribForPostProcessing())) {
                 HttpRequestHelper.postProcessSecurityHook(this.getClass().getName(), getWrappedMessageContext());
             }

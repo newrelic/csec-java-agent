@@ -46,7 +46,7 @@ public abstract class Statement_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String sql, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || sql == null || sql.trim().isEmpty()){
+            if (sql == null || sql.trim().isEmpty()){
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -83,8 +83,7 @@ public abstract class Statement_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(BatchSQLOperation operation){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    operation == null || operation.isEmpty()){
+            if (operation == null || operation.isEmpty()){
                 return null;
             }
             NewRelicSecurity.getAgent().registerOperation(operation);

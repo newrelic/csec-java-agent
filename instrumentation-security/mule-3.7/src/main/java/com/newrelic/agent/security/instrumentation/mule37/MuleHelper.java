@@ -109,10 +109,6 @@ public class MuleHelper {
         return MULE_LOCK_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 
-    public static String getNrSecCustomAttribName(String customAttribute) {
-        return customAttribute + Thread.currentThread().getId();
-    }
-
     public static void gatherURLMappings(HttpListener messageSource, List<MessageProcessor> messageProcessors) {
         try {
             String path = messageSource.getPath();

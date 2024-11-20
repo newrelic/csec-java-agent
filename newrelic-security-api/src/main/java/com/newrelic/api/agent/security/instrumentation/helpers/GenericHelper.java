@@ -56,7 +56,13 @@ public class GenericHelper {
         if (!NewRelicSecurity.isHookProcessingActive()){
             return false;
         }
+        if (caseType == null){
+            return true;
+        }
         if (caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isRequestParsed()){
+            return false;
+        }
+        if (!caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             return false;
         }
         boolean enabled = false;

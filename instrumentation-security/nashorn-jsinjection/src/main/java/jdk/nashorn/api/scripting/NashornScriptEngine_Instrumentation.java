@@ -75,10 +75,6 @@ public class NashornScriptEngine_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(ScriptFunction_Instrumentation script, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             String content = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JSEngineUtils.NASHORN_CONTENT + script.hashCode(), String.class);
             if(StringUtils.isEmpty(content)){
                 return null;
@@ -101,9 +97,7 @@ public class NashornScriptEngine_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String script, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(script)){
+            if (StringUtils.isBlank(script)){
                 return null;
             }
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(script, this.getClass().getName(), methodName);
@@ -123,15 +117,10 @@ public class NashornScriptEngine_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType javascriptInjection) {
-        try {
-            return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

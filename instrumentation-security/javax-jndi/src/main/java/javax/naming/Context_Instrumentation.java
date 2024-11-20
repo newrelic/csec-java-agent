@@ -120,8 +120,7 @@ public abstract class Context_Instrumentation {
 
     private List<AbstractOperation> preprocessSecurityHook (Enumeration<String> names, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    names == null || !names.hasMoreElements()){
+            if (names == null || !names.hasMoreElements()){
                 return null;
             }
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
@@ -139,8 +138,7 @@ public abstract class Context_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String name, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(name)){
+            if (StringUtils.isBlank(name)){
                 return null;
             }
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
@@ -157,15 +155,10 @@ public abstract class Context_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(JNDIUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JNDIUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType http) {
-        try {
-            return GenericHelper.acquireLockIfPossible(http, JNDIUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(http, JNDIUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

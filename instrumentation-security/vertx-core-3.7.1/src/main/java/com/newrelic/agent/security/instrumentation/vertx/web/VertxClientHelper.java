@@ -22,9 +22,7 @@ public class VertxClientHelper {
 
     public static AbstractOperation preprocessSecurityHook(String url, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    url == null || url.trim().isEmpty()) {
+            if (url == null || url.trim().isEmpty()) {
                 return null;
             }
 

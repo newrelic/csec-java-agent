@@ -206,11 +206,6 @@ public class Random_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String className, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (securityMetaData.getRequest().isEmpty()) {
-                return null;
-            }
-
             RandomOperation operation = null;
             Object obj = this;
             if (obj instanceof SecureRandom) {
@@ -248,17 +243,10 @@ public class Random_Instrumentation {
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.RANDOM, RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.RANDOM, RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
     }
 }

@@ -58,8 +58,7 @@ public abstract class PreparedStatement_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String sql, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()){
+            if (sql == null || sql.trim().isEmpty()){
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);

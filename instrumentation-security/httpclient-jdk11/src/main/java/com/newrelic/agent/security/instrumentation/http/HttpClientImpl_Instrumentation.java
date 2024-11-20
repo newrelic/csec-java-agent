@@ -63,11 +63,6 @@ final class HttpClientImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (securityMetaData.getRequest().isEmpty()) {
-                return null;
-            }
-
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
@@ -85,18 +80,11 @@ final class HttpClientImpl_Instrumentation {
 
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private static HttpRequest addSecurityHeader(AbstractOperation operation, HttpRequest req) {

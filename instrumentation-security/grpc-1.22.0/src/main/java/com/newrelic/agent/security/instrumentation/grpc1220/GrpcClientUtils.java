@@ -15,7 +15,7 @@ import io.grpc.Metadata;
 
 public class GrpcClientUtils {
     public static final String METHOD_NAME_START = "start";
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_CLIENT_OPERATIONAL_LOCK_";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_CLIENT_OPERATIONAL_LOCK_";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
@@ -32,11 +32,6 @@ public class GrpcClientUtils {
 
     public static AbstractOperation preprocessSecurityHook(String uri, Metadata meta, String klass) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
 
             SSRFOperation operation = new SSRFOperation(uri, klass, METHOD_NAME_START);
 

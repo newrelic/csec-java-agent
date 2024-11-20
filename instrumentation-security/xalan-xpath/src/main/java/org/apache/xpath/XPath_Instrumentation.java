@@ -57,7 +57,7 @@ public abstract class XPath_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String patternString, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || StringUtils.isBlank(patternString)){
+            if (StringUtils.isBlank(patternString)){
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(patternString, this.getClass().getName(), methodName);

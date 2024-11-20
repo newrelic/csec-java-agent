@@ -34,9 +34,6 @@ public class SecurityHelper {
     public static AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String className, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (securityMetaData.getRequest().isEmpty()) {
-                return null;
-            }
 
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();

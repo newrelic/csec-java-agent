@@ -24,7 +24,7 @@ public abstract class ChannelOutboundHandler_Instrumentation {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         boolean isLockAcquired = false;
         if (msg instanceof FullHttpResponse){
-            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND);
+            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(null, NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND);
         }
         if (isLockAcquired) {
             NettyUtils.processSecurityResponse(ctx, msg);

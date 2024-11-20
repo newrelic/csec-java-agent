@@ -51,7 +51,7 @@ public class LDAPInterface_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String name, String filter, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || StringUtils.isAnyBlank(filter)){
+            if (StringUtils.isAnyBlank(filter)){
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), methodName);

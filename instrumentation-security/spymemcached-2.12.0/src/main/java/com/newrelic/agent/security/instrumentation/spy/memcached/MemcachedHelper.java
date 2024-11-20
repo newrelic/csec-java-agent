@@ -20,9 +20,6 @@ public class MemcachedHelper {
 
     public static AbstractOperation preprocessSecurityHook(String type, String command, String key, Object val, String klass, String method) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             MemcachedOperation operation = new MemcachedOperation(command, Arrays.asList(key, val), type, klass, method);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
@@ -40,7 +37,7 @@ public class MemcachedHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);

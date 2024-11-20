@@ -54,8 +54,7 @@ final class PolyglotContextImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String languageId, Object sourceImpl, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    !StringUtils.equals(languageId, JSEngineUtils.LANGUAGE_ID_JS)){
+            if (!StringUtils.equals(languageId, JSEngineUtils.LANGUAGE_ID_JS)){
                 return null;
             }
             com.oracle.truffle.api.source.Source source = (Source) sourceImpl;

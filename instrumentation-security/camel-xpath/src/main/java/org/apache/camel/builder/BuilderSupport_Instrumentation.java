@@ -32,9 +32,7 @@ public class BuilderSupport_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String expression, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(expression)){
+            if (StringUtils.isBlank(expression)){
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(expression, this.getClass().getName(), methodName);

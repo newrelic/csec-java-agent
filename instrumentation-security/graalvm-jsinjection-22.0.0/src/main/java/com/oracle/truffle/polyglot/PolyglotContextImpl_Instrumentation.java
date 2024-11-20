@@ -54,8 +54,7 @@ final class PolyglotContextImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String languageId, Source source, String methodName){
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    !StringUtils.equals(languageId, JSEngineUtils.LANGUAGE_ID_JS)){
+            if (!StringUtils.equals(languageId, JSEngineUtils.LANGUAGE_ID_JS)){
                 return null;
             }
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(source.getCharacters()), this.getClass().getName(), methodName);
