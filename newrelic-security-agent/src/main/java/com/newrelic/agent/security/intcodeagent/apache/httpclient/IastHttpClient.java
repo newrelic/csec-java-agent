@@ -52,13 +52,14 @@ public class IastHttpClient {
         logger.log(LogLevel.FINEST, String.format("Replaying request %s with endpoints %s", fuzzRequestId, endpoints), IastHttpClient.class.getName());
         for (String endpoint : endpoints) {
             try {
-                ReadResult result = httpClient.execute(httpRequest, endpoint);
+                ReadResult result = httpClient.execute(httpRequest, endpoint, fuzzRequestId);
                 RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                 if(200 <= result.getStatusCode() && result.getStatusCode() < 300) {
+                    logger.log(LogLevel.FINEST, "Replay Request " + fuzzRequestId + " passed with status code " + result.getStatusCode() + " and response: " + result.getResponseBody(), IastHttpClient.class.getName());
                     break;
                 } else {
-                    logger.log(LogLevel.FINE, "Request failed with status code " + result.getStatusCode() + " and reason: " + result.getResponseBody(), IastHttpClient.class.getName());
-                    logger.postLogMessageIfNecessary(LogLevel.FINE, "Request failed with status code " + result.getStatusCode() + " and reason: " + result.getResponseBody(), null, IastHttpClient.class.getName());
+                    logger.log(LogLevel.FINE, "Replay Request " + fuzzRequestId + " failed with status code " + result.getStatusCode() + " and reason: " + result.getResponseBody(), IastHttpClient.class.getName());
+                    logger.postLogMessageIfNecessary(LogLevel.FINE, "Request " + fuzzRequestId + " failed with status code " + result.getStatusCode() + " and reason: " + result.getResponseBody(), null, IastHttpClient.class.getName());
                 }
             } catch (Exception e) {
                 String message = "Error while replaying control command %s with message : %s";
@@ -75,7 +76,7 @@ public class IastHttpClient {
             Map<String, String> endpoints = prepareEndpoints(serverPort);
             for (Map.Entry<String, String> endpoint : endpoints.entrySet()) {
                 try {
-                    ReadResult result = httpClient.execute(request, endpoint.getValue(), true);
+                    ReadResult result = httpClient.execute(request, endpoint.getValue(), null, true);
                     if(result.getStatusCode() >= 200 && result.getStatusCode() <= 500) {
                         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(serverPort, endpoint.getKey(), endpoint.getValue(), true);
                         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();

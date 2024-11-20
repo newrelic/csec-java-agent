@@ -226,20 +226,20 @@ public class ApacheHttpClientWrapper {
         }
     }
 
-    public ReadResult execute(HttpRequest httpRequest, String endpoint) throws IOException, URISyntaxException, ApacheHttpExceptionWrapper {
-        return execute(httpRequest, endpoint, false);
+    public ReadResult execute(HttpRequest httpRequest, String endpoint, String fuzzRequestId) throws IOException, URISyntaxException, ApacheHttpExceptionWrapper {
+        return execute(httpRequest, endpoint, fuzzRequestId, false);
     }
 
 
-    public ReadResult execute(HttpRequest httpRequest, String endpoint, boolean addEventIgnoreHeader) throws IOException, URISyntaxException, ApacheHttpExceptionWrapper {
+    public ReadResult execute(HttpRequest httpRequest, String endpoint, String fuzzRequestId, boolean addEventIgnoreHeader) throws IOException, URISyntaxException, ApacheHttpExceptionWrapper {
         HttpUriRequest request = buildIastFuzzRequest(httpRequest, endpoint, addEventIgnoreHeader);
-        logger.log(LogLevel.FINEST, "Executing request: " + request, ApacheHttpClientWrapper.class.getName());
+        logger.log(LogLevel.FINEST, String.format("Executing request %s: %s", fuzzRequestId, request), ApacheHttpClientWrapper.class.getName());
 
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             return mapResponseToResult(response);
         } catch (IOException hostConnectException) {
-            String message = "IOException Error while executing request %s message : %s";
-            logger.log(LogLevel.FINE, String.format(message, request, hostConnectException.getMessage()), ApacheHttpClientWrapper.class.getName());
+            String message = "IOException Error while executing request %s: %s message : %s";
+            logger.log(LogLevel.FINE, String.format(message, fuzzRequestId, request, hostConnectException.getMessage()), ApacheHttpClientWrapper.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
             throw hostConnectException;
         }
