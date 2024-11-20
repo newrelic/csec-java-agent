@@ -571,13 +571,5 @@ public interface IAgentConstants {
 
     String NR_APM_TRACE_ID = "trace.id";
     String NR_APM_SPAN_ID = "span.id";
-    String HTTP_STR = "http";
-    String HTTPS_STR = "https";
-    String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
-
-    String SSL_EXCEPTION_FAILURE_MESSAGE = "SSL Exception raised for url : %s";
-    String REQUEST_FAILURE_DUE_TO_IOEXCEPTION = "Request failure could be due to cancellation, a connectivity problem or timeout.";
-    String FAILURE_WHILE_GRPC_REQUEST_BODY_CONVERSION = "Failure while processing gRPC Request body, body : %s ";
-    String REQUEST_FAILURE_FOR_S_WITH_RESPONSE_CODE = "Request failure for : %s, with response : %s and response body : %s";
 
 }
