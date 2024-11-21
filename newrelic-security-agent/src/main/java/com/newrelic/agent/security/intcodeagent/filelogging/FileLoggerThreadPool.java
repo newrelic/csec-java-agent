@@ -29,7 +29,7 @@ public class FileLoggerThreadPool {
 
     protected boolean isLoggingToStdOut = false;
 
-    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    private static OSVariables osVariables;
 
     private FileLoggerThreadPool() throws IOException {
         maxfiles = LogFileHelper.logFileCount();
@@ -41,6 +41,7 @@ public class FileLoggerThreadPool {
      */
     public void initialiseLogger() {
         // load the settings
+        osVariables = OsVariablesInstance.getInstance().getOsVariables();
         int queueSize = 15000;
         int maxPoolSize = 1;
         int corePoolSize = 1;

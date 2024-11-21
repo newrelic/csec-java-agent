@@ -2,7 +2,6 @@ package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
-
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +11,8 @@ public class HttpRequest {
 
     @JsonIgnore
     public static final int MAX_ALLOWED_REQUEST_BODY_LENGTH = 500000;
+    @JsonIgnore
+    public static final String QUESTION_MARK = "?";
 
     private StringBuilder body;
 
@@ -38,20 +39,25 @@ public class HttpRequest {
     private Map<String, String> pathParameterMap;
 
     private boolean isRequestParsed;
+
     private boolean isGrpc;
+
     private String route;
+    private String requestURI;
+
+    private Map<String, String> customDataType;
 
     @JsonIgnore
-    private List<String> pathParameters;
+    private Set<String> pathParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> queryParameters;
+    private Map<String, Set<String>> queryParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> requestHeaderParameters;
+    private Map<String, Set<String>> requestHeaderParameters;
 
     @JsonIgnore
-    private Map<String, List<String>> requestBodyParameters;
+    private Map<String, Set<String>> requestBodyParameters;
 
     @JsonIgnore
     private boolean isRequestParametersParsed = false;
@@ -71,6 +77,8 @@ public class HttpRequest {
         this.isRequestParsed = false;
         this.isGrpc = false;
         this.route = StringUtils.EMPTY;
+        this.requestURI = StringUtils.EMPTY;
+        this.customDataType = new HashMap<>();
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -88,11 +96,14 @@ public class HttpRequest {
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
+        this.requestURI = servletInfo.requestURI;
         this.pathParameterMap = servletInfo.pathParameterMap;
+        this.pathParameters = servletInfo.pathParameters;
         this.queryParameters = servletInfo.queryParameters;
         this.requestHeaderParameters = servletInfo.requestHeaderParameters;
         this.requestBodyParameters = servletInfo.requestBodyParameters;
         this.isRequestParametersParsed = servletInfo.isRequestParametersParsed;
+        this.customDataType = servletInfo.customDataType;
     }
 
     public String getMethod() {
@@ -109,6 +120,7 @@ public class HttpRequest {
 
     public void setUrl(String url) {
         this.url = url;
+        this.requestURI = StringUtils.substringBefore(url, QUESTION_MARK);
     }
 
     public Map<String, String> getHeaders() {
@@ -242,11 +254,18 @@ public class HttpRequest {
     }
 
     public void setRoute(String route){
-        if(!NewRelicSecurity.isHookProcessingActive() ||
-                (!NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().isEmpty() && !NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().equals(Framework.SERVLET.name()))){
+        if(!NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().isEmpty() && !NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().equals(Framework.SERVLET.name())){
             return;
         }
         setRoute(route, true);
+    }
+
+    public String getRequestURI() {
+        return requestURI;
+    }
+
+    public void setRequestURI(String requestURI) {
+        this.requestURI = requestURI;
     }
 
     public void setRoute(String segment, Boolean isAlreadyServlet) {
@@ -264,35 +283,35 @@ public class HttpRequest {
         }
     }
 
-    public List<String> getPathParameters() {
+    public Set<String> getPathParameters() {
         return pathParameters;
     }
 
-    public void setPathParameters(List<String> pathParameters) {
+    public void setPathParameters(Set<String> pathParameters) {
         this.pathParameters = pathParameters;
     }
 
-    public Map<String, List<String>> getQueryParameters() {
+    public Map<String, Set<String>> getQueryParameters() {
         return queryParameters;
     }
 
-    public void setQueryParameters(Map<String, List<String>> queryParameters) {
+    public void setQueryParameters(Map<String, Set<String>> queryParameters) {
         this.queryParameters = queryParameters;
     }
 
-    public Map<String, List<String>> getRequestHeaderParameters() {
+    public Map<String, Set<String>> getRequestHeaderParameters() {
         return requestHeaderParameters;
     }
 
-    public void setRequestHeaderParameters(Map<String, List<String>> requestHeaderParameters) {
+    public void setRequestHeaderParameters(Map<String, Set<String>> requestHeaderParameters) {
         this.requestHeaderParameters = requestHeaderParameters;
     }
 
-    public Map<String, List<String>> getRequestBodyParameters() {
+    public Map<String, Set<String>> getRequestBodyParameters() {
         return requestBodyParameters;
     }
 
-    public void setRequestBodyParameters(Map<String, List<String>> requestBodyParameters) {
+    public void setRequestBodyParameters(Map<String, Set<String>> requestBodyParameters) {
         this.requestBodyParameters = requestBodyParameters;
     }
 
@@ -303,6 +322,11 @@ public class HttpRequest {
     public void setRequestParametersParsed(boolean requestParametersParsed) {
         isRequestParametersParsed = requestParametersParsed;
     }
+
+    public Map<String, String> getCustomDataType() {
+        return customDataType;
+    }
+
 }
 
 

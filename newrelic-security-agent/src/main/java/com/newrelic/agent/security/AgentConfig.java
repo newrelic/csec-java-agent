@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
+import com.newrelic.agent.security.intcodeagent.models.collectorconfig.ScanControllers;
 import com.newrelic.agent.security.intcodeagent.utils.CronExpression;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.policy.*;
@@ -74,7 +75,7 @@ public class AgentConfig {
 
     private Map<String, String> noticeErrorCustomParams = new HashMap<>();
 
-    private String iastTestIdentifier;
+    private ScanControllers scanControllers = new ScanControllers();
 
     private AgentConfig(){
     }
@@ -90,8 +91,6 @@ public class AgentConfig {
         groupName = applyRequiredGroup();
         Agent.getCustomNoticeErrorParameters().put(IUtilConstants.SECURITY_MODE, groupName);
         // Enable low severity hooks
-        // Set required LogLevel
-        logLevel = applyRequiredLogLevel();
 
         //Instantiation call please do not move or repeat this.
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
@@ -100,7 +99,24 @@ public class AgentConfig {
         //Do not repeat this task
         logger.initialiseLogger();
 
-        iastTestIdentifier = NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER);
+        // Set required LogLevel
+        logLevel = applyRequiredLogLevel();
+
+        try {
+            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT, 0));
+        } catch (NumberFormatException | ClassCastException e){
+            logger.log(LogLevel.FINEST, String.format("Error while reading IAST_SCAN_INSTANCE_COUNT %s , setting to default", NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT)), AgentConfig.class.getName());
+            scanControllers.setScanInstanceCount(0);
+        }
+
+        //Always set IAST Test Identifier after IAST_SCAN_INSTANCE_COUNT
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER) instanceof String) {
+            scanControllers.setIastTestIdentifier(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER));
+            scanControllers.setScanInstanceCount(1);
+        } else {
+            scanControllers.setIastTestIdentifier(StringUtils.EMPTY);
+        }
+
 
         instantiateAgentMode(groupName);
 
@@ -437,11 +453,15 @@ public class AgentConfig {
         return NR_CSEC_HOME;
     }
 
-    public String getIastTestIdentifier() {
-        return iastTestIdentifier;
-    }
-
     public AgentMode getAgentMode() {
         return agentMode;
+    }
+
+    public ScanControllers getScanControllers() {
+        return scanControllers;
+    }
+
+    public void setScanControllers(ScanControllers scanControllers) {
+        this.scanControllers = scanControllers;
     }
 }
