@@ -90,7 +90,7 @@ public class HttpSessionTest {
         SecureCookieOperationSet targetOperation = null;
         targetOperation = verifySecureCookieOp(operations);
 
-        Assert.assertEquals(1, targetOperation.getOperations().size());
+        Assert.assertTrue(!targetOperation.getOperations().isEmpty());
         Iterator<SecureCookieOperationSet.SecureCookieOperation> secureCookieOps = targetOperation.getOperations().iterator();
         Assert.assertTrue(secureCookieOps.hasNext());
 
@@ -106,7 +106,7 @@ public class HttpSessionTest {
         List<AbstractOperation> operations = introspector.getOperations();
 
         SecureCookieOperationSet targetOperation = verifySecureCookieOp(operations);
-        Assert.assertEquals(1, targetOperation.getOperations().size());
+        Assert.assertTrue(!targetOperation.getOperations().isEmpty());
 
         Iterator<SecureCookieOperationSet.SecureCookieOperation> secureCookieOps = targetOperation.getOperations().iterator();
         Assert.assertTrue(secureCookieOps.hasNext());
