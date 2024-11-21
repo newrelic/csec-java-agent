@@ -182,7 +182,7 @@ public class IASTDataTransferRequestProcessor {
             } catch (Exception e) {
                 logger.log(LogLevel.WARNING, String.format("Error while reading Configuration security.scan_request_rate_limit : %s,  Using default value %s replay request per min.", e.getMessage(), currentFetchThresholdPerMin), e, this.getClass().getName());
             }
-            logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s, after delay of %s seconds", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime(), initialDelay), IASTDataTransferRequestProcessor.class.getName());
+            logger.log(LogLevel.INFO, String.format("IAST data pull request is scheduled at %s", AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime()), IASTDataTransferRequestProcessor.class.getName());
             future = executorService.scheduleWithFixedDelay(this::task, initialDelay, delay, timeUnit);
         } catch (Throwable ignored){}
     }
