@@ -3,17 +3,11 @@ package com.newrelic.agent.security.instrumentation.servlet24;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -92,25 +86,12 @@ public class HttpServletHelper {
         return data;
     }
 
-    public static boolean isServletLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     public static boolean acquireServletLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, HttpServletHelper.getNrSecCustomAttribName());
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, HttpServletHelper.getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
-        try {
-            GenericHelper.releaseLock(HttpServletHelper.getNrSecCustomAttribName());
-        } catch (Throwable e) {}
+        GenericHelper.releaseLock(HttpServletHelper.getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {

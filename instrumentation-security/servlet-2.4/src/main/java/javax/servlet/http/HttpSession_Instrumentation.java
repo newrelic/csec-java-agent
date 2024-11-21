@@ -85,8 +85,7 @@ public class HttpSession_Instrumentation {
 
     private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
@@ -96,17 +95,10 @@ public class HttpSession_Instrumentation {
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
     }
 }

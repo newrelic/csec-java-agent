@@ -14,13 +14,13 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import io.grpc.Metadata;
 
 public class GrpcClientUtils {
-    public static final String METHOD_NAME_START = "start";
+    private static final String METHOD_NAME_START = "start";
+
     private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_CLIENT_OPERATIONAL_LOCK_";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
@@ -32,7 +32,6 @@ public class GrpcClientUtils {
 
     public static AbstractOperation preprocessSecurityHook(String uri, Metadata meta, String klass) {
         try {
-
             SSRFOperation operation = new SSRFOperation(uri, klass, METHOD_NAME_START);
 
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
