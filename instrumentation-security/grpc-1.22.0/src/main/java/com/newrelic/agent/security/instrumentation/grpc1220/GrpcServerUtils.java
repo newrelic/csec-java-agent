@@ -25,6 +25,7 @@ public class GrpcServerUtils {
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
+    public static final String METHOD_NAME_START_CALL = "startCall";
     private static Set<Descriptors.Descriptor> typeRegistries = new HashSet<>();
 
 
