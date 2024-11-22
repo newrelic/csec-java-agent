@@ -7,6 +7,7 @@
 
 package security.io.netty400.channel;
 
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -21,7 +22,7 @@ public abstract class ChannelOutboundHandler_Instrumentation {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         boolean isLockAcquired = false;
         if (msg instanceof FullHttpResponse){
-            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(null, NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND);
+            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND);
         }
         if (isLockAcquired) {
             NettyUtils.processSecurityResponse(ctx, msg);

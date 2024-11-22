@@ -45,7 +45,9 @@ public class NettyUtils {
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 com.newrelic.api.agent.security.schema.HttpRequest securityRequest =
                         securityMetaData.getRequest();
-
+                if (!NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && securityRequest.isRequestParsed()) {
+                    return;
+                }
                 securityRequest.setMethod(((HttpRequest) msg).getMethod().name());
                 securityRequest.setUrl(((HttpRequest) msg).getUri());
                 setClientAddressDetails(securityMetaData, ctx.channel().remoteAddress().toString());
@@ -224,8 +226,8 @@ public class NettyUtils {
         return false;
     }
 
-    public static boolean acquireNettyLockIfPossible(VulnerabilityCaseType reflectedXss, String operationLock) {
-        return GenericHelper.acquireLockIfPossible(reflectedXss, operationLock + Thread.currentThread().getId());
+    public static boolean acquireNettyLockIfPossible(String operationLock) {
+        return GenericHelper.acquireLockIfPossible(operationLock + Thread.currentThread().getId());
     }
 
     public static void releaseNettyLock(String operationLock) {
