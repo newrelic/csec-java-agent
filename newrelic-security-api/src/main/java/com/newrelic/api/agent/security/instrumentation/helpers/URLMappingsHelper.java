@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.RouteSegment;
 import com.newrelic.api.agent.security.schema.RouteSegments;
@@ -15,13 +16,14 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class URLMappingsHelper {
+
     public static final String SEPARATOR = "/";
 
     public static final String WILDCARD = "*";
 
     public static final String subResourceSegment = "/*";
 
-    private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
+    private static final Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
 
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
@@ -46,15 +48,24 @@ public class URLMappingsHelper {
         add("org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet");
         add("org.codehaus.groovy.grails.web.pages.GroovyPagesServlet");
         add("org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet");
+        add("weblogic.corba.iiop.http.TunnelLoginServlet");
+        add("weblogic.corba.iiop.http.TunnelSendServlet");
+        add("weblogic.corba.iiop.http.TunnelCloseServlet");
+        add("weblogic.corba.iiop.http.TunnelRecvServlet");
+        add("weblogic.rjvm.http.TunnelLoginServlet");
+        add("weblogic.rjvm.http.TunnelRecvServlet");
+        add("weblogic.rjvm.http.TunnelSendServlet");
+        add("weblogic.rjvm.http.TunnelCloseServlet");
+        add("weblogic.servlet.ClasspathServlet");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
         return mappings;
     }
 
-    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+    private static final Set<Integer> handlers = ConcurrentHashMap.newKeySet();
 
-    private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
+    private static final Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
 
     public static Set<Integer> getHandlersHash() {
         return handlers;
@@ -65,8 +76,11 @@ public class URLMappingsHelper {
     }
 
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
-        if (mapping.getHandler() == null || (mapping.getHandler() != null && !defaultHandlers.contains(mapping.getHandler()))) {
-            mappings.add(mapping);
+        if (mapping.getHandler() != null && defaultHandlers.contains(mapping.getHandler())) {
+            return;
+        }
+        mappings.add(mapping);
+        if (mapping.getHandler() == null) {
             generateRouteSegments(mapping.getPath());
         }
         if (mapping.getHandler() != null){
