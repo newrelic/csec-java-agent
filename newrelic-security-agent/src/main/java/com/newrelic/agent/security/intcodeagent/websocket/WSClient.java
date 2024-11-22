@@ -8,7 +8,9 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
+import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.ResourceUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -29,6 +31,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,9 +40,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
@@ -48,7 +49,7 @@ public class WSClient extends WebSocketClient {
     public static final String SENDING_EVENT = "sending event: ";
     public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
     public static final String ERROR_IN_WSOCK_CONNECTION = "Error in WSock connection : ";
-    public static final String CONNECTION_CLOSED_BY = "Connection closed by ";
+    public static final String CONNECTION_CLOSED_BY = "WS Connection closed by ";
     public static final String REMOTE_PEER = "remote peer.";
     public static final String LOCAL = "local.";
     public static final String CODE = " Code: ";
@@ -70,6 +71,8 @@ public class WSClient extends WebSocketClient {
 
     private WebSocketImpl connection = null;
 
+    private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
+
 
     private SSLContext createSSLContext() throws Exception {
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -88,6 +91,7 @@ public class WSClient extends WebSocketClient {
                 } catch (Exception e) {
                     logger.log(LogLevel.SEVERE,
                             "Unable to generate ca certificate. Verify the certificate format. Will not process further certs.", e, WSClient.class.getName());
+                    NewRelic.noticeError(new SecurityNoticeError("New Relic Security Agent is unable to generate CA Certificate. Verify the certificate format. Will not process further certs.", e), noticeErrorCustomParameters, true);
                     break;
                 }
             }
@@ -95,6 +99,7 @@ public class WSClient extends WebSocketClient {
 
         logger.log(caCerts.size() > 0 ? LogLevel.INFO : LogLevel.SEVERE,
                 String.format("Found %s certificates.", caCerts.size()), WSClient.class.getName());
+        noticeErrorCustomParameters.put("ca_bundle_count", String.valueOf(caCerts.size()));
         // Initialize the keystore
         keystore.load(null, null);
 
@@ -122,9 +127,11 @@ public class WSClient extends WebSocketClient {
         InputStream inputStream;
         String caBundlePath = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH);
         if (StringUtils.isNotBlank(caBundlePath)) {
+            noticeErrorCustomParameters.put("ca_bundle_path", caBundlePath);
             inputStream = Files.newInputStream(Paths.get(caBundlePath));
         } else {
-            inputStream = CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
+            noticeErrorCustomParameters.put("ca_bundle_path", "internal-pem");
+            inputStream = ResourceUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
         }
         return inputStream;
     }
@@ -147,9 +154,14 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
         this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
+        this.addHeader("NR-CSEC-IGNORED-VUL-CATEGORIES", AgentConfig.getInstance().getAgentMode().getSkipScan().getIastDetectionCategory().getDisabledCategoriesCSV());
+        this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
+        this.addHeader("NR-CSEC-IAST-TEST-IDENTIFIER", AgentConfig.getInstance().getScanControllers().getIastTestIdentifier());
+        this.addHeader("NR-CSEC-IAST-SCAN-INSTANCE-COUNT", String.valueOf(AgentConfig.getInstance().getScanControllers().getScanInstanceCount()));
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);
+            noticeErrorCustomParameters.put("proxy_host", proxy.address().toString());
         }
         if (StringUtils.startsWithIgnoreCase(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(), "wss:")) {
             try {
@@ -159,6 +171,7 @@ public class WSClient extends WebSocketClient {
                 logger.log(LogLevel.FINER, "Error creating socket factory", e, WSClient.class.getName());
             }
         }
+        noticeErrorCustomParameters.put("csec_ws_url", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL());
         logger.log(LogLevel.INFO, String.format("Connecting to WS client %s", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()), WSClient.class.getName());
     }
 
@@ -181,16 +194,21 @@ public class WSClient extends WebSocketClient {
             Proxy proxy = new Proxy(getProxyScheme(proxyScheme), new InetSocketAddress(proxyHost, proxyPort));
 
             if (proxyUser != null && proxyPass != null) {
-                // This Sets the authenticator that will be used by
-                // the networking code when a proxy or an HTTP server asks for authentication.
-                // This can lead to potential leak of authentication info by the application itself.
-//                Authenticator.setDefault(new Authenticator() {
-//                    @Override
-//                    protected PasswordAuthentication getPasswordAuthentication() {
-//                        return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
-//                    }
-//                });
-//                logger.log(LogLevel.FINER, "Authenticated proxy using username and password", WSClient.class.getName());
+                /**
+                 * This Sets the authenticator that will be used by
+                 * the networking code when a proxy or an HTTP server asks for authentication.
+                 * This can lead to potential leak of authentication info by the application itself.
+                 */
+                // Requires System.setProperty("jdk.http.auth.tunneling.disabledSchemes", ""); reference https://github.com/TooTallNate/Java-WebSocket/issues/1179#issuecomment-2184917604
+                System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+                System.setProperty("jdk.http.auth.proxying.disabledSchemes", "");
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
+                    }
+                });
+                logger.log(LogLevel.FINER, "Authenticated proxy using username and password", WSClient.class.getName());
             }
             logger.log(LogLevel.FINER, String.format("Proxy being used to connect with WSS %s", proxy), WSClient.class.getName());
             return proxy;
@@ -234,6 +252,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
+        AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementConnectionReconnected();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
@@ -244,7 +263,6 @@ public class WSClient extends WebSocketClient {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
-        AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
@@ -261,6 +279,7 @@ public class WSClient extends WebSocketClient {
     public void onMessage(String message) {
         // Receive communication from IC side.
         try {
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesReceived();
             if (logger.isLogLevelEnabled(LogLevel.FINEST)) {
                 logger.log(LogLevel.FINEST, String.format(INCOMING_CONTROL_COMMAND_S, message),
                         this.getClass().getName());
@@ -274,8 +293,10 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
-                + REASON + reason, WSClient.class.getName());
+        String message = CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+                + REASON + reason;
+        logger.log(LogLevel.WARNING, message, WSClient.class.getName());
+        NewRelic.noticeError(new SecurityNoticeError(message), noticeErrorCustomParameters, true);
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
@@ -289,6 +310,8 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
+        AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementConnectionFailure();
+        NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
@@ -306,8 +329,10 @@ public class WSClient extends WebSocketClient {
         if (this.isOpen()) {
             logger.log(LogLevel.FINER, SENDING_EVENT + text, WSClient.class.getName());
             super.send(text);
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementMessagesSent();
         } else {
             logger.log(LogLevel.FINER, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
+            AgentInfo.getInstance().getJaHealthCheck().getWebSocketConnectionStats().incrementSendFailure();
         }
     }
 
@@ -347,8 +372,14 @@ public class WSClient extends WebSocketClient {
         return instance;
     }
 
-    public static void shutDownWSClient(boolean clean) {
+    public static void shutDownWSClientAbnormal(boolean clean) {
         logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
+                WSClient.class.getName());
+        shutDownWSClient(clean, CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
+    }
+
+    public static void shutDownWSClient(boolean clean, int frame, String message) {
+        logger.log(LogLevel.WARNING, String.format("WebSocket Shutdown initiated with %s", frame),
                 WSClient.class.getName());
         WSUtils.getInstance().setConnected(false);
         if(clean) {
@@ -356,7 +387,7 @@ public class WSClient extends WebSocketClient {
             GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
         }
         if (instance != null) {
-            instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
+            instance.close(frame, message);
         }
     }
 

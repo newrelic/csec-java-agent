@@ -4,39 +4,67 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 public class ThreadPoolStats {
 
-    private Integer dispatcherQueueSize;
+    private ThreadPoolActiveStat dispatcher;
 
-    private Integer eventSendQueueSize;
+    private ThreadPoolActiveStat eventSender;
+
+    private ThreadPoolActiveStat fileLogger;
+
+    private ThreadPoolActiveStat iastHttpRequestProcessor;
+
+    private ThreadPoolActiveStat controlCommandProcessor;
 
     public ThreadPoolStats() {
     }
 
-    public ThreadPoolStats(Integer dispatcherQueueSize, Integer eventSendQueueSize) {
-        this.dispatcherQueueSize = dispatcherQueueSize;
-        this.eventSendQueueSize = eventSendQueueSize;
-    }
-
     public ThreadPoolStats(ThreadPoolStats threadPoolStats) {
-        this.dispatcherQueueSize = threadPoolStats.dispatcherQueueSize;
-        this.eventSendQueueSize = threadPoolStats.eventSendQueueSize;
+        this.dispatcher = new ThreadPoolActiveStat(threadPoolStats.dispatcher.getActiveThreadCount(), threadPoolStats.dispatcher.getCurrentQueueSize());
+        this.eventSender = new ThreadPoolActiveStat(threadPoolStats.eventSender.getActiveThreadCount(), threadPoolStats.eventSender.getCurrentQueueSize());
+        this.fileLogger = new ThreadPoolActiveStat(threadPoolStats.fileLogger.getActiveThreadCount(), threadPoolStats.fileLogger.getCurrentQueueSize());
+        this.iastHttpRequestProcessor = new ThreadPoolActiveStat(threadPoolStats.iastHttpRequestProcessor.getActiveThreadCount(), threadPoolStats.iastHttpRequestProcessor.getCurrentQueueSize());
+        this.controlCommandProcessor = new ThreadPoolActiveStat(threadPoolStats.controlCommandProcessor.getActiveThreadCount(), threadPoolStats.controlCommandProcessor.getCurrentQueueSize());
+
     }
 
-    public Integer getDispatcherQueueSize() {
-        return dispatcherQueueSize;
+    public ThreadPoolActiveStat getDispatcher() {
+        return dispatcher;
     }
 
-    public void setDispatcherQueueSize(Integer dispatcherQueueSize) {
-        this.dispatcherQueueSize = dispatcherQueueSize;
+    public ThreadPoolActiveStat getEventSender() {
+        return eventSender;
     }
 
-    public Integer getEventSendQueueSize() {
-        return eventSendQueueSize;
+    public ThreadPoolActiveStat getFileLogger() {
+        return fileLogger;
     }
 
-    public void setEventSendQueueSize(Integer eventSendQueueSize) {
-        this.eventSendQueueSize = eventSendQueueSize;
+    public ThreadPoolActiveStat getIastHttpRequestProcessor() {
+        return iastHttpRequestProcessor;
     }
 
+    public ThreadPoolActiveStat getControlCommandProcessor() {
+        return controlCommandProcessor;
+    }
+
+    public void setDispatcher(ThreadPoolActiveStat dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+
+    public void setEventSender(ThreadPoolActiveStat eventSender) {
+        this.eventSender = eventSender;
+    }
+
+    public void setFileLogger(ThreadPoolActiveStat fileLogger) {
+        this.fileLogger = fileLogger;
+    }
+
+    public void setIastHttpRequestProcessor(ThreadPoolActiveStat iastHttpRequestProcessor) {
+        this.iastHttpRequestProcessor = iastHttpRequestProcessor;
+    }
+
+    public void setControlCommandProcessor(ThreadPoolActiveStat controlCommandProcessor) {
+        this.controlCommandProcessor = controlCommandProcessor;
+    }
 
     public String toString() {
         return JsonConverter.toJSON(this);

@@ -3,6 +3,7 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -72,23 +73,12 @@ public class R2dbcHelper {
         return false;
     }
 
-    public static boolean acquireLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType sqlDbCommand) {
+        return GenericHelper.acquireLockIfPossible(sqlDbCommand, getNrSecCustomAttribName());
     }
 
     public static void releaseLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {

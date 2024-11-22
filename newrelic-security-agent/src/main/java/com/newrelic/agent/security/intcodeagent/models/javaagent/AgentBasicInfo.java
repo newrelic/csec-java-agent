@@ -5,6 +5,8 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.TraceMetadata;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -60,11 +62,12 @@ public class AgentBasicInfo {
     private String eventType;
 
     private Map<String, String> linkingMetadata;
+    private String appAccountId;
+    private String appEntityGuid;
+    private String applicationUUID;
 
     @JsonInclude
     private static String policyVersion;
-
-    private String accountId;
 
     private boolean isPolicyOverridden = AgentUtils.getInstance().isPolicyOverridden();
 
@@ -79,7 +82,12 @@ public class AgentBasicInfo {
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
-        setAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        linkingMetadata.put(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        linkingMetadata.put(NR_APM_SPAN_ID, traceMetadata.getSpanId());
+        setAppEntityGuid(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        setAppAccountId(AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -240,11 +248,27 @@ public class AgentBasicInfo {
         this.linkingMetadata = linkingMetadata;
     }
 
-    public String getAccountId() {
-        return accountId;
+    public String getAppAccountId() {
+        return appAccountId;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
+    public void setAppAccountId(String appAccountId) {
+        this.appAccountId = appAccountId;
+    }
+
+    public String getAppEntityGuid() {
+        return appEntityGuid;
+    }
+
+    public void setAppEntityGuid(String appEntityGuid) {
+        this.appEntityGuid = appEntityGuid;
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 }

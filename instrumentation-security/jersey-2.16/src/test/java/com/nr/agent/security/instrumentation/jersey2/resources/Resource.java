@@ -19,28 +19,13 @@ public class Resource {
     @GET
     @Path("/sync")
     public String syncEndpoint(@DefaultValue("param") @QueryParam("param") final String param) {
-        return param;
+        return "sync result";
     }
 
     @GET
     @Path("/async")
     public void resume(@DefaultValue("1") @QueryParam("sleep") final int sleepMillis, @Suspended final AsyncResponse response) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String result = veryExpensiveOperation(sleepMillis);
-                response.resume(result);
-            }
-
-            private String veryExpensiveOperation(int sleepMillis) {
-                long currentTime = System.currentTimeMillis();
-                long endTime = currentTime + sleepMillis;
-                while (currentTime < endTime) {
-                    currentTime = System.currentTimeMillis();
-                }
-                return "async resume at " + System.currentTimeMillis();
-            }
-        }).start();
+        response.resume("async result");
     }
 }
 

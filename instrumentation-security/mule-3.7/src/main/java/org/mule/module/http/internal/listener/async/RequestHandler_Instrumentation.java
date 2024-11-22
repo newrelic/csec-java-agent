@@ -49,14 +49,15 @@ public class RequestHandler_Instrumentation {
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
             HttpRequest httpRequest = requestContext.getRequest();
+            if (httpRequest.getEntity() != null) {
+                MuleHelper.registerStreamHashIfNeeded(httpRequest.getEntity().hashCode(), MuleHelper.REQUEST_ENTITY_STREAM);
+            }
             securityRequest.setMethod(httpRequest.getMethod());
             securityRequest.setClientIP(requestContext.getClientConnection().getRemoteHostAddress().toString());
-            securityRequest.setServerPort(
-                    NewRelicSecurity
-                            .getAgent()
-                            .getSecurityMetaData()
-                            .getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class)
-            );
+
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class) != null) {
+                securityRequest.setServerPort(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(MuleHelper.MULE_SERVER_PORT_ATTRIB_NAME, Integer.class));
+            }
 
             if (securityRequest.getClientIP() != null && !securityRequest.getClientIP().trim().isEmpty()) {
                 securityAgentMetaData.getIps().add(securityRequest.getClientIP());
@@ -71,7 +72,7 @@ public class RequestHandler_Instrumentation {
 
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
-            securityRequest.setContentType(MuleHelper.getContentType(httpRequest));
+            securityRequest.setContentType(MuleHelper.getContentType(securityRequest.getHeaders()));
 
             // TODO: need to update UserClassEntity
             ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
@@ -81,8 +82,7 @@ public class RequestHandler_Instrumentation {
 
     private void postProcessSecurityHook() {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
             ServletHelper.executeBeforeExitingTransaction();
@@ -109,14 +109,14 @@ public class RequestHandler_Instrumentation {
 
     private boolean acquireLockIfPossible(int hashcode) {
         try {
-            return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName(hashcode));
+            return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName());
         } catch (Throwable ignored) {}
         return false;
     }
 
     private void releaseLock(int hashcode) {
         try {
-            GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName(hashcode));
+            GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName());
         } catch (Throwable e) {}
     }
 }
