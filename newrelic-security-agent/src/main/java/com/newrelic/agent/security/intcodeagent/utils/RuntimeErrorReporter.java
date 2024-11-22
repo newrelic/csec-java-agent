@@ -36,7 +36,7 @@ public class RuntimeErrorReporter {
 
     public void reportApplicationRuntimeError() {
         for (ApplicationRuntimeError applicationRuntimeError : errors.values()) {
-            EventSendPool.getInstance().sendEvent(applicationRuntimeError);
+            EventSendPool.getInstance().sendEvent(applicationRuntimeError, "postApplicationRuntimeError");
         }
         errors.clear();
     }

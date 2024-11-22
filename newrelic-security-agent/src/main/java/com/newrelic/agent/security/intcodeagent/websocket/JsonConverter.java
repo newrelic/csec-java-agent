@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,8 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -73,6 +76,16 @@ public class JsonConverter {
             return mapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             return StringUtils.EMPTY;
+        }
+    }
+
+    public static void writeValue(Object obj, Writer out) {
+        try {
+            JsonGenerator generator = mapper.getFactory().createGenerator(out);
+            mapper.writeValue(generator, obj);
+        } catch (IOException e) {
+            logger.log(LogLevel.SEVERE, "Error writing value", e, JsonConverter.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, "Error writing value", e, JsonConverter.class.getName());
         }
     }
 

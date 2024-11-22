@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcesso
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
+import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -229,7 +230,7 @@ public class ControlCommandProcessor implements Runnable {
                     WSUtils.getInstance().setReconnecting(true);
                     //TODO no need for draining IAST since last leg has complete ledger.
                     logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
-                    WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
+                    ConnectionFactory.getInstance().getSecurityConnection().close("Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
                     logger.log(LogLevel.SEVERE, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());

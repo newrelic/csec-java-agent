@@ -11,6 +11,9 @@ import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandPro
 import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.utils.ResourceUtils;
+import com.newrelic.api.agent.security.schema.http.ReadResult;
+import com.newrelic.api.agent.security.utils.ConnectionException;
+import com.newrelic.api.agent.security.utils.SecurityConnection;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -43,7 +46,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class WSClient extends WebSocketClient {
+public class WSClient extends WebSocketClient implements SecurityConnection {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String SENDING_EVENT = "sending event: ";
@@ -72,6 +75,8 @@ public class WSClient extends WebSocketClient {
     private WebSocketImpl connection = null;
 
     private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
+    private final ReadResult DISCONNECTED = new ReadResult(500, "Disconnected");
+    private final ReadResult SUCCESS = new ReadResult(200, "Success");
 
 
     private SSLContext createSSLContext() throws Exception {
@@ -349,7 +354,7 @@ public class WSClient extends WebSocketClient {
      * @return the instance
      * @throws URISyntaxException
      */
-    public static WSClient getInstance() throws URISyntaxException, InterruptedException {
+    public static WSClient getInstance() throws URISyntaxException {
         if (instance == null) {
             instance = new WSClient();
         }
@@ -391,4 +396,42 @@ public class WSClient extends WebSocketClient {
         }
     }
 
+    @Override
+    public void setConnected(boolean connected) {
+        WSUtils.getInstance().setConnected(connected);
+    }
+
+    @Override
+    public boolean isConnected() {
+        return WSUtils.getInstance().isConnected();
+    }
+
+    @Override
+    public boolean isReconnecting() {
+        return WSUtils.getInstance().isReconnecting();
+    }
+
+    @Override
+    public void setReconnecting(boolean isReconnecting) {
+        WSUtils.getInstance().setReconnecting(isReconnecting);
+    }
+
+    @Override
+    public ReadResult send(Object message, String api) throws ConnectionException {
+        if(!isConnected()){
+            return DISCONNECTED;
+        }
+        send(message.toString());
+        return SUCCESS;
+    }
+
+    @Override
+    public void close(String message) {
+        super.close(CloseFrame.NORMAL, message);
+    }
+
+    @Override
+    public void ping() {
+        super.sendPing();
+    }
 }

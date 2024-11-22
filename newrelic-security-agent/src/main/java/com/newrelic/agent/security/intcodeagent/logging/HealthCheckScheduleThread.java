@@ -7,6 +7,8 @@ import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.SecurityClient;
+import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolActiveStat;
@@ -83,12 +85,12 @@ public class HealthCheckScheduleThread {
                 AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
                 AgentUtils.getInstance().addStatusLogMostRecentHCs(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
-                if (WSClient.getInstance().isOpen()) {
+                if (ConnectionFactory.getInstance().getSecurityConnection().isConnected()) {
                     synchronized (AgentInfo.getInstance().getJaHealthCheck()){
                         sendJaHealthCheck = new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck());
                         AgentInfo.getInstance().getJaHealthCheck().reset();
                     }
-                    WSClient.getInstance().send(JsonConverter.toJSON(sendJaHealthCheck));
+                    ConnectionFactory.getInstance().getSecurityConnection().send(sendJaHealthCheck, "postAny");
                 }
 
             } catch (NullPointerException ex) {

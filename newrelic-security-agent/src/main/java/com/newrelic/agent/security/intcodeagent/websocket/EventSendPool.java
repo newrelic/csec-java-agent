@@ -3,6 +3,7 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.CommunicationApis;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -13,6 +14,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventB
 import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import org.json.simple.JSONStreamAware;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -98,12 +100,12 @@ public class EventSendPool {
             AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementRaspProcessingDeactivated();
             return;
         }
-        executor.submit(new EventSender(event));
+        executor.submit(new EventSender(event, CommunicationApis.POST_EVENT));
         AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementSubmitted();
     }
 
-    public void sendEvent(Object event) {
-        executor.submit(new EventSender(event));
+    public void sendEvent(Object event, String api) {
+        executor.submit(new EventSender(event, api));
     }
 
     public static void shutDownPool() {

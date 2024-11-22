@@ -4,7 +4,7 @@ public class ReadResult {
     private final int statusCode;
     private final String responseBody;
 
-    ReadResult(int statusCode, String responseBody) {
+    public ReadResult(int statusCode, String responseBody) {
         this.statusCode = statusCode;
         this.responseBody = responseBody;
     }

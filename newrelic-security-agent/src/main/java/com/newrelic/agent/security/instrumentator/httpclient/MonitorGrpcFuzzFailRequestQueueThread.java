@@ -23,7 +23,7 @@ public class MonitorGrpcFuzzFailRequestQueueThread {
                 FuzzRequestBean request = (FuzzRequestBean) fuzzFailMap.keySet().toArray()[0];
                 FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
                 fuzzFailEvent.setFuzzHeader(request.getHeaders().get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-                EventSendPool.getInstance().sendEvent(fuzzFailEvent);
+                EventSendPool.getInstance().sendEvent(fuzzFailEvent, "postFuzzFailEvent");
             } catch (InterruptedException e) {
             } finally {
                 future = commonExecutor.submit(runnable);

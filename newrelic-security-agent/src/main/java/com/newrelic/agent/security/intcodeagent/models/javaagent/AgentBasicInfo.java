@@ -5,10 +5,14 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.TraceMetadata;
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONStreamAware;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +22,7 @@ import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*
 /**
  * The Class AgentBasicInfo.
  */
-public class AgentBasicInfo {
+public class AgentBasicInfo implements JSONStreamAware {
 
     private static final String SCAN_COMPONENT_DATA = "scanComponentData";
     public static final String FETCH_POLICY = "fetchPolicy";
@@ -270,5 +274,10 @@ public class AgentBasicInfo {
 
     public void setApplicationUUID(String applicationUUID) {
         this.applicationUUID = applicationUUID;
+    }
+
+    @Override
+    public void writeJSONString(Writer out) throws IOException {
+        JsonConverter.writeValue(this, out);
     }
 }

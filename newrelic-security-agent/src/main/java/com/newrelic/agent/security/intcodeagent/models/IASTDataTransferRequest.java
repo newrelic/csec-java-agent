@@ -3,12 +3,15 @@ package com.newrelic.agent.security.intcodeagent.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONStreamAware;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class IASTDataTransferRequest {
+public class IASTDataTransferRequest implements JSONStreamAware {
     private String jsonName = "iast-data-request";
     private String applicationUUID;
     private String appAccountId;
@@ -90,5 +93,10 @@ public class IASTDataTransferRequest {
         } catch (Exception e) {
             return StringUtils.EMPTY;
         }
+    }
+
+    @Override
+    public void writeJSONString(Writer out) throws IOException {
+        JsonConverter.writeValue(this, out);
     }
 }

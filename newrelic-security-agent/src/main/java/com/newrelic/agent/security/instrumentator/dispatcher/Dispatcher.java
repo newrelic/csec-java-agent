@@ -109,7 +109,7 @@ public class Dispatcher implements Callable {
     public Object call() throws Exception {
         try {
             if (this.exitEventBean != null) {
-                EventSendPool.getInstance().sendEvent(exitEventBean);
+                EventSendPool.getInstance().sendEvent(exitEventBean, "postExitEvent");
                 return null;
             }
             if (!firstEventSent.get()) {

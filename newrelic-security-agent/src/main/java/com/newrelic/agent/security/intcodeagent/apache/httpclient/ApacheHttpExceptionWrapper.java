@@ -1,6 +1,8 @@
 package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
-public class ApacheHttpExceptionWrapper extends Exception {
+import com.newrelic.api.agent.security.utils.ConnectionException;
+
+public class ApacheHttpExceptionWrapper extends ConnectionException {
     public ApacheHttpExceptionWrapper(String message) {
         super(message);
     }

@@ -7,8 +7,6 @@
 
 package com.newrelic.api.agent.security;
 
-import java.lang.reflect.Method;
-
 /**
  * The New Relic Security API. Consumers of this API should add the newrelic-security-api.jar to their classpath. The static methods of
  * this class form the Security Agent's basic Java API. Use {@link NewRelicSecurity#getAgent} to obtain the root of a hierarchy of

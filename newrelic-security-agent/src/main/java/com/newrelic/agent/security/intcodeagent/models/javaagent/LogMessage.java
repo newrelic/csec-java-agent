@@ -6,12 +6,15 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONStreamAware;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.time.Instant;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LogMessage {
+public class LogMessage implements JSONStreamAware {
 
     private String jsonName = "critical-messages";
 
@@ -116,5 +119,10 @@ public class LogMessage {
     @Override
     public String toString() {
         return JsonConverter.toJSON(this);
+    }
+
+    @Override
+    public void writeJSONString(Writer out) throws IOException {
+        JsonConverter.writeValue(this, out);
     }
 }

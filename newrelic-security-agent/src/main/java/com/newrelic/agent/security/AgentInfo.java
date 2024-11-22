@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
@@ -163,7 +164,7 @@ public class AgentInfo {
         else if (!AgentConfig.getInstance().isNRSecurityEnabled()) {
             logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
             state = false;
-        } else if (!WSUtils.isConnected()) {
+        } else if (!ConnectionFactory.getInstance().getSecurityConnection().isConnected()) {
             logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! Can't connect with Security Engine.", AgentInfo.class.getName());
             state = false;
         }

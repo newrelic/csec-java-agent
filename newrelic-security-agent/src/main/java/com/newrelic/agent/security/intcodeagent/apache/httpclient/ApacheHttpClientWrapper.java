@@ -185,22 +185,14 @@ public class ApacheHttpClientWrapper {
         return proxyManager.updateContext(HttpClientContext.create());
     }
 
-    public ReadResult execute(String api, List<String> pathParams, Map<String, String> queryParams,
+    public ReadResult execute(RequestLayout requestLayout, List<String> pathParams, Map<String, String> queryParams,
                                          Map<String, String> headers, byte[] body) throws IOException, URISyntaxException {
-        RequestLayout requestLayout = null;
-        try {
-            requestLayout = getRequestConfigurations(api);
-        } catch (ApacheHttpExceptionWrapper e) {
-            logger.log(LogLevel.WARNING, "Error while getting request configurations for API: " + api, ApacheHttpClientWrapper.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.WARNING, "Error while getting request configurations for API: " + api, e, ApacheHttpClientWrapper.class.getName());
-            return null;
-        }
         HttpUriRequest request;
         try {
             request = buildHttpRequest(requestLayout, pathParams, queryParams, headers, body);
         } catch (ApacheHttpExceptionWrapper e) {
-            logger.log(LogLevel.WARNING, "Error while building request for API: " + api + "with content requestLayout : " + requestLayout +" pathParams: "+ pathParams+" queryParams: "+ queryParams+" headers: "+ headers+" body: "+ Arrays.toString(body), ApacheHttpClientWrapper.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.WARNING, "Error while building request for API: " + api + "with content requestLayout : " + requestLayout +" pathParams: "+ pathParams+" queryParams: "+ queryParams+" headers: "+ headers+" body: "+ Arrays.toString(body), e, ApacheHttpClientWrapper.class.getName());
+            logger.log(LogLevel.WARNING, "Error while building request for API: " + requestLayout.getApi() + "with content requestLayout : " + requestLayout +" pathParams: "+ pathParams+" queryParams: "+ queryParams+" headers: "+ headers+" body: "+ Arrays.toString(body), ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, "Error while building request for API: " + requestLayout.getApi() + "with content requestLayout : " + requestLayout +" pathParams: "+ pathParams+" queryParams: "+ queryParams+" headers: "+ headers+" body: "+ Arrays.toString(body), e, ApacheHttpClientWrapper.class.getName());
             return null;
         }
         logger.log(LogLevel.FINEST, "Executing request: " + request, ApacheHttpClientWrapper.class.getName());
@@ -285,7 +277,9 @@ public class ApacheHttpClientWrapper {
         URI uri = setQueryParams(requestLayout.getEndpoint(), apiPath, queryParams);
         requestBuilder.setUri(uri);
         setHeader(requestBuilder, headers);
-        requestBuilder.setEntity(new ByteArrayEntity(body));
+        if(body != null) {
+            requestBuilder.setEntity(new ByteArrayEntity(body));
+        }
         return requestBuilder.build();
     }
 
@@ -353,13 +347,6 @@ public class ApacheHttpClientWrapper {
             builder.addParameter(param.getKey(), param.getValue());
         }
         return  builder.build();
-    }
-
-    private RequestLayout getRequestConfigurations(String api) throws ApacheHttpExceptionWrapper {
-        if(StringUtils.isBlank(api)){
-            throw new ApacheHttpExceptionWrapper("Unsupported API");
-        }
-        return CommunicationApis.get(api);
     }
 
     private ReadResult mapResponseToResult(HttpResponse response) throws IOException, ApacheHttpExceptionWrapper {

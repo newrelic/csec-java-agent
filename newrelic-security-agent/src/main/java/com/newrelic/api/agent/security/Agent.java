@@ -8,6 +8,8 @@ import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferReq
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.SecurityClient;
+import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.constants.HttpStatusCodes;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
@@ -263,7 +265,7 @@ public class Agent implements SecurityAgent {
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
                 Agent.class.getName()
         );
-        WSReconnectionST.getInstance().submitNewTaskSchedule(0);
+        ConnectionFactory.getInstance().getSecurityConnection().ping();
         EventSendPool.getInstance();
         ControlCommandProcessorThreadPool.getInstance();
         logger.logInit(
@@ -991,7 +993,7 @@ public class Agent implements SecurityAgent {
             }
             IASTReplayFailure replayFailure = new IASTReplayFailure(apiId, nrCsecFuzzRequestId, controlCommandId, failureMessage, message);
             IASTScanFailure scanFailure = new IASTScanFailure(replayFailure, metaData);
-            EventSendPool.getInstance().sendEvent(scanFailure);
+            EventSendPool.getInstance().sendEvent(scanFailure, "postScanFailure");
         }
     }
 

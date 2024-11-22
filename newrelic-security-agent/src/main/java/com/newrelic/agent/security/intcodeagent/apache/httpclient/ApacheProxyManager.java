@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
-import com.newrelic.api.agent.Logger;
+import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -16,13 +17,11 @@ import java.util.logging.Level;
 public class ApacheProxyManager {
     private final HttpHost proxy;
     private final Credentials proxyCredentials;
-    private final Logger logger;
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    public ApacheProxyManager(String proxyHost, Integer proxyPort, String proxyScheme, String proxyUser, String proxyPassword, Logger logger) {
-        this.logger = logger;
-
+    public ApacheProxyManager(String proxyHost, Integer proxyPort, String proxyScheme, String proxyUser, String proxyPassword) {
         if (proxyHost != null && proxyPort != null) {
-            logger.log(Level.FINE, MessageFormat.format("Using proxy host {0}:{1}", proxyHost, Integer.toString(proxyPort)));
+            logger.log(LogLevel.FINE, MessageFormat.format("Using proxy host {0}:{1}", proxyHost, Integer.toString(proxyPort)), ApacheProxyManager.class.getName());
             proxy = new HttpHost(proxyHost, proxyPort, proxyScheme);
             proxyCredentials = getProxyCredentials(proxyUser, proxyPassword);
         } else {
@@ -33,7 +32,7 @@ public class ApacheProxyManager {
 
     private Credentials getProxyCredentials(final String proxyUser, final String proxyPass) {
         if (proxyUser != null && proxyPass != null) {
-            logger.log(Level.INFO, MessageFormat.format("Setting Proxy Authenticator for user {0}", proxyUser));
+            logger.log(LogLevel.INFO, MessageFormat.format("Setting Proxy Authenticator for user {0}", proxyUser), ApacheProxyManager.class.getName());
             return new UsernamePasswordCredentials(proxyUser, proxyPass);
         }
         return null;

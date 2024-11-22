@@ -188,7 +188,7 @@ public class FileLoggerThreadPool {
         if (logLevel.getLevel() <= LogLevel.WARNING.getLevel()) {
             AgentUtils.getInstance().addStatusLogMostRecentErrors(JsonConverter.toJSON(message));
         }
-        EventSendPool.getInstance().sendEvent(message);
+        EventSendPool.getInstance().sendEvent(message, "postCriticalMessage");
         return message;
     }
 

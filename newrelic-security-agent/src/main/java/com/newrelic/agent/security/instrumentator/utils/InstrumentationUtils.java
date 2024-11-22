@@ -3,6 +3,7 @@ package com.newrelic.agent.security.instrumentator.utils;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
+import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
@@ -58,7 +59,7 @@ public class InstrumentationUtils {
             ShutDownEvent shutDownEvent = new ShutDownEvent();
             shutDownEvent.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             shutDownEvent.setStatus(IAgentConstants.TERMINATING);
-            EventSendPool.getInstance().sendEvent(shutDownEvent);
+            EventSendPool.getInstance().sendEvent(shutDownEvent, "postShutDown");
             logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
         } catch (Throwable e) {
@@ -66,7 +67,7 @@ public class InstrumentationUtils {
                     InstrumentationUtils.class.getName());
         }
         try {
-            WSClient.getInstance().close();
+            ConnectionFactory.getInstance().getSecurityConnection().close("IAST agent shutting down");
         } catch (Throwable e) {
         }
         try {

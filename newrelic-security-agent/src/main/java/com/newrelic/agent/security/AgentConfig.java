@@ -142,6 +142,16 @@ public class AgentConfig {
     }
 
     private void instantiateAgentMode(String groupName) throws RestrictionModeException {
+        try {
+            readScanSchedule();
+            readSkipScan();
+        } catch (RestrictionModeException e){
+            System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
+            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message : {0}", e.getMessage());
+            NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
+            AgentInfo.getInstance().agentStatTrigger(false);
+            throw e;
+        }
         this.agentMode = new AgentMode(groupName);
         switch (groupName){
             case IAST:
@@ -169,17 +179,7 @@ public class AgentConfig {
                 break;
         }
 
-        try {
-            readScanSchedule();
-            readSkipScan();
-            updateSkipScanParameters();
-        } catch (RestrictionModeException e){
-            System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
-            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message : {0}", e.getMessage());
-            NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
-            AgentInfo.getInstance().agentStatTrigger(false);
-            throw e;
-        }
+        updateSkipScanParameters();
         logger.log(LogLevel.INFO, String.format("Security Agent Modes and Config :  %s", agentMode), AgentConfig.class.getName());
     }
 

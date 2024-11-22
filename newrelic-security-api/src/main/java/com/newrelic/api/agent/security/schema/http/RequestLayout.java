@@ -3,16 +3,18 @@ package com.newrelic.api.agent.security.schema.http;
 public class RequestLayout {
 
     private String api;
-
     private String method;
-
     private String endpoint;
     private String path;
     private String contentType;
     private String contentEncoding;
 
-    public RequestLayout(String api) {
-        this.api = api;
+    public RequestLayout(String postEvent, String post, String path, String contentType, String contentEncoding) {
+        this.api = postEvent;
+        this.method = post;
+        this.path = path;
+        this.contentType = contentType;
+        this.contentEncoding = contentEncoding;
     }
 
     public String getApi() {

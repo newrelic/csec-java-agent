@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.SecurityClient;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
@@ -399,9 +400,10 @@ public class AgentUtils {
             logger.log(LogLevel.INFO, String.format(NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S,
                     JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
             try {
-                WSClient.getInstance().send(JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
+//                WSClient.getInstance().send(JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
+//                SecurityClient.getInstance().postAny(AgentUtils.getInstance().getAgentPolicy());
                 AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
-                EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+                EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo(), "postApplicationInfo");
                 return true;
             } catch (Throwable e) {
                 logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S, e.getMessage(), e.getCause()), AgentUtils.class.getName());
@@ -426,7 +428,7 @@ public class AgentUtils {
             logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
             AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
-            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo(), "postApplicationInfo");
 
             return true;
         } catch (Throwable e) {
@@ -659,6 +661,6 @@ public class AgentUtils {
         ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
         applicationURLMappings.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings), Agent.class.getName());
-        EventSendPool.getInstance().sendEvent(applicationURLMappings);
+        EventSendPool.getInstance().sendEvent(applicationURLMappings, "postApplicationURLMappings");
     }
 }

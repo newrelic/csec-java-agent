@@ -3,6 +3,8 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.SecurityClient;
+import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -58,12 +60,12 @@ public class IASTDataTransferRequestProcessor {
                 return;
             }
 
-            if (!WSClient.getInstance().isOpen()) {
-                logger.log(LogLevel.FINER, "IAST request processing deactivated due to websocket connection status.", IASTDataTransferRequestProcessor.class.getName());
+            if (!ConnectionFactory.getInstance().getSecurityConnection().isConnected()) {
+                logger.log(LogLevel.FINER, "IAST request processing deactivated due to SE connection status.", IASTDataTransferRequestProcessor.class.getName());
                 return;
             }
 
-            if(WSUtils.getInstance().isReconnecting()) {
+            if(ConnectionFactory.getInstance().getSecurityConnection().isReconnecting()) {
                 logger.log(LogLevel.FINER, "IAST request processing deactivated due to SE requested for reconnection..", IASTDataTransferRequestProcessor.class.getName());
                 return;
             }
@@ -118,7 +120,8 @@ public class IASTDataTransferRequestProcessor {
                 pendingRequestIds.addAll(RestRequestThreadPool.getInstance().getPendingIds());
                 pendingRequestIds.addAll(GrpcClientRequestReplayHelper.getInstance().getPendingIds());
                 request.setPendingRequestIds(pendingRequestIds);
-                WSClient.getInstance().send(request.toString());
+//                WSClient.getInstance().send(request.toString());
+                SecurityClient.getInstance().send(request, "postAny");
             }
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), this.getClass().getName());
