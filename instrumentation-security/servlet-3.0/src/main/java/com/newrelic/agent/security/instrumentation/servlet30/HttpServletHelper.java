@@ -19,8 +19,10 @@ public class HttpServletHelper {
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
-            getJSPMappings(servletContext, URLMappingsHelper.SEPARATOR);
-
+            String contextPath = StringUtils.removeStart(StringUtils.removeEnd(servletContext.getContextPath(), URLMappingsHelper.SEPARATOR), StringUtils.SEPARATOR);
+            if (!StringUtils.equalsAny(contextPath, "docs", "examples")) {
+                getJSPMappings(servletContext, URLMappingsHelper.SEPARATOR);
+            }
             for (ServletRegistration servletRegistration : servletRegistrations.values()) {
                 for (String s : servletRegistration.getMappings()) {
                     URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, s, servletRegistration.getClassName()));

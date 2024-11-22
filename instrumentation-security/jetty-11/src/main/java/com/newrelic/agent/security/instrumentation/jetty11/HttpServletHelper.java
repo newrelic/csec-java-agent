@@ -207,6 +207,10 @@ public class HttpServletHelper {
     }
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
+            String contextPath = StringUtils.removeStart(StringUtils.removeEnd(servletContext.getContextPath(), SEPARATOR), StringUtils.SEPARATOR);
+            if (StringUtils.equalsAny(contextPath, "docs", "examples")) {
+                return;
+            }
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, SEPARATOR);
 
