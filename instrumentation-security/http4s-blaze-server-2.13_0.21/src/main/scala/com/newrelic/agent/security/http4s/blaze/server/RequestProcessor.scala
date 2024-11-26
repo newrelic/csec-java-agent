@@ -65,6 +65,7 @@ object RequestProcessor {
         processRequestHeaders(request.headers, securityRequest)
         securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders))
         securityRequest.setContentType(getContentType(securityRequest.getHeaders))
+        securityRequest.getBody.append(body)
 
         val trace: Array[StackTraceElement] = Thread.currentThread.getStackTrace
         securityMetaData.getMetaData.setServiceTrace(util.Arrays.copyOfRange(trace, 2, trace.length))
@@ -140,6 +141,8 @@ object RequestProcessor {
         securityResponse.setResponseCode(response.status.code)
         processResponseHeaders(response.headers, securityResponse)
         securityResponse.setResponseContentType(getContentType(securityResponse.getHeaders))
+
+        securityResponse.getResponseBody.append(body)
 
         ServletHelper.executeBeforeExitingTransaction()
         if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent.getSecurityMetaData.getResponse.getResponseContentType)) {
