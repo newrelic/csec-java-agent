@@ -12,7 +12,6 @@ import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
 import com.newrelic.api.agent.security.schema.policy.SkipScan;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -304,14 +303,14 @@ public class RestrictionUtility {
         return requestBodyParameters;
     }
 
-    private static @NotNull String getBase(String baseKey, String key) {
+    private static String getBase(String baseKey, String key) {
         if(StringUtils.isBlank(baseKey)){
             return key;
         }
         return baseKey + "." + key;
     }
 
-    private static @NotNull String getBase(String baseKey, int index) {
+    private static String getBase(String baseKey, int index) {
         if(StringUtils.isBlank(baseKey)){
             return "[]";
         }

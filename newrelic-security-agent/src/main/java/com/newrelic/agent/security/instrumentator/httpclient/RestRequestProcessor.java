@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.api.agent.security.NewRelicSecurity;
@@ -40,7 +41,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
 
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
-    public static final String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
     private static final String IAST_REQUEST_HAS_NO_ARGUMENTS = "IAST request has no arguments : %s";
     public static final String AGENT_IS_NOT_ACTIVE = "Agent is not active";
     public static final String WS_RECONNECTING = "Websocket reconnecting failing for control command id: %s";
@@ -108,15 +108,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
                 MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
             } else {
-                boolean postSSL = false;
-                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig(), httpRequest);
-                logger.log(LogLevel.FINER, String.format("Endpoints to fire : %s", endpoints), RestRequestProcessor.class.getSimpleName());
-                if (endpoints.isEmpty()){
-                    endpoints = prepareAllEndpoints(httpRequest);
-                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: %s", endpoints), RestRequestProcessor.class.getSimpleName());
-                    postSSL = true;
-                }
-                RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
+                IastHttpClient.getInstance().replay(NewRelicSecurity.getAgent().getApplicationConnectionConfig(), httpRequest, controlCommand.getId());
             }
             return true;
         } catch (JsonProcessingException e){
@@ -137,42 +129,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
             throw e;
         }
         return true;
-    }
-
-    private List<String> prepareAllEndpoints(FuzzRequestBean httpRequest) {
-        List<String> endpoitns = new ArrayList<>();
-        endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, httpRequest.getProtocol(), httpRequest.getServerPort()));
-        endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(httpRequest.getProtocol()), httpRequest.getServerPort()));
-        return endpoitns;
-    }
-
-    private List<String> prepareAllEndpoints(Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig, FuzzRequestBean httpRequest) {
-        List<String> endpoints = new ArrayList<>();
-        for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
-            ServerConnectionConfiguration connectionConfiguration = connectionConfig.getValue();
-            if(!connectionConfig.getValue().isConfirmed()){
-                if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, connectionConfiguration.getProtocol(), connectionConfiguration.getPort()))) {
-                    updateServerConnectionConfiguration(connectionConfiguration, connectionConfiguration.getProtocol());
-                    endpoints.add(connectionConfiguration.getEndpoint());
-                } else if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfiguration.getProtocol()), connectionConfiguration.getPort()))) {
-                    updateServerConnectionConfiguration(connectionConfiguration, toggleProtocol(connectionConfiguration.getProtocol()));
-                    endpoints.add(connectionConfiguration.getEndpoint());
-                }
-            } else {
-                endpoints.add(connectionConfiguration.getEndpoint());
-            }
-        }
-        return endpoints;
-    }
-
-    private void updateServerConnectionConfiguration(ServerConnectionConfiguration connectionConfiguration, String protocol) {
-        connectionConfiguration.setEndpoint(String.format(ENDPOINT_LOCALHOST_S, protocol, connectionConfiguration.getPort()));
-        connectionConfiguration.setProtocol(protocol);
-        connectionConfiguration.setConfirmed(true);
-    }
-
-    private String toggleProtocol(String value) {
-        return StringUtils.equalsAnyIgnoreCase(value, "https")? "http": "https";
     }
 
     public static void processControlCommand(IntCodeControlCommand command) {

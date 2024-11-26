@@ -889,29 +889,8 @@ public class Agent implements SecurityAgent {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
         appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
+        logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
 //        verifyConnectionAndPut(port, scheme, appServerInfo);
-    }
-
-    private boolean isConnectionSuccessful(int port, String scheme) {
-        try {
-            java.net.URL endpoint = new URL(String.format("%s://localhost:%s", scheme, port));
-            HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
-
-            // Set the request method to HEAD (you won't download the whole content)
-            connection.setRequestMethod("HEAD");
-
-            int responseCode = connection.getResponseCode();
-
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                return true;
-            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (IOException e) {
-            return false;
-        }
     }
 
     public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
