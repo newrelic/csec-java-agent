@@ -10,7 +10,8 @@ import com.newrelic.api.agent.security.schema._
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation
 import com.newrelic.api.agent.security.utils.logging.LogLevel
-import org.http4s.{Headers, Request, Response}
+import fs2.RaiseThrowable
+import org.http4s.{Headers, Message, Request, Response}
 
 import java.util
 
@@ -29,15 +30,17 @@ object RequestProcessor {
     val result = construct((): Unit)
       .redeemWith(_ => httpApp(request),
         _ => for {
-          isLockAcquired <- preprocessHttpRequest(request)
+          requestBody <- extractBody(request)
+          isLockAcquired <- preprocessHttpRequest(request, requestBody)
           resp <- httpApp(request)
-          _ <- postProcessSecurityHook(isLockAcquired, resp)
+          responseBody <- extractBody(resp)
+          _ <- postProcessSecurityHook(isLockAcquired, resp, responseBody)
         } yield resp
       )
     result
   }
 
-  private def preprocessHttpRequest[F[_]: Sync](request: Request[F]): F[Boolean] = construct {
+  private def preprocessHttpRequest[F[_]: Sync](request: Request[F], body: String): F[Boolean] = construct {
     val isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP4S-BLAZE-REQUEST_LOCK")
     try {
       if (NewRelicSecurity.isHookProcessingActive && isLockAcquired && !NewRelicSecurity.getAgent.getSecurityMetaData.getRequest.isRequestParsed){
@@ -66,10 +69,8 @@ object RequestProcessor {
         securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders))
         securityRequest.setContentType(getContentType(securityRequest.getHeaders))
 
-        // TODO extract request body & user class detection
-
         val trace: Array[StackTraceElement] = Thread.currentThread.getStackTrace
-        securityMetaData.getMetaData.setServiceTrace(util.Arrays.copyOfRange(trace, 1, trace.length))
+        securityMetaData.getMetaData.setServiceTrace(util.Arrays.copyOfRange(trace, 2, trace.length))
         securityRequest.setRequestParsed(true)
       }
 
@@ -126,7 +127,16 @@ object RequestProcessor {
     })
   }
 
-  private def postProcessSecurityHook[F[_]: Sync](isLockAcquired:Boolean, response: Response[F]): F[Unit] = construct {
+  private def extractBody[F[_]: Sync](msg: Message[F]): F[String] = {
+    if (msg.contentType.nonEmpty && msg.contentType.get.charset.nonEmpty) {
+      val charset = msg.contentType.get.charset.get;
+      msg.bodyText(RaiseThrowable.fromApplicativeError, defaultCharset = charset).compile.string
+    } else {
+      msg.bodyText.compile.string
+    }
+  }
+
+  private def postProcessSecurityHook[F[_]: Sync](isLockAcquired:Boolean, response: Response[F], body: String): F[Unit] = construct {
     try {
       if (NewRelicSecurity.isHookProcessingActive && isLockAcquired) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
@@ -134,10 +144,9 @@ object RequestProcessor {
         processResponseHeaders(response.headers, securityResponse)
         securityResponse.setResponseContentType(getContentType(securityResponse.getHeaders))
 
-        // TODO extract response body
-
         ServletHelper.executeBeforeExitingTransaction()
         if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent.getSecurityMetaData.getResponse.getResponseContentType)) {
+          NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData.setFromJumpRequiredInStackTrace(3)
           val rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent.getSecurityMetaData.getRequest, NewRelicSecurity.getAgent.getSecurityMetaData.getResponse, this.getClass.getName, METHOD_WITH_HTTP_APP)
           NewRelicSecurity.getAgent.registerOperation(rxssOperation)
         }
@@ -155,7 +164,7 @@ object RequestProcessor {
 
   private def processResponseHeaders(headers: Headers, securityResp: HttpResponse): Unit = {
     headers.foreach(header => {
-      if (header.name != null && header.name.isEmpty) {
+      if (header.name != null && !header.name.isEmpty) {
         securityResp.getHeaders.put(header.name.toString.toLowerCase, header.value)
       }
     })
