@@ -5,12 +5,12 @@ import com.newrelic.agent.security.introspec.{InstrumentationTestConfig, Securit
 import com.newrelic.api.agent.security.instrumentation.helpers.{GenericHelper, ServletHelper}
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation
 import com.newrelic.api.agent.security.schema.{SecurityMetaData, VulnerabilityCaseType}
-import org.http4s.HttpRoutes
-import org.http4s.Method.GET
 import org.http4s.dsl.io._
 import org.http4s.implicits._
+import org.http4s.{Header, HttpRoutes}
 import org.junit.runner.RunWith
 import org.junit.{After, Assert, Before, Test}
+import org.typelevel.ci.CIString
 
 import java.net.{HttpURLConnection, URL}
 import java.util
@@ -26,8 +26,8 @@ class EmberServerBuilderTest {
 
   val emberServer = new Http4sTestServer(hostname, port,
     HttpRoutes.of[IO] {
-      case GET -> Root / "hello" / name =>
-        Ok(s"Hello, $name.")
+      case _ -> Root / "hello" / name =>
+        Ok(s"Hello, $name.").map(_.putHeaders(Header.Raw(CIString.apply("content-type"), contentType)))
     }.orNotFound)
 
   @Before
@@ -87,32 +87,49 @@ class EmberServerBuilderTest {
     Assert.assertFalse("request should not be empty", operation.getRequest.isEmpty)
     Assert.assertEquals("Invalid Request content-type.", contentType, operation.getRequest.getContentType)
     Assert.assertEquals("Invalid protocol.", "http", operation.getRequest.getProtocol)
+    Assert.assertFalse("Headers should not be empty", operation.getRequest.getHeaders.isEmpty)
+    Assert.assertEquals("Invalid Request body", "body extract", operation.getRequest.getBody.toString)
 
-    //    Assert.assertFalse("response should not be empty", operation.getResponse.isEmpty)
-    //    Assert.assertEquals("Invalid response content-type.", contentType, operation.getResponse.getResponseContentType)
+    Assert.assertFalse("response should not be empty", operation.getResponse.isEmpty)
+    Assert.assertEquals("Invalid response content-type.", contentType, operation.getResponse.getResponseContentType)
+    Assert.assertFalse("Headers should not be empty", operation.getResponse.getHeaders.isEmpty)
+    Assert.assertEquals("Invalid Response body", "Hello, bob.", operation.getResponse.getResponseBody.toString)
+    Assert.assertEquals("Invalid Response code", 200, operation.getResponse.getResponseCode)
   }
 
   private def assertMetaData(metaData: SecurityMetaData): Unit = {
     Assert.assertFalse("request should not be empty", metaData.getRequest.isEmpty)
     Assert.assertEquals("Invalid Request content-type.", contentType, metaData.getRequest.getContentType)
     Assert.assertEquals("Invalid protocol.", "http", metaData.getRequest.getProtocol)
+    Assert.assertEquals("Invalid Request body", "body extract", metaData.getRequest.getBody.toString)
+    Assert.assertFalse("Headers should not be empty", metaData.getRequest.getHeaders.isEmpty)
 
-    //    Assert.assertFalse("response should not be empty", metaData.getResponse.isEmpty)
-    //    Assert.assertEquals("Invalid response content-type.", contentType, metaData.getResponse.getResponseContentType)
+    Assert.assertFalse("response should not be empty", metaData.getResponse.isEmpty)
+    Assert.assertEquals("Invalid response content-type.", contentType, metaData.getResponse.getResponseContentType)
+    Assert.assertEquals("Invalid Response code", 200, metaData.getResponse.getResponseCode)
+    Assert.assertFalse("Headers should not be empty", metaData.getResponse.getHeaders.isEmpty)
+    Assert.assertEquals("Invalid Response body", "Hello, bob.", metaData.getResponse.getResponseBody.toString)
   }
 }
 
 object Http4sTestUtils {
-  def makeRequest(url: String, addCSECHeader: Boolean, headerValue: String): Int = {
+  def makeRequest(url: String, addCSECHeader: Boolean, headerValue: String): Unit = {
     val u: URL = new URL(url)
     val conn = u.openConnection.asInstanceOf[HttpURLConnection]
-    conn.setRequestProperty("content-type", "text/plain; charset=utf-8")
+    conn.setDoOutput(true)
+
+    conn.setRequestProperty("content-type", "text/plain")
+
     if (addCSECHeader) {
       conn.setRequestProperty(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, headerValue + "a")
       conn.setRequestProperty(GenericHelper.CSEC_PARENT_ID, headerValue + "b")
       conn.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue))
     }
+
+    val stream = conn.getOutputStream
+    stream.write("body extract".getBytes)
+
     conn.connect()
-    conn.getResponseCode
+    println(conn.getResponseCode)
   }
 }
