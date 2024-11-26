@@ -12,4 +12,4 @@ runs:
     - name: Publish CSEC agent locally
       shell: bash
       run: |
-        ./gradlew ${GRADLE_OPTIONS} publishToMavenLocal -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
+        ./gradlew ${GRADLE_OPTIONS} publishToMavenLocal -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel --stacktrace
