@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
@@ -25,6 +26,7 @@ public class HttpHandler_Instrumentation {
             preprocessSecurityHook(exchange);
         }
         ServletHelper.registerUserLevelCode(HttpServerHelper.SUN_NET_HTTP_SERVER);
+        HttpServerHelper.detectRoute();
         try{
             Weaver.callOriginal();
         } finally {
@@ -64,12 +66,7 @@ public class HttpHandler_Instrumentation {
             securityRequest.setProtocol(HttpServerHelper.getProtocol(exchange));
             securityRequest.setUrl(String.valueOf(exchange.getRequestURI()));
 
-            String queryString = exchange.getRequestURI().getQuery();
-            if (queryString != null && !queryString.trim().isEmpty()) {
-                securityRequest.setUrl(securityRequest.getUrl() + HttpServerHelper.QUESTION_MARK + queryString);
-            }
-
-            securityRequest.setContentType(HttpServerHelper.getContentType(exchange.getRequestHeaders()));
+            securityRequest.setContentType(HttpServerHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
@@ -83,7 +80,11 @@ public class HttpHandler_Instrumentation {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(exchange.getResponseCode());
+            HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
+            securityResponse.setResponseCode(exchange.getResponseCode());
+            HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);
+            securityResponse.setResponseContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
+
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());

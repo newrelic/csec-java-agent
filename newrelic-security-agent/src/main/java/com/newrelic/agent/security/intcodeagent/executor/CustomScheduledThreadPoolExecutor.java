@@ -1,7 +1,5 @@
 package com.newrelic.agent.security.intcodeagent.executor;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.concurrent.*;
 
 public class CustomScheduledThreadPoolExecutor extends ScheduledThreadPoolExecutor {
@@ -10,15 +8,15 @@ public class CustomScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
         super(corePoolSize);
     }
 
-    public CustomScheduledThreadPoolExecutor(int corePoolSize, @NotNull ThreadFactory threadFactory) {
+    public CustomScheduledThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory) {
         super(corePoolSize, threadFactory);
     }
 
-    public CustomScheduledThreadPoolExecutor(int corePoolSize, @NotNull RejectedExecutionHandler handler) {
+    public CustomScheduledThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler) {
         super(corePoolSize, handler);
     }
 
-    public CustomScheduledThreadPoolExecutor(int corePoolSize, @NotNull ThreadFactory threadFactory, @NotNull RejectedExecutionHandler handler) {
+    public CustomScheduledThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, threadFactory, handler);
     }
 
