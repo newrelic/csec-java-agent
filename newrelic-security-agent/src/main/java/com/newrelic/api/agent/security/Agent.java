@@ -259,7 +259,8 @@ public class Agent implements SecurityAgent {
                 30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         SchedulerHelper.getInstance().scheduleSampling(IastMonitoring::sampleData, 0, 5, TimeUnit.SECONDS);
-        SchedulerHelper.getInstance().scheduleSampling(IastMonitoring::resetEventSampler, 0, 6, TimeUnit.HOURS);
+        SchedulerHelper.getInstance().scheduleResetEventSampler(IastMonitoring::resetEventSampler, 0,
+                AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getEventQuotaTimeDuration(), TimeUnit.MINUTES);
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),

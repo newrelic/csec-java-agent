@@ -10,7 +10,11 @@ public class MonitoringMode {
 
     private AtomicBoolean harvesting = new AtomicBoolean(false);
 
-    private int max_event_quota = 100;
+    private int maxEventQuota = 100;
+
+    private int eventQuotaTimeDuration = 360; //in minutes
+
+    private int repeat = 0; //0 means keep repeating
 
     public int getHarvestCycle() {
         return harvestCycle;
@@ -36,11 +40,27 @@ public class MonitoringMode {
         this.harvesting = harvesting;
     }
 
-    public int getMax_event_quota() {
-        return max_event_quota;
+    public int getMaxEventQuota() {
+        return maxEventQuota;
     }
 
-    public void setMax_event_quota(int max_event_quota) {
-        this.max_event_quota = max_event_quota;
+    public void setMaxEventQuota(int maxEventQuota) {
+        this.maxEventQuota = maxEventQuota;
+    }
+
+    public int getEventQuotaTimeDuration() {
+        return eventQuotaTimeDuration;
+    }
+
+    public void setEventQuotaTimeDuration(int eventQuotaTimeDuration) {
+        this.eventQuotaTimeDuration = eventQuotaTimeDuration;
+    }
+
+    public int getRepeat() {
+        return repeat;
+    }
+
+    public void setRepeat(int repeat) {
+        this.repeat = repeat;
     }
 }

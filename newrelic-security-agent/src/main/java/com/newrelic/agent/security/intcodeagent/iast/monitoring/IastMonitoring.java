@@ -3,6 +3,7 @@ package com.newrelic.agent.security.intcodeagent.iast.monitoring;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,6 +23,7 @@ public class IastMonitoring {
     private final AtomicInteger harvestCycleCount = new AtomicInteger();
     private final AtomicInteger remainingHarvestRequests = new AtomicInteger();
     private final AtomicInteger requestHarvested = new AtomicInteger();
+    private final AtomicInteger samplerCycle = new AtomicInteger();
 
     private final Map<String, Integer> harvestedTraceId = new ConcurrentHashMap<>();
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -88,6 +90,14 @@ public class IastMonitoring {
         return harvestedTraceId;
     }
 
+    public int incrementSamplerCycle() {
+        return samplerCycle.incrementAndGet();
+    }
+
+    public int getSamplerCycle() {
+        return samplerCycle.get();
+    }
+
     public void incrementHarvestedTraceId(String traceId) {
         harvestedTraceId.put(traceId, harvestedTraceId.getOrDefault(traceId, 0) + 1);
     }
@@ -104,9 +114,16 @@ public class IastMonitoring {
     }
 
     public static void resetEventSampler() {
+        int repeat = AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getRepeat();
+        if(repeat != 0 && IastMonitoring.getInstance().getSamplerCycle() > repeat){
+            logger.log( LogLevel.INFO, String.format("IAST Monitoring: Sampling of Data shutdown after cycle %s", IastMonitoring.getInstance().getSamplerCycle()), IastMonitoring.class.getName());
+            SchedulerHelper.getInstance().shutdownSampling();
+        }
+
+        IastMonitoring.getInstance().incrementSamplerCycle();
         IastMonitoring.getInstance().setRemainingHarvestRequests(0);
         IastMonitoring.getInstance().getHarvestedTraceId().clear();
-        logger.log( LogLevel.FINEST, String.format("IAST Monitoring: Sampling of Data Stopped for cycle %s", IastMonitoring.getInstance().getHarvestCycleCount()), IastMonitoring.class.getName());
+        logger.log( LogLevel.FINEST, String.format("IAST Monitoring: Sampling of Data started for sampling cycle %s", IastMonitoring.getInstance().getSamplerCycle()), IastMonitoring.class.getName());
     }
 
 
@@ -130,7 +147,8 @@ public class IastMonitoring {
     }
 
     public static boolean eventQuotaReached(String traceId) {
-        return IastMonitoring.getInstance().getHarvestedTraceId().getOrDefault(traceId, 0) >= 100;
+        return IastMonitoring.getInstance().getHarvestedTraceId().getOrDefault(traceId, 0)
+                >= AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getMaxEventQuota();
     }
 
     public static boolean shouldProcessInterception() {

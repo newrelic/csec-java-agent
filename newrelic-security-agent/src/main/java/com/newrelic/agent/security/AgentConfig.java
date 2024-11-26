@@ -142,6 +142,8 @@ public class AgentConfig {
     }
 
     private void instantiateAgentMode(String groupName) throws RestrictionModeException {
+        //Initialise agent mode
+        this.agentMode = new AgentMode(groupName);
         try {
             readScanSchedule();
             readSkipScan();
@@ -152,7 +154,6 @@ public class AgentConfig {
             AgentInfo.getInstance().agentStatTrigger(false);
             throw e;
         }
-        this.agentMode = new AgentMode(groupName);
         switch (groupName){
             case IAST:
                 readIastConfig();
@@ -183,12 +184,22 @@ public class AgentConfig {
         logger.log(LogLevel.INFO, String.format("Security Agent Modes and Config :  %s", agentMode), AgentConfig.class.getName());
     }
 
-    private void readIastMonitoringConfig() {
-        this.agentMode.getIastScan().setEnabled(false);
-        this.agentMode.getRaspScan().setEnabled(false);
-        this.agentMode.getIastScan().setRestricted(false);
-        this.agentMode.getIastScan().setMonitoring(true);
-        this.agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(true);
+    private void readIastMonitoringConfig() throws RestrictionModeException {
+        try {
+            this.agentMode.getIastScan().setEnabled(false);
+            this.agentMode.getRaspScan().setEnabled(false);
+            this.agentMode.getIastScan().setRestricted(false);
+            this.agentMode.getIastScan().setMonitoring(true);
+            this.agentMode.getIastScan().getMonitoringMode().setMaxEventQuota(NewRelic.getAgent().getConfig().getValue(MONITORING_CRITERIA_MAX_EVENT_QUOTA, 100));
+            this.agentMode.getIastScan().getMonitoringMode().setEventQuotaTimeDuration(NewRelic.getAgent().getConfig().getValue(MONITORING_CRITERIA_EVENT_QUOTA_PER_TRACE, 360));
+            this.agentMode.getIastScan().getMonitoringMode().setRepeat(NewRelic.getAgent().getConfig().getValue(MONITORING_CRITERIA_REPEAT, 0));
+            this.agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(true);
+        } catch (ClassCastException | NumberFormatException e){
+            System.err.println("[NR-CSEC-JA] Error while reading IAST Monitoring Configuration. Security will be disabled.");
+            NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Monitoring Configuration. Security will be disabled.");
+            NewRelic.noticeError(e, Agent.getCustomNoticeErrorParameters(), true);
+            throw new RestrictionModeException(INVALID_SECURITY_CONFIGURATION + "for IAST Monitoring " + e.getMessage(), e);
+        }
     }
 
     private void readSkipScan() throws RestrictionModeException {

@@ -32,6 +32,10 @@ public interface IUtilConstants {
     String SKIP_SSRF = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".ssrf";
     String SKIP_RXSS = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".rxss";
 
+    String MONITORING_CRITERIA_MAX_EVENT_QUOTA = "security.monitoring_criteria.event_quota_per_trace";
+    String MONITORING_CRITERIA_EVENT_QUOTA_PER_TRACE = "security.monitoring_criteria.event_quota_per_trace";
+    String MONITORING_CRITERIA_REPEAT = "security.monitoring_criteria.repeat";
+
     String RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE = "security.restriction_criteria.scan_time.schedule";
     String RESTRICTION_CRITERIA_SCAN_TIME_DURATION = "security.restriction_criteria.scan_time.duration";
     String RESTRICTION_CRITERIA = "security.restriction_criteria";

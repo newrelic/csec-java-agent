@@ -111,4 +111,20 @@ public class SchedulerHelper {
             scheduledFutureMap.put("sampling", future);
         }
     }
+
+    public void shutdownSampling() {
+        if(scheduledFutureMap.containsKey("sampling")){
+            ScheduledFuture<?> future = scheduledFutureMap.get("sampling");
+            future.cancel(false);
+            future = scheduledFutureMap.get("reset-event-sampler");
+            future.cancel(false);
+        }
+    }
+
+    public void scheduleResetEventSampler(Runnable runnable, long initialDelay, long delay, TimeUnit unit) {
+        if(AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoring()) {
+            ScheduledFuture<?> future = commonExecutor.scheduleAtFixedRate(runnable, initialDelay, delay, unit);
+            scheduledFutureMap.put("reset-event-sampler", future);
+        }
+    }
 }
