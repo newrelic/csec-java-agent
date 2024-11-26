@@ -36,22 +36,26 @@ public class PekkoCoreUtils {
 
     private static boolean isServletLockAcquired() {
         try {
-            return GenericHelper.isLockAcquired(NR_SEC_CUSTOM_ATTRIB_HTTP_REQ);
+            return GenericHelper.isLockAcquired(getNrSecCustomAttribHttpReq());
         } catch (Throwable ignored) {}
         return false;
     }
 
     private static void releaseServletLock() {
         try {
-            GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_HTTP_REQ);
+            GenericHelper.releaseLock(getNrSecCustomAttribHttpReq());
         } catch (Throwable ignored){}
     }
 
     public static boolean acquireServletLockIfPossible() {
         try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_HTTP_REQ);
+            return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribHttpReq());
         } catch (Throwable ignored){}
         return false;
+    }
+
+    private static String getNrSecCustomAttribHttpReq() {
+        return NR_SEC_CUSTOM_ATTRIB_HTTP_REQ + Thread.currentThread().getId();
     }
 
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, int responseCode, String className, String methodName, Token token) {
@@ -123,7 +127,6 @@ public class PekkoCoreUtils {
             if (queryString != null && !queryString.trim().isEmpty()) {
                 securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
             }
-            System.out.println("content-type : " + request.entity().getContentType());
 
             securityRequest.setContentType(request.entity().getContentType().toString());
 
@@ -144,10 +147,8 @@ public class PekkoCoreUtils {
     private static String getProtocol(String value) {
         if(StringUtils.containsIgnoreCase(value, "https")){
             return "https";
-        } else if (StringUtils.containsIgnoreCase(value, "http")) {
-            return "http";
         } else {
-            return value;
+            return "http";
         }
     }
 
