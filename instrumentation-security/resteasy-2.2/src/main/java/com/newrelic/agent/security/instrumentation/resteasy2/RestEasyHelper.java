@@ -6,8 +6,6 @@ import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.jboss.resteasy.core.ResourceInvoker;
 import org.jboss.resteasy.core.ResourceLocator;
 import org.jboss.resteasy.core.ResourceMethod;
@@ -22,6 +20,9 @@ public class RestEasyHelper {
 
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             List<String> subResourceList = Collections.emptyList();
             if (NewRelicSecurity.isHookProcessingActive()) {
                 subResourceList = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESTEASY_SUB_RESOURCE_LIST, List.class);

@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.instrumentation.apache.wicket7;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 
@@ -10,6 +11,9 @@ public class WicketHelper {
 
     public static void getMappings(String path, String handler, boolean isPackageMapper) {
         try{
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             if(!path.startsWith(SEPARATOR)) {
                 path = SEPARATOR + path;
             }

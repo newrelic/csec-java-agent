@@ -50,6 +50,9 @@ public class VertxApiEndpointUtils {
 
     public void addRouteImpl(int routerHashCode, int routeHashCode, String path, String pattern, String method){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             addRouteImpl(routerHashCode, routeHashCode);
             if (!routes.containsKey(routerHashCode)){
                 return;
@@ -74,6 +77,9 @@ public class VertxApiEndpointUtils {
 
     public void addHandlerClass(int routerHashCode, int routeHashCode, String handlerName){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             if (!routes.containsKey(routerHashCode)){
                 return;
             }
@@ -87,6 +93,9 @@ public class VertxApiEndpointUtils {
 
     public void resolveSubRoutes(int parentRouterHashCode, int childRouterHashCode, String path){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             if (path == null || !routes.containsKey(childRouterHashCode) || !routes.containsKey(parentRouterHashCode)){
                 return;
             }
@@ -107,6 +116,9 @@ public class VertxApiEndpointUtils {
     }
 
     public void generateAPIEndpoints(int routerHashCode){
+        if (!NewRelicSecurity.getAgent().isSecurityEnabled()){
+            return;
+        }
         if (!routes.containsKey(routerHashCode)){
             return;
         }
@@ -131,6 +143,9 @@ public class VertxApiEndpointUtils {
 
     public void removeRouteImpl(int routerHashCode, int routeHashCode){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             if (routes.containsKey(routerHashCode) && routes.get(routerHashCode).containsKey(routeHashCode)){
                 VertxRoute route = routes.get(routerHashCode).remove(routeHashCode);
                 if (route != null && !URLMappingsHelper.getApplicationURLMappings().isEmpty()){
@@ -154,6 +169,9 @@ public class VertxApiEndpointUtils {
     }
 
     public void routeDetection(String path, Pattern pattern) {
+        if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+            return;
+        }
         if (NewRelicSecurity.isHookProcessingActive()){
             String route = StringUtils.EMPTY;
             if (path != null){
@@ -170,6 +188,9 @@ public class VertxApiEndpointUtils {
     }
 
     public void generateAPIEndpointsIfNotPresent(int routeHashCode) {
+        if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+            return;
+        }
         for (Map.Entry<Integer, Map<Integer, VertxRoute>> routesSet : routes.entrySet()) {
             if (routesSet.getValue().containsKey(routeHashCode)) {
                 generateAPIEndpoints(routesSet.getKey());

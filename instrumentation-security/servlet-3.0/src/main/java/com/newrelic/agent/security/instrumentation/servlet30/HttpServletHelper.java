@@ -19,6 +19,9 @@ public class HttpServletHelper {
     public static final String SERVLET_3_0 = "SERVLET-3.0";
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, SEPARATOR);
 

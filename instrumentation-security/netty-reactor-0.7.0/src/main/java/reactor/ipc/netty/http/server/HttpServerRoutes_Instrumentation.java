@@ -23,6 +23,9 @@ public class HttpServerRoutes_Instrumentation {
     }
     private void addURLMapping(Predicate<? super HttpServerRequest> condition, String className){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             className = StringUtils.substringBefore(className, URLMappingsHelper.SEPARATOR);
             ApplicationURLMapping mapping;
             if (condition instanceof HttpPredicate){

@@ -19,6 +19,9 @@ public class RestEasyHelper {
     private static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             if(invoker instanceof ResourceMethodInvoker) {
                 ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) invoker;
                 String handler = methodInvoker.getResourceClass().getName();

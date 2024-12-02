@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {
@@ -125,6 +124,9 @@ public class HttpServletHelper {
 
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, SEPARATOR);
 

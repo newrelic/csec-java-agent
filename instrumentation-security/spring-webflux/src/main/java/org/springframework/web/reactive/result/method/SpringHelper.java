@@ -18,6 +18,9 @@ public class SpringHelper {
     public static final String SPRING_WEBFLUX = "SPRING-WEBFLUX";
     public static <T> void gatherURLMappings(T mapping, Method method){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             RequestMappingInfo mappingInfo = (RequestMappingInfo) mapping;
             PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
             if (patternsCondition != null) {
