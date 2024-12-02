@@ -207,6 +207,9 @@ public class HttpServletHelper {
     }
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, SEPARATOR);
 

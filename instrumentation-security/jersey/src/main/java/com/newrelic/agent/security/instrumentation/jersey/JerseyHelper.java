@@ -22,6 +22,9 @@ public class JerseyHelper {
 
     public static void gatherUrlMappings(ResourceModel resourceModel) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             List<Resource> resources = resourceModel.getResources();
             if(resources != null){
                 extractMappingsFromResources(resources, EMPTY);

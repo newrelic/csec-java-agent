@@ -19,6 +19,9 @@ public class CXFHelper {
 
     public static void gatherURLMapping(List<ClassResourceInfo> classResourceInfo) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             for (ClassResourceInfo classResource: classResourceInfo){
                 resources(classResource.getURITemplate().getValue(), classResource);
             }

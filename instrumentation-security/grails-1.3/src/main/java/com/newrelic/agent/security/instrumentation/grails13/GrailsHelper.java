@@ -15,6 +15,9 @@ public class GrailsHelper {
 
     public static void gatherUrlMappings(Map<String, String> uri2viewMap, String handler) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             for (String path : uri2viewMap.keySet()) {
                 URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path, handler));
             }

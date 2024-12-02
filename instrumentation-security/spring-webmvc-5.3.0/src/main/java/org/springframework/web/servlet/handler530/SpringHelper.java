@@ -20,6 +20,9 @@ public class SpringHelper {
     public static final String SPRING_WEBMVC_530 = "SPRING-WEBMVC-5.3.0";
     public static <T> void gatherURLMappings(T mapping, Method method){
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             RequestMappingInfo mappingInfo = (RequestMappingInfo) mapping;
             PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
             PathPatternsRequestCondition pathPatternsCondition = mappingInfo.getPathPatternsCondition();

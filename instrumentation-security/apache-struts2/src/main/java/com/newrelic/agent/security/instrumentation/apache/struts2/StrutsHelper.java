@@ -19,6 +19,9 @@ public class StrutsHelper {
 
     public static void gatherURLMappings(RuntimeConfiguration runtimeConfig) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             Map<String, Map<String, ActionConfig>> namespaces = runtimeConfig.getActionConfigs();
             for (Map.Entry<String, Map<String, ActionConfig>> namespace : namespaces.entrySet()) {
                 String url = namespace.getKey();

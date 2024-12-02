@@ -16,6 +16,9 @@ public class GrailsHelper {
 
     public static void gatherUrlMappings(Map<String, Method> actions, String handler, String controller) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             String path = StringUtils.prependIfMissing(controller, StringUtils.SEPARATOR);
             for (String action : actions.keySet()) {
                 String finalPath = StringUtils.appendIfMissing(path, StringUtils.SEPARATOR) + action;

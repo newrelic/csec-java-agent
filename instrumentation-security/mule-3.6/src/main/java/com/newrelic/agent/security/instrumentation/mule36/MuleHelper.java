@@ -116,6 +116,9 @@ public class MuleHelper {
 
     public static void gatherURLMappings(HttpListener messageSource, List<MessageProcessor> messageProcessors) {
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return;
+            }
             String path = messageSource.getPath();
             String handlerClass = null;
             for (MessageProcessor processor: messageProcessors){

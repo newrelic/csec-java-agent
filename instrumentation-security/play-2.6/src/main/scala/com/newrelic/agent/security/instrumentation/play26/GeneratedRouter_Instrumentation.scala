@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.instrumentation.play26
 
+import com.newrelic.api.agent.security.NewRelicSecurity
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper
 import com.newrelic.api.agent.security.schema.{ApplicationURLMapping, StringUtils}
 import com.newrelic.api.agent.weaver.{MatchType, Weave, Weaver}
@@ -20,6 +21,9 @@ abstract class GeneratedRouter_Instrumentation {
   }
 
   private def gatherURLMappings(): Unit = {
+    if (!NewRelicSecurity.getAgent.isSecurityEnabled) {
+      return
+    }
     val iterator = documentation.iterator
     while (iterator.hasNext) {
       val doc = iterator.next

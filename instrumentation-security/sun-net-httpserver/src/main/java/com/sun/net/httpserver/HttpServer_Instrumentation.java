@@ -16,6 +16,9 @@ public class HttpServer_Instrumentation {
     public HttpContext createContext (String path, HttpHandler handler){
         HttpContext context = Weaver.callOriginal();
         try {
+            if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+                return context;
+            }
             URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(HttpServerHelper.HTTP_METHOD, path, handler.getClass().getName()));
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());

@@ -14,6 +14,9 @@ public class BindableService_Instrumentation {
     public ServerServiceDefinition bindService() {
         ServerServiceDefinition returnValue = Weaver.callOriginal();
 
+        if (!NewRelicSecurity.getAgent().isSecurityEnabled()) {
+            return returnValue;
+        }
         try {
             String handler = this.getClass().getName();
             for (ServerMethodDefinition<?, ?> serverMethod : returnValue.getMethods()) {
