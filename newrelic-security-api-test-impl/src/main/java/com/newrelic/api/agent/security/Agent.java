@@ -223,4 +223,9 @@ public class Agent implements SecurityAgent {
     public void reportURLMapping() {
 
     }
+
+    @Override
+    public boolean isSecurityEnabled() {
+        return true;
+    }
 }

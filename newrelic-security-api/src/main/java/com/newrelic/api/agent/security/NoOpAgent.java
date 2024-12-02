@@ -153,4 +153,9 @@ class NoOpAgent implements SecurityAgent {
 
     }
 
+    @Override
+    public boolean isSecurityEnabled() {
+        return false;
+    }
+
 }
