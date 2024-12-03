@@ -15,7 +15,7 @@ public abstract class ContextHandler_Instrumentation {
     public abstract ContextHandler.Context getServletContext();
 
     public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -23,7 +23,7 @@ public abstract class ContextHandler_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
@@ -40,18 +40,4 @@ public abstract class ContextHandler_Instrumentation {
         }
     }
 
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {
-        }
-    }
 }

@@ -47,30 +47,37 @@ public class GenericHelper {
 
     public static boolean isLockAcquired(String nrSecCustomAttrName, int hashCode) {
         try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode), Boolean.class));
+            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode), Boolean.class));
         } catch (Throwable ignored) {}
         return false;
     }
 
-    public static boolean acquireLockIfPossible(VulnerabilityCaseType caseType, String nrSecCustomAttrName, int hashCode) {
-        boolean enabled = false;
-        if(!NewRelicSecurity.isHookProcessingActive()) {
+    private static boolean isLockAcquirePossible(VulnerabilityCaseType caseType) {
+        if (!NewRelicSecurity.isHookProcessingActive()){
             return false;
         }
+        if (caseType == null){
+            return true;
+        }
+        if (caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isRequestParsed()){
+            return false;
+        }
+        if (!caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            return false;
+        }
+        boolean enabled = false;
         switch (caseType) {
             case SYSTEM_COMMAND:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getCommandInjectionEnabled();
                 break;
             case FILE_OPERATION:
+            case FILE_INTEGRITY:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInvalidFileAccessEnabled();
                 break;
             case SQL_DB_COMMAND:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getSqlInjectionEnabled();
                 break;
             case NOSQL_DB_COMMAND:
-                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getNoSqlInjectionEnabled();
-                break;
             case DYNAMO_DB_COMMAND:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getNoSqlInjectionEnabled();
                 break;
@@ -81,19 +88,14 @@ public class GenericHelper {
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getLdapInjectionEnabled();
                 break;
             case XPATH:
+            case XQUERY_INJECTION:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getXpathInjectionEnabled();
                 break;
             case REFLECTED_XSS:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled();
                 break;
-            case FILE_INTEGRITY:
-                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInvalidFileAccessEnabled();
-                break;
             case JAVASCRIPT_INJECTION:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getJavascriptInjectionEnabled();
-                break;
-            case XQUERY_INJECTION:
-                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getXpathInjectionEnabled();
                 break;
             case SECURE_COOKIE:
             case CRYPTO:
@@ -108,13 +110,27 @@ public class GenericHelper {
         if(enabled) {
             return false;
         }
-        return acquireLockIfPossible(nrSecCustomAttrName, hashCode);
+        return true;
+    }
+
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType caseType, String nrSecCustomAttrName, int hashCode) {
+        try {
+            if(!isLockAcquirePossible(caseType)) {
+                return false;
+            }
+            if (!isLockAcquired(nrSecCustomAttrName, hashCode)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode), true);
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
     }
 
     public static boolean acquireLockIfPossible(String nrSecCustomAttrName, int hashCode) {
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired(nrSecCustomAttrName, hashCode)) {
+            if (NewRelicSecurity.isHookProcessingActive() && !isLockAcquired(nrSecCustomAttrName, hashCode)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode), true);
                 return true;
             }
@@ -124,8 +140,8 @@ public class GenericHelper {
 
     public static void releaseLock(String nrSecCustomAttrName, int hashCode) {
         try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode), null);
+            if(NewRelicSecurity.getAgent().getSecurityMetaData() != null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().removeCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode));
             }
         } catch (Throwable ignored){}
     }

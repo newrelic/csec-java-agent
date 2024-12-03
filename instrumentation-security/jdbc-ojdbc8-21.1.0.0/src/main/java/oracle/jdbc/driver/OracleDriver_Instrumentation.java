@@ -25,7 +25,7 @@ public abstract class OracleDriver_Instrumentation {
 
     @Trace(leaf = true, excludeFromTransactionTrace = true)
     public Connection connect(String var1, @Blind(PropertiesBlinder.class) Properties var2, AbstractConnectionBuilder<?, ?> var3) throws SQLException {
-        if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if (NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.ORACLE);
         }
         return Weaver.callOriginal();

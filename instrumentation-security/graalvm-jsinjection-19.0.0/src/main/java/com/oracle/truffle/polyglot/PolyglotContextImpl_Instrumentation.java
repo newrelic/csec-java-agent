@@ -21,7 +21,7 @@ import static com.newrelic.agent.security.instrumentation.graalvm19.JSEngineUtil
 final class PolyglotContextImpl_Instrumentation {
 
     public Value eval(String languageId, Object sourceImpl) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.JAVASCRIPT_INJECTION);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(languageId, sourceImpl, JSEngineUtils.METHOD_EVAL);
@@ -54,9 +54,7 @@ final class PolyglotContextImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String languageId, Object sourceImpl, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    !StringUtils.equals(languageId, JSEngineUtils.LANGUAGE_ID_JS)){
+            if (!StringUtils.equals(languageId, JSEngineUtils.LANGUAGE_ID_JS)){
                 return null;
             }
             com.oracle.truffle.api.source.Source source = (Source) sourceImpl;
@@ -75,15 +73,10 @@ final class PolyglotContextImpl_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType javascriptInjection) {
-        try {
-            return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.JAVASCRIPT_INJECTION, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

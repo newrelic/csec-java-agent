@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcRequestThreadPool {
-    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
 
     /**
      * Thread pool executor.

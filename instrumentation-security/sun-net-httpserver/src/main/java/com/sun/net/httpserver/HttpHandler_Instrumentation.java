@@ -20,7 +20,7 @@ import java.io.IOException;
 @Weave(originalName = "com.sun.net.httpserver.HttpHandler", type = MatchType.Interface)
 public class HttpHandler_Instrumentation {
     public void handle (HttpExchange exchange) throws IOException {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServerHelper.acquireServletLockIfPossible();
 
         if (isServletLockAcquired){
             preprocessSecurityHook(exchange);
@@ -31,7 +31,7 @@ public class HttpHandler_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired){
-                releaseServletLock();
+                HttpServerHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired){
@@ -41,15 +41,9 @@ public class HttpHandler_Instrumentation {
 
     private void preprocessSecurityHook(HttpExchange exchange) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
+
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(exchange.getRequestMethod());
@@ -74,10 +68,7 @@ public class HttpHandler_Instrumentation {
     }
     private void postProcessSecurityHook(HttpExchange exchange) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
-            if (!NewRelicSecurity.isHookProcessingActive()) {
+            if(!NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
             HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
@@ -104,17 +95,5 @@ public class HttpHandler_Instrumentation {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
         }
-    }
-
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServerHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
-    }
-    private void releaseServletLock() {
-        try {
-            HttpServerHelper.releaseServletLock();
-        } catch (Throwable ignored) {}
     }
 }

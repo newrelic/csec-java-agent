@@ -34,10 +34,6 @@ public class SecurityHelper {
     public static AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String className, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
 
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
@@ -45,7 +41,7 @@ public class SecurityHelper {
                 request.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
 
-            String csecParentId = getParentId();
+            String csecParentId = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
             if(csecParentId!= null && !csecParentId.isEmpty()){
                 request.setHeader(GenericHelper.CSEC_PARENT_ID, csecParentId);
             }
@@ -71,9 +67,5 @@ public class SecurityHelper {
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTPCLIENT_5_0, e.getMessage()), e, SecurityHelper.class.getName());
         }
         return null;
-    }
-
-    public static String getParentId(){
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
     }
 }

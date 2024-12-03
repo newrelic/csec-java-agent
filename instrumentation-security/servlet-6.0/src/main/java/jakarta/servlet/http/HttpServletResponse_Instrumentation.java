@@ -6,8 +6,8 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -19,10 +19,11 @@ import com.newrelic.api.agent.weaver.Weaver;
 public class HttpServletResponse_Instrumentation {
 
     public void addCookie(Cookie cookie){
-        boolean isLockAcquired = acquireLockIfPossible(cookie.hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(cookie.hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(cookie, getClass().getName(), "addCookie");
         }
@@ -40,12 +41,6 @@ public class HttpServletResponse_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(Cookie cookie, String className, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
-
             //"https".equals(securityMetaData.getRequest().getProtocol()) ||
             boolean isSecure = cookie.getSecure();
             boolean isHttpOnly = cookie.isHttpOnly();
@@ -90,17 +85,10 @@ public class HttpServletResponse_Instrumentation {
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SECURE_COOKIE, ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
     }
 }

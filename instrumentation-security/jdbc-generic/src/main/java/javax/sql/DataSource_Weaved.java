@@ -31,7 +31,7 @@ public abstract class DataSource_Weaved {
     private void postHookProcessing(Connection connection) {
         try {
             String vendor;
-            if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 vendor = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class);
                 if(vendor == null || vendor.trim().isEmpty()){
                     vendor = JdbcHelper.detectDatabaseProduct(connection.getMetaData().getDatabaseProductName());

@@ -320,9 +320,6 @@ public abstract class FileSystemProvider_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String methodName, Path... filename) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                return null;
-            }
 
             List<String> fileNames = new ArrayList<>();
             for (Path path : filename) {

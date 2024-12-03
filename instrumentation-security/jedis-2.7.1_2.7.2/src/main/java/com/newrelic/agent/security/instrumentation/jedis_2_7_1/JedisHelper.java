@@ -14,10 +14,8 @@ public class JedisHelper {
     public static final String NR_SEC_LOCK_ATTRIB_NAME = "REDIS_SERIALISED_DATA_";
     public static AbstractOperation preprocessSecurityHook(String command, List<Object> args, String klass, String method) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             RedisOperation operation = new RedisOperation(klass, method, command, args);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
@@ -39,15 +37,10 @@ public class JedisHelper {
     }
 
     public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_LOCK_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(NR_SEC_LOCK_ATTRIB_NAME, hashCode);
     }
 
     public static boolean acquireLockIfPossible(VulnerabilityCaseType cachingDataStore, int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(cachingDataStore, NR_SEC_LOCK_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(cachingDataStore, NR_SEC_LOCK_ATTRIB_NAME, hashCode);
     }
 }

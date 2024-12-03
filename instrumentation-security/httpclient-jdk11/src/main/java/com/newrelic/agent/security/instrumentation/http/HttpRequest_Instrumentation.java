@@ -20,7 +20,9 @@ public abstract class HttpRequest_Instrumentation {
             HttpRequest req = null;
             try {
                 req =  Weaver.callOriginal();
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME + req.hashCode(), this);
+                if (NewRelicSecurity.getAgent().getSecurityMetaData() != null) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME + req.hashCode(), this);
+                }
             } catch (Exception e){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, this.getClass().getName());
             }

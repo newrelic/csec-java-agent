@@ -8,7 +8,7 @@ import java.util.Set;
 public class ServletRequestCallback {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_IS_OPERATION_LOCK-";
-    private static final String REQUEST_STREAM_OR_READER_CALLED = "REQUEST_STREAM_OR_READER_CALLED";
+
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
 
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";

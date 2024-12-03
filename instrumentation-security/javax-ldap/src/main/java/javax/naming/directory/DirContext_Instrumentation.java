@@ -21,7 +21,7 @@ import javax.naming.NamingException;
 public abstract class DirContext_Instrumentation implements Context {
 
     public NamingEnumeration<SearchResult> search(Name name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(name.toString(), filterExpr);
@@ -40,7 +40,7 @@ public abstract class DirContext_Instrumentation implements Context {
     }
 
     public NamingEnumeration<SearchResult> search(String name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(name, filterExpr);
@@ -59,7 +59,7 @@ public abstract class DirContext_Instrumentation implements Context {
     }
 
     public NamingEnumeration<SearchResult> search(String name, String filter, SearchControls cons) throws NamingException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(name, filter);
@@ -77,13 +77,9 @@ public abstract class DirContext_Instrumentation implements Context {
         return returnVal;
     }
 
-    public NamingEnumeration<SearchResult>
-    search(Name name,
-           String filter,
-           SearchControls cons)
-            throws NamingException {
+    public NamingEnumeration<SearchResult> search(Name name, String filter, SearchControls cons) throws NamingException {
 
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.LDAP);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(name.toString(), filter);
@@ -103,7 +99,7 @@ public abstract class DirContext_Instrumentation implements Context {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()) {
                 return;
             }
@@ -115,8 +111,7 @@ public abstract class DirContext_Instrumentation implements Context {
 
     private AbstractOperation preprocessSecurityHook(String name, String filter) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isAnyBlank(filter)) {
+            if (StringUtils.isAnyBlank(filter)) {
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), LDAPUtils.METHOD_SEARCH);
@@ -134,18 +129,11 @@ public abstract class DirContext_Instrumentation implements Context {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType ldap) {
-        try {
-            return GenericHelper.acquireLockIfPossible(ldap, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {
-        }
-        return false;
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.LDAP, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
 }

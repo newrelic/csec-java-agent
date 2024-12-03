@@ -24,7 +24,7 @@ public abstract class ChannelInboundHandler_Instrumentation {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         boolean isLockAcquired = false;
         if (msg instanceof HttpRequest || msg instanceof HttpContent){
-            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK);
+            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK);
         }
         if (isLockAcquired) {
             NettyUtils.processSecurityRequest(ctx, msg, getClass().getName());

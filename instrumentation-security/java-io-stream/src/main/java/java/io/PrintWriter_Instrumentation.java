@@ -20,18 +20,14 @@ public abstract class PrintWriter_Instrumentation {
     private PrintWriter_Instrumentation(){}
 
     private static boolean acquireLockIfPossible(int hashCode) {
-        try {
-            if(IOStreamHelper.processResponseWriterHookData(hashCode)) {
-                return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_WRITER, hashCode);
-            }
-        } catch (Throwable ignored) {}
+        if(IOStreamHelper.processResponseWriterHookData(hashCode)) {
+            return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_WRITER, hashCode);
+        }
         return false;
     }
 
     private static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_WRITER, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_WRITER, hashCode);
     }
 
     public PrintWriter append(char c) {

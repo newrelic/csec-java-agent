@@ -22,10 +22,11 @@ public class RestEasyHelper {
 
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
-            List<String> subResourceList = Collections.emptyList();
-            if (NewRelicSecurity.isHookProcessingActive()) {
-                subResourceList = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESTEASY_SUB_RESOURCE_LIST, List.class);
+            if (!NewRelicSecurity.isHookProcessingActive()) {
+                return;
             }
+            List<String> subResourceList = Collections.emptyList();
+            subResourceList = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESTEASY_SUB_RESOURCE_LIST, List.class);
             if(invoker instanceof ResourceMethod) {
                 ResourceMethod methodInvoker = (ResourceMethod) invoker;
                 if (subResourceList != null && !subResourceList.isEmpty() && subResourceList.contains(methodInvoker.getResourceClass().getName())){

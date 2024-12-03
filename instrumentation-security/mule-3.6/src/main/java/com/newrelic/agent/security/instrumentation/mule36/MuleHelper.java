@@ -86,10 +86,6 @@ public class MuleHelper {
         }
     }
 
-    public static String getNrSecCustomAttribName(String customAttribute) {
-        return customAttribute + Thread.currentThread().getId();
-    }
-
     public static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {

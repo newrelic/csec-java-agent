@@ -62,9 +62,7 @@ public abstract class FileInputStream_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String filename) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || filename == null || filename.trim().isEmpty()
+            if (filename == null || filename.trim().isEmpty()
             ) {
                 return null;
             }

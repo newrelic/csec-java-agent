@@ -13,8 +13,7 @@ import org.jboss.resteasy.core.ResourceMethodInvoker;
 import org.jboss.resteasy.spi.ResourceInvoker;
 
 public class RestEasyHelper {
-    private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
+
     private static final String RESTEASY_4 = "RESTEASY-4";
     private static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
@@ -30,8 +29,8 @@ public class RestEasyHelper {
             // case of SubResource
             else if(invoker instanceof ResourceLocatorInvoker) {
                 String handler = invoker.getMethod().getDeclaringClass().getName();
-                String finalPath = StringUtils.appendIfMissing(path, StringUtils.SEPARATOR) + WILDCARD;
-                URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, finalPath, handler));
+                String finalPath = StringUtils.appendIfMissing(path, StringUtils.SEPARATOR) + URLMappingsHelper.WILDCARD;
+                URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, finalPath, handler));
             }
         } catch (Exception ignored){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, RESTEASY_4, ignored.getMessage()), ignored, RestEasyHelper.class.getName());
@@ -40,8 +39,7 @@ public class RestEasyHelper {
 
     public static void getRequestRoute(String pathExpression, String path) {
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(ROUTE_DETECTION_COMPLETED, Boolean.class))){
+            if (NewRelicSecurity.isHookProcessingActive() && !Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(ROUTE_DETECTION_COMPLETED, Boolean.class))){
                 SecurityMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 boolean isServletFramework = metaData.getMetaData().getFramework().equals(Framework.SERVLET.name());
 

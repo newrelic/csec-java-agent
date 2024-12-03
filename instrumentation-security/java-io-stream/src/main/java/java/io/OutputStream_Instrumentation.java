@@ -16,18 +16,14 @@ import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
 @Weave(type = MatchType.BaseClass, originalName = "java.io.OutputStream")
 public abstract class OutputStream_Instrumentation {
     private static boolean acquireLockIfPossible(int hashCode) {
-        try {
-            if(IOStreamHelper.processResponseOutputStreamHookData(hashCode)) {
-                return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM, hashCode);
-            }
-        } catch (Throwable ignored) {}
+        if(IOStreamHelper.processResponseOutputStreamHookData(hashCode)) {
+            return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM, hashCode);
+        }
         return false;
     }
 
     private static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM, hashCode);
     }
     
     public void write(byte b[]) throws IOException {

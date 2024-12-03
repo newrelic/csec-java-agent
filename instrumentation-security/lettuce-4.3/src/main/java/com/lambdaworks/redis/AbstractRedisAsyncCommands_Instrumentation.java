@@ -65,10 +65,6 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
 
     private <T> AbstractOperation preprocessSecurityHook(RedisCommand_Instrumentation<K,V,T> cmd, String methodDispatch) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             String type = cmd.getType().name();
             CommandArgs_Instrumentation commandArgs = cmd.getArgs();
             List<Object> arguments = new ArrayList<>();
@@ -91,15 +87,10 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType cachingDataStore) {
-        try {
-            return GenericHelper.acquireLockIfPossible(cachingDataStore, LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(cachingDataStore, LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

@@ -31,9 +31,6 @@ public class Http_Instrumentation {
 
         @WeaveAllConstructors
         public ServerBinding() {
-//            AgentBridge.getAgent().getLogger().log(Level.FINE, "Setting akka-http port to: {0,number,#}", localAddress().getPort());
-//            AgentBridge.publicApi.setAppServerPort(localAddress().getPort());
-//            AgentBridge.publicApi.setServerInfo("Akka HTTP", ManifestUtils.getVersionFromManifest(getClass(), "akka-http-core", "10.2.0"));
 
             NewRelicSecurity.getAgent().setApplicationConnectionConfig(localAddress().getPort(), "http");
             try {

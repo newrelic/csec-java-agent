@@ -61,17 +61,14 @@ public abstract class DynamoDBUtil {
     public static <Y> AbstractOperation processDynamoDBRequest(Request<Y> yRequest, String klassName) {
         DynamoDBOperation operation = null;
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                List<DynamoDBRequest> requests = new ArrayList();
-                AmazonWebServiceRequest request = yRequest.getOriginalRequest();
+            List<DynamoDBRequest> requests = new ArrayList();
+            AmazonWebServiceRequest request = yRequest.getOriginalRequest();
 
-                operation = checkAndGenerateOperation(request, requests, klassName);
+            operation = checkAndGenerateOperation(request, requests, klassName);
 
-                if (operation!=null) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
-                    NewRelicSecurity.getAgent().registerOperation(operation);
-                }
+            if (operation!=null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
+                NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

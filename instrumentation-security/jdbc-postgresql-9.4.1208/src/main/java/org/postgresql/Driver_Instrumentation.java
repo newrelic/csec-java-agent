@@ -20,7 +20,7 @@ import java.util.Properties;
 public abstract class Driver_Instrumentation {
 
     public Connection connect(String url, Properties props) throws SQLException {
-        if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.POSTGRES);
         }
         return Weaver.callOriginal();

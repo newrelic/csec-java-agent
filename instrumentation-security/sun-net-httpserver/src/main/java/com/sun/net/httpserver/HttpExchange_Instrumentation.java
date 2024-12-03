@@ -17,7 +17,7 @@ public class HttpExchange_Instrumentation {
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(HttpServerHelper.SUN_NET_READER_OPERATION_LOCK);
             stream = Weaver.callOriginal();
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && stream != null) {
+            if (isLockAcquired && stream != null) {
                 HttpServerHelper.registerInputStreamHashIfNeeded(stream.hashCode());
             }
         } finally {
@@ -34,7 +34,7 @@ public class HttpExchange_Instrumentation {
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(HttpServerHelper.SUN_NET_WRITER_OPERATION_LOCK);
             stream = Weaver.callOriginal();
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && stream != null) {
+            if (isLockAcquired && stream != null) {
                 HttpServerHelper.registerOutputStreamHashIfNeeded(stream.hashCode());
             }
         } finally {

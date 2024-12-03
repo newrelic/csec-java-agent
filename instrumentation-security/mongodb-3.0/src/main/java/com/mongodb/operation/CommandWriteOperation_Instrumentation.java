@@ -20,10 +20,8 @@ public class CommandWriteOperation_Instrumentation<T> {
     public T execute(final WriteBinding binding) {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
-        if (NewRelicSecurity.isHookProcessingActive()){
-            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
-        }
         if (isLockAcquired) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         T returnVal = null;
@@ -41,10 +39,8 @@ public class CommandWriteOperation_Instrumentation<T> {
     public void executeAsync(final AsyncWriteBinding binding, final SingleResultCallback<T> callback) {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
-        if (NewRelicSecurity.isHookProcessingActive()){
-            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
-        }
         if (isLockAcquired) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         try {

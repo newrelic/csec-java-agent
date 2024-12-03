@@ -21,7 +21,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 public abstract class DB2Driver {
 
     public Connection connect(String url, Properties props) throws SQLException {
-        if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.IBMDB2);
         }
         return Weaver.callOriginal();

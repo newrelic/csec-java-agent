@@ -24,7 +24,7 @@ import java.util.Properties;
 public abstract class OracleDataSource_Instrumentation {
 
     protected Connection getPhysicalConnection(@Blind(PropertiesBlinder.class) Properties var1, AbstractConnectionBuilder var2) throws SQLException {
-        if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if (NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.ORACLE);
         }
         return Weaver.callOriginal();

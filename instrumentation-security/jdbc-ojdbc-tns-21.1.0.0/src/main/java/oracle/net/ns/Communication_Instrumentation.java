@@ -22,7 +22,7 @@ import java.util.Properties;
 @Weave(type = MatchType.Interface, originalName = "oracle.net.ns.Communication")
 public abstract class Communication_Instrumentation {
     public void connect(String var1, Properties var2, GSSCredential var3, SSLContext var4, DMSFactory.DMSNoun var5) throws IOException, NetException {
-        if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if (NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.ORACLE);
         }
         Weaver.callOriginal();

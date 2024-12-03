@@ -20,18 +20,14 @@ public abstract class Reader_Instrumentation {
     protected Object lock;
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            if(IOStreamHelper.processRequestReaderHookData(hashCode)) {
-                return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, hashCode);
-            }
-        } catch (Throwable ignored) {}
+        if(IOStreamHelper.processRequestReaderHookData(hashCode)) {
+            return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, hashCode);
+        }
         return false;
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, hashCode);
     }
 
     protected Reader_Instrumentation(){
