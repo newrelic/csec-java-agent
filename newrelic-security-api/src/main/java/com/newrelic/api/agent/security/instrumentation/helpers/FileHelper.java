@@ -146,6 +146,7 @@ public class FileHelper {
                             if (fbean.isIntegrityBreached(file)) {
                                 //Lock release is required here, as this register operation inside lock is intentional
                                 ThreadLocalLockHelper.releaseLock();
+                                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                                 NewRelicSecurity.getAgent().registerOperation(fbean);
                             }
                         }

@@ -27,6 +27,7 @@ public class VertxClientHelper {
             }
 
             SSRFOperation operation = new SSRFOperation(url, className, methodName);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {

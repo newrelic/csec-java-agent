@@ -21,6 +21,7 @@ public class MemcachedHelper {
     public static AbstractOperation preprocessSecurityHook(String type, String command, String key, Object val, String klass, String method) {
         try {
             MemcachedOperation operation = new MemcachedOperation(command, Arrays.asList(key, val), type, klass, method);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {

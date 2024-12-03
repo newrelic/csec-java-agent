@@ -15,6 +15,7 @@ public class JedisHelper {
     public static AbstractOperation preprocessSecurityHook(String command, List<Object> args, String klass, String method) {
         try {
             RedisOperation operation = new RedisOperation(klass, method, command, args);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
