@@ -2,9 +2,12 @@ package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSender;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.utils.ConnectionException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.util.IUtilConstants;
@@ -147,7 +150,17 @@ public class SecurityClient implements SecurityConnection {
 
     @Override
     public void close(String message) {
+        cleanIASTState();
         httpClient.shutdown();
+    }
+
+    private static void cleanIASTState() {
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
+        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        RestRequestThreadPool.getInstance().getRejectedIds().clear();
+        GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
+        DispatcherPool.getInstance().reset();
+        EventSendPool.getInstance().reset();
     }
 
     @Override
