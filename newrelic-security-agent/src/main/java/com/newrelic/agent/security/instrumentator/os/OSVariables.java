@@ -17,6 +17,10 @@ public class OSVariables {
 
     private File rootDir;
 
+    private File logFile;
+
+    private File initLogFile;
+
     public String getOs() {
         return os;
     }
@@ -89,19 +93,20 @@ public class OSVariables {
         this.snapshotDir = snapshotDir;
     }
 
-    /*public String getPolicyConfigPath() {
-        return policyConfigPath;
+    public File getLogFile() {
+        return logFile;
     }
 
-    public void setPolicyConfigPath(String policyConfigPath) {
-        this.policyConfigPath = policyConfigPath;
+    public void setLogFile(File logFile) {
+        this.logFile = logFile;
     }
 
-    public String getK2RootDir() {
-        return k2RootDir;
+    public File getInitLogFile() {
+        return initLogFile;
     }
 
-    public void setK2RootDir(String k2RootDir) {
-        this.k2RootDir = k2RootDir;
-    }*/
+    public void setInitLogFile(File initLogFile) {
+        this.initLogFile = initLogFile;
+    }
+
 }
