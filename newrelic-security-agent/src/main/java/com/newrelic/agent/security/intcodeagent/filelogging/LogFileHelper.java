@@ -10,6 +10,7 @@ package com.newrelic.agent.security.intcodeagent.filelogging;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
+import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.schema.StringUtils;
@@ -17,10 +18,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
@@ -47,8 +45,12 @@ public class LogFileHelper {
     private static final Integer DEFAULT_LOG_FILE_LIMIT = 0;
 
     public static boolean isLoggingToStdOut() {
-        String logFileName = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_NAME, LogFileHelper.DEFAULT_LOG_FILE_NAME);
-        return StringUtils.equalsIgnoreCase(logFileName, STDOUT);
+        try {
+            String logFileName = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_NAME, LogFileHelper.DEFAULT_LOG_FILE_NAME);
+            return StringUtils.equalsIgnoreCase(logFileName, STDOUT);
+        } catch (ClassCastException | NumberFormatException e){
+            return false;
+        }
     }
 
     public static int logFileCount() {
@@ -112,5 +114,27 @@ public class LogFileHelper {
             FileLoggerThreadPool.getInstance().setLoggingActive(false);
         }
 
+    }
+
+    public static File createLogFile(String logFileName) {
+        File logFile = new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory(), logFileName);
+        try {
+            CommonUtils.forceMkdirs(logFile.getParentFile().toPath(), IUtilConstants.DIRECTORY_PERMISSION);
+            FileUtils.touch(logFile);
+            logFile.setReadable(true, false);
+            logFile.setWritable(true, false);
+            if (!OsVariablesInstance.getInstance().getOsVariables().getWindows()) {
+                Files.setPosixFilePermissions(logFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
+            }
+            return logFile;
+        } catch (IOException e) {
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            System.err.println("[NR-CSEC-JA] CSEC Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+            try {
+                e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
+            } catch (FileNotFoundException ex) {
+            }
+            return null;
+        }
     }
 }

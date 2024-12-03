@@ -32,8 +32,6 @@ public class InitLogWriter implements Runnable {
 
     private static final String STR_COLON = " : ";
 
-    public static final String LOGS = "logs";
-
     public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
 
     private static final String LOG_FILE_INITIATED_MSG = "Init Log File initiated.\n";
@@ -66,50 +64,30 @@ public class InitLogWriter implements Runnable {
 
     private static BufferedWriter writer;
 
-    private static File currentLogFile;
-
     private String threadName;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        if(FileLoggerThreadPool.getInstance().isLoggingToStdOut){
-            writer = new BufferedWriter(new OutputStreamWriter(System.out));
-        } else {
-            fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
-            currentLogFile = new File(fileName);
+        File currentLogFile = osVariables.getInitLogFile();
+        if (currentLogFile != null) {
+            fileName = currentLogFile.getAbsolutePath();
             currentLogFileName = fileName;
-            createLogFile();
-        }
-    }
-
-    private static Boolean createLogFile() {
-        try {
-            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), DIRECTORY_PERMISSION);
-            System.out.println("New Relic Security Agent: Writing InitLogs to log file:"+currentLogFile);
-            currentLogFile.setReadable(true, false);
-            writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-            writer.write(LOG_FILE_INITIATED_MSG);
-            writer.flush();
-            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
-
-            // k2.log.handler.maxfilesize=10
-            // k2.log.handler.maxfilesize.unit=MB
-            if (!osVariables.getWindows()) {
-                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
-            }
-            writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
-            writer.flush();
-            return true;
-        } catch (Throwable e) {
-            FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
-            String tmpDir = System.getProperty("java.io.tmpdir");
-            System.err.println("[NR-CSEC-JA] Init Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
             try {
-                e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
-            } catch (FileNotFoundException ex) {
+                writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+                writer.write(LOG_FILE_INITIATED_MSG);
+                writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
+                writer.flush();
+            } catch (IOException e) {
+                String tmpDir = System.getProperty("java.io.tmpdir");
+                System.err.println("[NR-CSEC-JA] CSEC Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+                try {
+                    e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
+                } catch (FileNotFoundException ex) {
+                }
             }
-            return false;
+            System.out.println("New Relic Security Agent: Writing to InitLogs file:"+currentLogFile);
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
         }
     }
 

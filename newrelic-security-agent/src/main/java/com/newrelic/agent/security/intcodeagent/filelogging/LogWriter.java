@@ -30,8 +30,6 @@ public class LogWriter implements Runnable {
 
     private static final String STR_COLON = " : ";
 
-    public static final String LOGS = "logs";
-
     public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
     public static final String CAUSED_BY = "Caused by: ";
 
@@ -60,50 +58,33 @@ public class LogWriter implements Runnable {
 
     private static BufferedWriter writer;
 
-    private static File currentLogFile;
-
     private String threadName;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
     private String logTime;
 
-    private static boolean createLogFile() {
-
-        try {
-            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), IUtilConstants.DIRECTORY_PERMISSION);
-            System.out.println("New Relic Security Agent: Writing to log file:"+currentLogFile);
-            currentLogFile.setReadable(true, false);
-            writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-
-            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
-
-            if (!osVariables.getWindows()) {
-                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
-            }
-
-        } catch (Throwable e) {
-            if (FileLoggerThreadPool.getInstance().isLoggingActive()) {
-                FileLoggerThreadPool.getInstance().setLoggingActive(false);
-            }
-            String tmpDir = System.getProperty("java.io.tmpdir");
-            System.err.println("[NR-CSEC-JA] CSEC Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
-            try {
-                e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
-            } catch (FileNotFoundException ex) {
-            }
-            return false;
-        }
-        return true;
-    }
-
     static {
-        if(FileLoggerThreadPool.getInstance().isLoggingToStdOut){
-            writer = new BufferedWriter(new OutputStreamWriter(System.out));
-        } else {
-            fileName = new File(osVariables.getLogDirectory(), "java-security-collector.log").getAbsolutePath();
-            currentLogFile = new File(fileName);
+        File currentLogFile = osVariables.getLogFile();
+        boolean logActive = true;
+        if (currentLogFile != null) {
+            fileName = currentLogFile.getAbsolutePath();
             currentLogFileName = fileName;
-            createLogFile();
+            try {
+                writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+            } catch (IOException e) {
+                logActive = false;
+                String tmpDir = System.getProperty("java.io.tmpdir");
+                System.err.println("[NR-CSEC-JA] CSEC Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+                try {
+                    e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
+                } catch (FileNotFoundException ex) {
+                }
+            }
+            System.out.println("New Relic Security Agent: Writing to log file:"+currentLogFile);
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
+        }
+        if(FileLoggerThreadPool.getInstance().isLoggingToStdOut || !logActive){
+            writer = new BufferedWriter(new OutputStreamWriter(System.out));
         }
     }
 

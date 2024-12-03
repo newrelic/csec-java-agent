@@ -5,7 +5,6 @@ import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
-import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -42,28 +41,19 @@ public class FileLoggerThreadPool {
     public void initialiseLogger() {
         // load the settings
         osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
+        LogAppender appender = selectAppender();
+
+        if(appender == LogAppender.CONSOLE) {
+            this.isLoggingToStdOut = true;
+        }
+
         int queueSize = 15000;
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 600;
-
-        TimeUnit timeUnit = TimeUnit.SECONDS;
-        try {
-            if(LogFileHelper.isLoggingToStdOut()){
-                this.isLoggingToStdOut = true;
-            }
-        } catch (NumberFormatException e){}
-
-        if(!isLoggingToStdOut && StringUtils.isBlank(osVariables.getLogDirectory())) {
-            isLoggingActive = false;
-            isInitLoggingActive = false;
-            return;
-        }
-
-
-
         boolean allowCoreThreadTimeOut = false;
-        executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
+        executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
@@ -87,6 +77,23 @@ public class FileLoggerThreadPool {
                 return t;
             }
         });
+    }
+
+    private LogAppender selectAppender() {
+        if(LogFileHelper.isLoggingToStdOut()){
+            return LogAppender.CONSOLE;
+        }
+
+        if (StringUtils.isBlank(osVariables.getLogDirectory())) {
+            return LogAppender.CONSOLE;
+        }
+
+        osVariables.setLogFile(LogFileHelper.createLogFile("java-security-collector.log"));
+        if(osVariables.getLogFile() == null) {
+            return LogAppender.CONSOLE;
+        }
+        osVariables.setInitLogFile(LogFileHelper.createLogFile("java-security-collector-init.log"));
+        return LogAppender.FILE;
     }
 
 
