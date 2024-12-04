@@ -1,10 +1,10 @@
-package com.nr.agent.security.instrumentation.springweb.springweb.app;/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
+package com.nr.agent.security.instrumentation.springweb.springweb.app;
 
+import org.springframework.graphql.data.method.annotation.BatchMapping;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -46,4 +46,30 @@ public class TestMappingsWithRest {
     public String testDelete() {
         return "From Delete RestMapping";
     }
+
+    @MutationMapping
+    public void testMutation() {
+        // mutation mapping
+    }
+
+    @QueryMapping
+    public void testQuery() {
+        // Query mapping
+    }
+
+    @SchemaMapping
+    public void testSchemaMapping() {
+        // SchemaMapping
+    }
+
+    @SubscriptionMapping
+    public void testSubscriptionMapping() {
+        // SubscriptionMapping
+    }
+
+    @BatchMapping
+    public void testBatchMapping() {
+        // BatchMapping
+    }
+
 }

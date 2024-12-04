@@ -186,14 +186,14 @@ public class ServletHelper {
         return false;
     }
 
-    public static boolean setFoundAnnotedUserLevelServiceMethod() {
+    public static boolean setFoundAnnotatedUserLevelServiceMethod(boolean foundAnnotatedUserLevelServiceMethod) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty())
             ) {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            securityMetaData.getMetaData().setFoundAnnotedUserLevelServiceMethod(true);
+            securityMetaData.getMetaData().setFoundAnnotedUserLevelServiceMethod(foundAnnotatedUserLevelServiceMethod);
             return true;
         } catch (Throwable ignored){
         }

@@ -9,9 +9,9 @@ import com.newrelic.api.agent.security.instrumentation.helpers.{GenericHelper, I
 import com.newrelic.api.agent.security.schema._
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation
-import com.newrelic.api.agent.security.schema.policy.AgentPolicy
 import com.newrelic.api.agent.security.utils.logging.LogLevel
-import org.http4s.{Headers, Request, Response}
+import fs2.RaiseThrowable
+import org.http4s.{Headers, Message, Request, Response}
 
 import java.util
 
@@ -30,16 +30,18 @@ object RequestProcessor {
     val result = construct((): Unit)
       .redeemWith(_ => httpApp(request),
         _ => for {
-          _ <- preprocessHttpRequest(request)
+          requestBody <- extractBody(request)
+          isLockAcquired <- preprocessHttpRequest(request, requestBody)
           resp <- httpApp(request)
-          _ <- postProcessSecurityHook(resp)
+          responseBody <- extractBody(resp)
+          _ <- postProcessSecurityHook(isLockAcquired, resp, responseBody)
         } yield resp
       )
     result
   }
 
-  private def preprocessHttpRequest[F[_]: Sync](request: Request[F]): F[Unit] = construct {
-    val isLockAcquired = BlazeUtils.acquireLockIfPossible()
+  private def preprocessHttpRequest[F[_]: Sync](request: Request[F], body: String): F[Boolean] = construct {
+    val isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP4S-BLAZE-REQUEST_LOCK")
     try {
       if (NewRelicSecurity.isHookProcessingActive && isLockAcquired && !NewRelicSecurity.getAgent.getSecurityMetaData.getRequest.isRequestParsed){
 
@@ -50,7 +52,12 @@ object RequestProcessor {
         securityRequest.setMethod(request.method.name)
         securityRequest.setServerPort((request.serverPort).get.asInstanceOf[Port].value)
         securityRequest.setClientIP(request.remoteAddr.get.toString)
-        securityRequest.setProtocol(BlazeUtils.getProtocol(request.isSecure.get))
+
+        securityRequest.setProtocol("http")
+        if (request.isSecure.get) {
+          securityRequest.setProtocol("https")
+        }
+
         securityRequest.setUrl(request.uri.toString)
 
         if (securityRequest.getClientIP != null && securityRequest.getClientIP.trim.nonEmpty) {
@@ -59,36 +66,48 @@ object RequestProcessor {
         }
 
         processRequestHeaders(request.headers, securityRequest)
-        securityMetaData.setTracingHeaderValue(BlazeUtils.getTraceHeader(securityRequest.getHeaders))
-        securityRequest.setContentType(BlazeUtils.getContentType(securityRequest.getHeaders))
+        securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders))
+        securityRequest.setContentType(getContentType(securityRequest.getHeaders))
 
-        // TODO extract request body & user class detection
+        securityRequest.getBody.append(body)
 
         val trace: Array[StackTraceElement] = Thread.currentThread.getStackTrace
-        securityMetaData.getMetaData.setServiceTrace(util.Arrays.copyOfRange(trace, 1, trace.length))
+        securityMetaData.getMetaData.setServiceTrace(util.Arrays.copyOfRange(trace, 2, trace.length))
         securityRequest.setRequestParsed(true)
       }
 
     } catch {
       case e: Throwable => NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HTTP_4S_EMBER_SERVER_2_12_0_23, e.getMessage), e, this.getClass.getName)
-    } finally {
-      if (isLockAcquired) {
-        BlazeUtils.releaseLock()
-      }
     }
+    isLockAcquired
+  }
+
+  private def extractBody[F[_]: Sync](msg: Message[F]): F[String] = {
+    if (msg.contentType.nonEmpty && msg.contentType.get.charset.nonEmpty) {
+      val charset = msg.contentType.get.charset.get;
+      msg.bodyText(RaiseThrowable.fromApplicativeError, defaultCharset = charset).compile.string
+    } else {
+      msg.bodyText.compile.string
+    }
+  }
+
+  private def getContentType(headers: util.Map[String, String]): String = {
+    var contentType = StringUtils.EMPTY
+    if (headers.containsKey("content-type")) contentType = headers.get("content-type")
+    contentType
   }
 
   private def processRequestHeaders(headers: Headers, securityRequest: HttpRequest): Unit = {
     headers.foreach(header => {
       var takeNextValue = false
-      var headerKey: String = StringUtils.EMPTY
+      var headerKey = StringUtils.EMPTY
       if (header.name != null && header.name.nonEmpty) {
         headerKey = header.name.toString
       }
-      val headerValue: String = header.value
+      val headerValue = header.value
 
-      val agentPolicy: AgentPolicy = NewRelicSecurity.getAgent.getCurrentPolicy
-      val agentMetaData: AgentMetaData = NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData
+      val agentPolicy = NewRelicSecurity.getAgent.getCurrentPolicy
+      val agentMetaData = NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData
       if (agentPolicy != null
         && agentPolicy.getProtectionMode.getEnabled()
         && agentPolicy.getProtectionMode.getIpBlocking.getEnabled()
@@ -119,18 +138,19 @@ object RequestProcessor {
     })
   }
 
-  private def postProcessSecurityHook[F[_]: Sync](response: Response[F]): F[Unit] = construct {
+  private def postProcessSecurityHook[F[_]: Sync](isLockAcquired:Boolean, response: Response[F], body: String): F[Unit] = construct {
     try {
-      if (NewRelicSecurity.isHookProcessingActive) {
+      if (NewRelicSecurity.isHookProcessingActive && isLockAcquired) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
         securityResponse.setResponseCode(response.status.code)
         processResponseHeaders(response.headers, securityResponse)
-        securityResponse.setResponseContentType(BlazeUtils.getContentType(securityResponse.getHeaders))
+        securityResponse.setResponseContentType(getContentType(securityResponse.getHeaders))
 
-        // TODO extract response body
+        securityResponse.getResponseBody.append(body)
 
         ServletHelper.executeBeforeExitingTransaction()
         if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent.getSecurityMetaData.getResponse.getResponseContentType)) {
+          NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData.setFromJumpRequiredInStackTrace(3)
           val rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent.getSecurityMetaData.getRequest, NewRelicSecurity.getAgent.getSecurityMetaData.getResponse, this.getClass.getName, METHOD_WITH_HTTP_APP)
           NewRelicSecurity.getAgent.registerOperation(rxssOperation)
         }
@@ -148,11 +168,20 @@ object RequestProcessor {
 
   private def processResponseHeaders(headers: Headers, securityResp: HttpResponse): Unit = {
     headers.foreach(header => {
-      if (header.name != null && header.name.isEmpty) {
+      if (header.name != null && !header.name.isEmpty) {
         securityResp.getHeaders.put(header.name.toString.toLowerCase, header.value)
       }
     })
   }
 
-  private def construct[F[_]: Sync, T](t: => T): F[T] = Sync[F].delay(t)
+  private def getTraceHeader(headers: util.Map[String, String]): String = {
+    var data = StringUtils.EMPTY
+    if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase)) {
+      data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)
+      if (data == null || data.trim.isEmpty) data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase)
+    }
+    data
+  }
+
+  private def construct[F[_] : Sync, T](t: => T): F[T] = Sync[F].delay(t)
 }
