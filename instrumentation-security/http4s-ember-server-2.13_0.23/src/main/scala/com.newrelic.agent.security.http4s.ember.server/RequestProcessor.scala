@@ -12,7 +12,6 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy
 import com.newrelic.api.agent.security.utils.logging.LogLevel
 import fs2.RaiseThrowable
-import fs2.text.decodeWithCharset
 import org.http4s.{Headers, Message, Request, Response}
 
 import java.util
@@ -94,7 +93,7 @@ object RequestProcessor {
 
   private def postProcessSecurityHook[F[_]: Sync](isLockAcquired: Boolean, response: Response[F], body: String): F[Unit] = construct {
     try {
-      if (isLockAcquired && NewRelicSecurity.isHookProcessingActive) {
+      if (isLockAcquired && NewRelicSecurity.isHookProcessingActive && !NewRelicSecurity.getAgent.getIastDetectionCategory.getRxssEnabled) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
         securityResponse.setResponseCode(response.status.code)
         processResponseHeaders(response.headers, securityResponse)
