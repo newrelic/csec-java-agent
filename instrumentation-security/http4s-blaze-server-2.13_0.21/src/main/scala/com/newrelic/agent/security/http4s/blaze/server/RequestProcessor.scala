@@ -136,7 +136,7 @@ object RequestProcessor {
 
   private def postProcessSecurityHook[F[_]: Sync](isLockAcquired:Boolean, response: Response[F], body: String): F[Unit] = construct {
     try {
-      if (NewRelicSecurity.isHookProcessingActive && isLockAcquired) {
+      if (NewRelicSecurity.isHookProcessingActive && isLockAcquired && !NewRelicSecurity.getAgent.getIastDetectionCategory.getRxssEnabled) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
         securityResponse.setResponseCode(response.status.code)
         processResponseHeaders(response.headers, securityResponse)
