@@ -61,7 +61,7 @@ public class HttpResponseEvent extends AgentBasicInfo {
     }
 
     public boolean isEmpty() {
-        return traceId == null || httpResponse == null || httpResponse.getStatusCode() > 0;
+        return traceId == null || httpResponse == null || httpResponse.getStatusCode() <= 0;
     }
 
     @Override
