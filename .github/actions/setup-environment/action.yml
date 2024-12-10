@@ -55,6 +55,8 @@ runs:
 
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: 7.5.1
 
     - name: Setup Gradle options
       shell: bash
