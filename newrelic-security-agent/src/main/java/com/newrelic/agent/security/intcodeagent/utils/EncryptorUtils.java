@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
-import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -32,6 +31,20 @@ public class EncryptorUtils {
     public static final String EMPTY_PASSWORD_PROVIDED_S = "Empty Password provided %s";
     public static final String DATA_TO_BE_DECRYPTED_IS_EMPTY_S = "Data to be decrypted is Empty %s";
 
+    private static Cipher cipher = null;
+
+    private static void prepareCipherInstance(String password) throws Exception {
+        SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF_2_WITH_HMAC_SHA_1);
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), generateSalt(password), ITERATION, KEY_LEN);
+        SecretKey tmp = factory.generateSecret(spec);
+        SecretKey secret = new SecretKeySpec(tmp.getEncoded(), AES);
+        cipher = Cipher.getInstance(AES_CBC_PKCS_5_PADDING);
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] iv = new byte[OFFSET];
+        secureRandom.nextBytes(iv);
+        cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
+    }
+
     public static String decrypt(String password, String encryptedData) {
         String decryptedData;
         if (StringUtils.isBlank(password)){
@@ -43,20 +56,11 @@ public class EncryptorUtils {
             return null;
         }
         try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF_2_WITH_HMAC_SHA_1);
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), generateSalt(password), ITERATION, KEY_LEN);
-            SecretKey tmp = factory.generateSecret(spec);
-            SecretKey secret = new SecretKeySpec(tmp.getEncoded(), AES);
-
-            Cipher cipher = Cipher.getInstance(AES_CBC_PKCS_5_PADDING);
-            SecureRandom secureRandom = new SecureRandom();
-            byte[] iv = new byte[OFFSET];
-            secureRandom.nextBytes(iv);
-            cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
-
+            if (cipher == null) {
+                prepareCipherInstance(password);
+            }
             // Decrypt the content
             byte[] decryptedBytes = cipher.doFinal(Hex.decodeHex(encryptedData));
-
             decryptedData = new String(decryptedBytes, OFFSET, decryptedBytes.length - OFFSET);
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(ENCRYPTED_DATA_S_DECRYPTED_DATA_S, encryptedData, decryptedData), EncryptorUtils.class.getName());
             return decryptedData;
