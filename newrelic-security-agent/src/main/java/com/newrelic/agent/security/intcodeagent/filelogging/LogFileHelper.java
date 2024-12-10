@@ -72,7 +72,7 @@ public class LogFileHelper {
     }
 
     public static void deleteRolloverLogFiles(String fileName, long max) {
-        Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.prefixFileFilter(fileName + "."), null);
+        Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.and(FileFilterUtils.prefixFileFilter(fileName + "."), FileFilterUtils.suffixFileFilter(".log")), null);
 
         if (rolloverLogFiles.size() > max) {
             File[] sortedLogFiles = rolloverLogFiles.toArray(new File[0]);
