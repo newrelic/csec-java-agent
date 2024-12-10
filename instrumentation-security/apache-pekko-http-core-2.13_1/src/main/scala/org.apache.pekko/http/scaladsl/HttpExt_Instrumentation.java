@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -57,7 +58,7 @@ public class HttpExt_Instrumentation {
 
     public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings, LoggingAdapter loggingAdapter) {
 
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(PekkoCoreUtils.NR_SEC_CUSTOM_ATTRIB_OUTBOUND_REQ);
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, PekkoCoreUtils.NR_SEC_CUSTOM_ATTRIB_OUTBOUND_REQ);
         AbstractOperation operation = null;
 
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();

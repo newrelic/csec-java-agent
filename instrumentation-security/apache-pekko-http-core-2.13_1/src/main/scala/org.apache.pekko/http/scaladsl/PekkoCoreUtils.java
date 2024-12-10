@@ -13,8 +13,10 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.pekko.http.javadsl.model.HttpHeader;
+import org.apache.pekko.http.javadsl.model.MediaType;
 import org.apache.pekko.http.scaladsl.model.HttpRequest;
 import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
+import org.apache.pekko.http.scaladsl.model.MediaTypes;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -33,6 +35,8 @@ public class PekkoCoreUtils {
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
 
     private static final String QUESTION_MARK = "?";
+
+    private static final String NO_MEDIA_CONTENT_TYPE = "none/none";
 
     private static boolean isServletLockAcquired() {
         try {
@@ -61,12 +65,14 @@ public class PekkoCoreUtils {
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, int responseCode, String className, String methodName, Token token) {
         try {
             token.linkAndExpire();
-            if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
+            if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(responseBody);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
+            if (!contentType.equals(NO_MEDIA_CONTENT_TYPE)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
+            }
             ServletHelper.executeBeforeExitingTransaction();
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
@@ -127,8 +133,9 @@ public class PekkoCoreUtils {
             if (queryString != null && !queryString.trim().isEmpty()) {
                 securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
             }
-
-            securityRequest.setContentType(request.entity().getContentType().toString());
+            if (!request.entity().getContentType().toString().equals(NO_MEDIA_CONTENT_TYPE)) {
+                securityRequest.setContentType(request.entity().getContentType().toString());
+            }
 
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
