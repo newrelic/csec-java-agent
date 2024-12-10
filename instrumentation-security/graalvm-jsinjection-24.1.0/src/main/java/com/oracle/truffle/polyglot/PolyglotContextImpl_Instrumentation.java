@@ -6,9 +6,11 @@ import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.impl.AbstractPolyglotImpl;
 
 @Weave(originalName = "com.oracle.truffle.polyglot.PolyglotContextImpl")
-public abstract class PolyglotContextImpl_Instrumentation {
+final class PolyglotContextImpl_Instrumentation {
 
-    abstract AbstractPolyglotImpl.APIAccess getAPIAccess();
+    public AbstractPolyglotImpl.APIAccess getAPIAccess() {
+        return Weaver.callOriginal();
+    }
 
     public Object eval(String languageId, Object source) {
         Object result;
