@@ -20,7 +20,9 @@ dependencies {
     implementation("org.ow2.asm:asm-commons:9.2")
 
     // Shadow is used here because several classes implement the Transformer interface
-    implementation("com.github.jengelman.gradle.plugins:shadow:6.0.0")
+    implementation("com.github.jengelman.gradle.plugins:shadow:6.0.0") {
+        exclude(group: "org.codehaus.plexus", module: "plexus-utils")
+    }
 
     // Reflections and GSON are used for building the manifest of annotated classes.
     implementation("org.reflections:reflections:0.9.11")
