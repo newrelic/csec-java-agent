@@ -11,7 +11,7 @@ import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import org.graalvm.polyglot.Source;
+import com.oracle.truffle.api.source.Source;
 import org.graalvm.polyglot.impl.AbstractPolyglotImpl;
 
 @Weave(originalName = "com.oracle.truffle.polyglot.PolyglotContextImpl")
@@ -57,16 +57,16 @@ final class PolyglotContextImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String languageId, Object source, String methodName) {
         try {
-            JSInjectionOperation jsInjectionOperation = null;
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
                     !StringUtils.equalsIgnoreCase(languageId, JSEngineUtils.LANGUAGE_ID_JS)) {
                 return null;
             }
-            if (source instanceof Source) {
-                com.oracle.truffle.api.source.Source sourceReceiver = (com.oracle.truffle.api.source.Source) getAPIAccess().getSourceReceiver(source);
-                jsInjectionOperation = new JSInjectionOperation(String.valueOf(sourceReceiver.getCharacters()), this.getClass().getName(), methodName);
-                NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
-            }
+
+            // Getting the source to get the Characters
+            Source sourceReceiver = (com.oracle.truffle.api.source.Source) getAPIAccess().getSourceReceiver(source);
+            JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(sourceReceiver.getCharacters()), this.getClass().getName(),
+                    methodName);
+            NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
