@@ -5,7 +5,6 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
@@ -13,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -68,7 +68,7 @@ public class AgentInfo {
     }
 
     public void initialiseHC(){
-        jaHealthCheck = new JAHealthCheck(applicationUUID);
+        jaHealthCheck = new JAHealthCheck();
     }
 
     public ApplicationInfoBean getApplicationInfo() {
