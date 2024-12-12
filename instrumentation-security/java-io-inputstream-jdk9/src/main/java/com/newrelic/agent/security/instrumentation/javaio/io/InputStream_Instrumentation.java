@@ -18,18 +18,14 @@ import java.io.IOException;
 public abstract class InputStream_Instrumentation {
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            if(InputStreamHelper.processRequestInputStreamHookData(hashCode)) {
-                return GenericHelper.acquireLockIfPossible(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-            }
-        } catch (Throwable ignored) {}
+        if(InputStreamHelper.processRequestInputStreamHookData(hashCode)) {
+            return GenericHelper.acquireLockIfPossible(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+        }
         return false;
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     public int read(byte[] b) throws IOException {

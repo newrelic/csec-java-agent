@@ -7,8 +7,10 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -108,22 +110,17 @@ public class HttpRequestToMuleEvent_Instrumentation {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
                 throw e;
             }
         }
     }
 
     private static boolean acquireLockIfPossible(int hashcode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName());
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, MuleHelper.getNrSecCustomAttribName());
     }
 
     private static void releaseLock(int hashcode) {
-        try {
-            GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName());
-        } catch (Throwable e) {}
+        GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName());
     }
 }

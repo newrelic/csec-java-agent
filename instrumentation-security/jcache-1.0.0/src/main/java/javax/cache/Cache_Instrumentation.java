@@ -2,7 +2,6 @@ package javax.cache;
 
 import com.newrelic.agent.security.instrumentation.jcache_1_0_0.JCacheHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -18,7 +17,7 @@ import java.util.Set;
 @Weave(type = MatchType.Interface, originalName = "javax.cache.Cache")
 public abstract class Cache_Instrumentation<K, V> {
     public V get(K key) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.READ, Collections.singletonList(key), this.getClass().getName(), "get");
@@ -36,7 +35,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public Map<K, V> getAll(Set<? extends K> keys) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.READ, new ArrayList<Object>() { { addAll(keys); } }, this.getClass().getName(), "getAll");
@@ -54,7 +53,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public boolean containsKey(K key) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.READ, Collections.singletonList(key), this.getClass().getName(), "containsKey");
@@ -72,7 +71,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.READ, new ArrayList<Object>() { { addAll(keys); } }, this.getClass().getName(), "loadAll");
@@ -88,7 +87,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public void put(K key, V value) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.WRITE, Arrays.asList(key, value), this.getClass().getName(), "put");
@@ -104,7 +103,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public V getAndPut(K key, V value) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.WRITE, Arrays.asList(key, value), this.getClass().getName(), "getAndPut");
@@ -122,7 +121,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public void putAll(Map<? extends K, ? extends V> map) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             List<Object> argList = new ArrayList<>();
@@ -144,7 +143,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public boolean putIfAbsent(K key, V value) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.WRITE, Arrays.asList(key, value), this.getClass().getName(), "putIfAbsent");
@@ -162,7 +161,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public boolean remove(K key) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.DELETE, Collections.singletonList(key), this.getClass().getName(), "remove");
@@ -180,7 +179,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public boolean remove(K key, V oldValue) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.DELETE, Arrays.asList(key, oldValue), this.getClass().getName(), "remove");
@@ -198,7 +197,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public V getAndRemove(K key) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.DELETE, Collections.singletonList(key), this.getClass().getName(), "getAndRemove");
@@ -216,7 +215,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public boolean replace(K key, V oldValue) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.UPDATE, Arrays.asList(key, oldValue), this.getClass().getName(), "replace");
@@ -234,7 +233,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public boolean replace(K key, V oldValue, V newValue) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.UPDATE, Arrays.asList(key, oldValue, newValue), this.getClass().getName(), "replace");
@@ -252,7 +251,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public V getAndReplace(K key, V value) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.UPDATE, Arrays.asList(key, value), this.getClass().getName(), "getAndReplace");
@@ -270,7 +269,7 @@ public abstract class Cache_Instrumentation<K, V> {
     }
 
     public void removeAll(Set<? extends K> keys) {
-        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, this.hashCode());
+        boolean isLockAcquired = JCacheHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = JCacheHelper.preprocessSecurityHook(JCacheHelper.DELETE, new ArrayList<Object>() { { addAll(keys); } }, this.getClass().getName(), "removeAll");
