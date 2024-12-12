@@ -10,7 +10,7 @@ import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 public class MySQLConnection_Instrumentation {
     @WeaveAllConstructors
     private MySQLConnection_Instrumentation() {
-        if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if (NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.MARIA_DB);
         }
     }

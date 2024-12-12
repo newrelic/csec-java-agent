@@ -9,7 +9,7 @@ import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 final class OracleConnectionImpl_Instrumentation {
     @WeaveAllConstructors
     OracleConnectionImpl_Instrumentation() {
-        if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if (NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(R2DBCVendor.META_CONST_R2DBC_VENDOR, R2DBCVendor.ORACLE);
         }
     }

@@ -104,7 +104,7 @@ public class AgentInfo {
     }
 
     public boolean isAgentActive() {
-        return isAgentActive && AgentConfig.getInstance().isNRSecurityEnabled();
+        return isAgentActive;
     }
 
     public void setAgentActive(boolean agentActive) {

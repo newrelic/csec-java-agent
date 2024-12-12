@@ -14,9 +14,11 @@ import org.jboss.resteasy.core.ResourceMethodInvoker;
 
 public class RestEasyHelper {
     private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
+
     private static final String RESTEASY_3 = "RESTEASY-3";
+
     private static final String ROUTE_DETECTION_COMPLETED = "ROUTE_DETECTION_COMPLETED";
+
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
         try{
             if(invoker instanceof ResourceMethodInvoker) {

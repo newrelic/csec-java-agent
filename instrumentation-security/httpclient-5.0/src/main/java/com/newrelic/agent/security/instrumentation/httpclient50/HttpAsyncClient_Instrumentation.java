@@ -39,7 +39,7 @@ public class HttpAsyncClient_Instrumentation {
             FutureCallback<T> callback) {
         HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(APACHE5_ASYNC_REQUEST_PRODUCER+requestProducer.hashCode(), HttpRequest.class);
 
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -63,17 +63,10 @@ public class HttpAsyncClient_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
-        try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 }
