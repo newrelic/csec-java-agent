@@ -4,6 +4,26 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2024-12-16
+### Adds
+- Apache Pekko Server Support: The security agent now supports Apache Pekko Server version 1.0.0 and newer, compatible with Scala 2.13 and above.
+- HTTP4s Ember Server Support: Added support for HTTP4s Ember Server version 0.23 and newer, compatible with Scala 2.12 and above.
+- HTTP4s Blaze Server Support: The security agent now supports HTTP4s Blaze Server version 0.21 and newer, compatible with Scala 2.12 and above.
+- HTTP4s Ember Client Support: Introduced support for HTTP4s Ember Client version 0.23 and above, compatible with Scala 2.12 and above.
+- HTTP4s Blaze Client Support: Added support for HTTP4s Blaze Client version 0.21 and newer, compatible with Scala 2.12 and above.
+- GraphQL Support: GraphQL support is now enabled by default.
+
+### Changes
+- REST Client Update for IAST Request Replay: Migrated to utilize the Apache HTTP Client for enhanced request replay functionality.
+- Status File Removed: The status file used for debugging has been eliminated. All debugging capabilities have been integrated into Init Logging or the Error Inbox.
+- Code Optimization: Optimized code to minimize the overhead of the Security Agent in relation to the APM Agent.
+
+
+### Fixes
+- Corrected the issue regarding inaccurate user class details in the mule-demo-app.
+- Improved logging for scenarios where delay is set to a negative value.
+
+
 ## [1.5.1] - 2024-11-9
 ### New features
 - [PR-350](https://github.com/newrelic/csec-java-agent/pull/350) IAST support for CI/CD.
