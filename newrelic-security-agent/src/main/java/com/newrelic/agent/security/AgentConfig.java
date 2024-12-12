@@ -218,6 +218,8 @@ public class AgentConfig {
                 } else {
                     throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE);
                 }
+            } else {
+                agentMode.getScanSchedule().setNextScanTime(new Date(Instant.now().toEpochMilli()));
             }
             agentMode.getScanSchedule().setDataCollectionTime(agentMode.getScanSchedule().getNextScanTime());
             if(agentMode.getScanSchedule().isCollectSamples()){
