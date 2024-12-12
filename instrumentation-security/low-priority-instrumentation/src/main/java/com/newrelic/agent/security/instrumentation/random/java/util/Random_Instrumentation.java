@@ -34,12 +34,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -56,12 +56,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -77,12 +77,12 @@ public class Random_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
     }
 
@@ -98,12 +98,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -120,12 +120,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -142,12 +142,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -164,12 +164,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -186,12 +186,12 @@ public class Random_Instrumentation {
         try {
             returnValue = Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
         return returnValue;
     }
@@ -213,8 +213,6 @@ public class Random_Instrumentation {
             }
             operation.setLowSeverityHook(true);
 
-            NewRelicSecurity.getAgent().registerOperation(operation);
-
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -234,7 +232,7 @@ public class Random_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, Random_Instrumentation.class.getName());
         }

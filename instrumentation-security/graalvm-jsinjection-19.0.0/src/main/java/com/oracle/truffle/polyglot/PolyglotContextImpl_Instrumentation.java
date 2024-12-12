@@ -32,10 +32,10 @@ final class PolyglotContextImpl_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -46,7 +46,7 @@ final class PolyglotContextImpl_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, GRAALVM_JS_INJECTION_19_0_0, ignored.getMessage()), ignored, this.getClass().getName());
         }
@@ -61,7 +61,6 @@ final class PolyglotContextImpl_Instrumentation {
             }
             com.oracle.truffle.api.source.Source source = (Source) sourceImpl;
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(source.getCharacters()), this.getClass().getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

@@ -83,8 +83,6 @@ public class MessageDigest_Instrumentation {
             operation.setProvider(provider);
             operation.setLowSeverityHook(true);
 
-            NewRelicSecurity.getAgent().registerOperation(operation);
-
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -104,7 +102,7 @@ public class MessageDigest_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, MessageDigest_Instrumentation.class.getName());
         }

@@ -32,10 +32,10 @@ abstract class ProcessImpl_Instrumentation {
             p = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(operation);
                 GenericHelper.releaseLock("SYSTEM_COMMAND_");
             }
         }
-        registerExitOperation(operation);
         return p;
     }
 
@@ -45,7 +45,7 @@ abstract class ProcessImpl_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, "JAVA-LANG", ignored.getMessage()), ignored, ProcessImpl_Instrumentation.class.getName());
         }
@@ -61,7 +61,6 @@ abstract class ProcessImpl_Instrumentation {
             String command = String.join(" ", cmdarray);
             ForkExecOperation operation = new ForkExecOperation(command, environment,
                     ProcessImpl_Instrumentation.class.getName(), "start");
-            NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){

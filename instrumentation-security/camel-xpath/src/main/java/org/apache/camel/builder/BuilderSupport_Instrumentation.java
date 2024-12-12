@@ -24,7 +24,7 @@ public class BuilderSupport_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.CAMEL_XPATH, ignored.getMessage()), ignored, this.getClass().getName());
         }
@@ -38,7 +38,6 @@ public class BuilderSupport_Instrumentation {
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(expression, this.getClass().getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -76,10 +75,10 @@ public class BuilderSupport_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 }

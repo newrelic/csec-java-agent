@@ -47,10 +47,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 

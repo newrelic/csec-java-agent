@@ -83,8 +83,6 @@ public class KeyPairGenerator_Instrumentation {
             operation.setLowSeverityHook(true);
             operation.setEventCategory(category);
 
-            NewRelicSecurity.getAgent().registerOperation(operation);
-
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -104,7 +102,7 @@ public class KeyPairGenerator_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, KeyPairGenerator_Instrumentation.class.getName());
         }

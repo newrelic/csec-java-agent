@@ -29,10 +29,10 @@ public abstract class Context_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operations);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operations);
         return returnVal;
     }
 
@@ -47,10 +47,10 @@ public abstract class Context_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operations);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operations);
         return returnVal;
     }
 
@@ -65,10 +65,10 @@ public abstract class Context_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -83,10 +83,10 @@ public abstract class Context_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -98,7 +98,7 @@ public abstract class Context_Instrumentation {
             }
 
             for (AbstractOperation operation : operations) {
-                NewRelicSecurity.getAgent().registerExitEvent(operation);
+                NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
@@ -112,7 +112,7 @@ public abstract class Context_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, ignored.getMessage()), ignored, this.getClass().getName());
         }

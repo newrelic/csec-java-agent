@@ -61,7 +61,7 @@ public abstract class File_Instrumentation {
                 return;
             }
             FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE,
                     LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, File_Instrumentation.class.getName());
@@ -88,7 +88,6 @@ public abstract class File_Instrumentation {
             if(isBooleanAttributesCall) {
                 operation.setLowSeverityHook(isLowSeverityHook);
             }
-            NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

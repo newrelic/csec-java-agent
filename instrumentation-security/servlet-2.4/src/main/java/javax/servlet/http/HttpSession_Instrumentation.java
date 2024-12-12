@@ -28,12 +28,12 @@ public class HttpSession_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
     }
 
@@ -48,12 +48,12 @@ public class HttpSession_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isLockAcquired, operation);
+            }
             if (isLockAcquired) {
                 releaseLock(hashCode());
             }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
         }
     }
 
@@ -67,8 +67,6 @@ public class HttpSession_Instrumentation {
 
             TrustBoundaryOperation operation = new TrustBoundaryOperation(name, value, className, methodName);
             operation.setLowSeverityHook(true);
-            NewRelicSecurity.getAgent().registerOperation(operation);
-
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -88,7 +86,7 @@ public class HttpSession_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, HttpSession_Instrumentation.class.getName());
         }

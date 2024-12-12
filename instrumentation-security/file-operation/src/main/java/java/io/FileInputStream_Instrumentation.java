@@ -32,10 +32,10 @@ public abstract class FileInputStream_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isFileLockAcquired){
+                registerExitOperation(isFileLockAcquired, operation);
                 releaseFileLock();
             }
         }
-        registerExitOperation(isFileLockAcquired, operation);
     }
 
     private static boolean acquireFileLockIfPossible(VulnerabilityCaseType fileOperation) {
@@ -54,7 +54,7 @@ public abstract class FileInputStream_Instrumentation {
                 return;
             }
             FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, FileHelper.FILE_OPERATION, ignored.getMessage()), ignored, FileInputStream_Instrumentation.class.getName());
         }
@@ -72,7 +72,6 @@ public abstract class FileInputStream_Instrumentation {
             FileOperation operation = new FileOperation(filePath,
                     this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
             FileHelper.createEntryOfFileIntegrity(filePath, this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
-            NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

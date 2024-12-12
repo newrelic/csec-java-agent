@@ -32,10 +32,10 @@ public abstract class DirContext_Instrumentation implements Context {
             returnVal = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -51,10 +51,10 @@ public abstract class DirContext_Instrumentation implements Context {
             returnVal = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -70,10 +70,10 @@ public abstract class DirContext_Instrumentation implements Context {
             returnVal = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -94,10 +94,10 @@ public abstract class DirContext_Instrumentation implements Context {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -107,7 +107,7 @@ public abstract class DirContext_Instrumentation implements Context {
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, LDAPUtils.JAVAX_LDAP, ignored.getMessage()), ignored, this.getClass().getName());
         }
@@ -120,7 +120,6 @@ public abstract class DirContext_Instrumentation implements Context {
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), LDAPUtils.METHOD_SEARCH);
-            NewRelicSecurity.getAgent().registerOperation(ldapOperation);
             return ldapOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

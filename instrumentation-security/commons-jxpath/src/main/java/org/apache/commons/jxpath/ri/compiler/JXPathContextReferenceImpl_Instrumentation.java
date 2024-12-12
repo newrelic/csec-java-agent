@@ -30,10 +30,10 @@ public class JXPathContextReferenceImpl_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -49,10 +49,10 @@ public class JXPathContextReferenceImpl_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -67,10 +67,10 @@ public class JXPathContextReferenceImpl_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
     }
 
     public void removeAll(String xpath, Expression expr) {
@@ -84,10 +84,10 @@ public class JXPathContextReferenceImpl_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
     }
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
@@ -97,7 +97,7 @@ public class JXPathContextReferenceImpl_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, ignored.getMessage()), ignored, this.getClass().getName());
         }
@@ -111,7 +111,6 @@ public class JXPathContextReferenceImpl_Instrumentation {
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(patternString, this.getClass().getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

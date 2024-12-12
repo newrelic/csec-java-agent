@@ -37,10 +37,10 @@ public class Files_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if (isFileLockAcquired) {
+                registerExitOperation(isFileLockAcquired, operation);
                 releaseFileLock();
             }
         }
-        registerExitOperation(isFileLockAcquired, operation);
         return returnVal;
     }
 
@@ -61,7 +61,7 @@ public class Files_Instrumentation {
                 return;
             }
             FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, FileHelper.FILE_OPERATION, ignored.getMessage()), ignored, File_Instrumentation.class.getName());
         }
@@ -87,7 +87,6 @@ public class Files_Instrumentation {
             if(isBooleanAttributesCall) {
                 operation.setLowSeverityHook(isLowSeverityHook);
             }
-            NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

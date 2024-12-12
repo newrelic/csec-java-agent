@@ -33,7 +33,6 @@ public class JNDIUtils {
             if (StringUtils.isNotBlank(url.getScheme()) &&
                     StringUtils.equalsAny(url.getScheme().toLowerCase(), "ldap", "rmi", "dns", "iiop")) {
                 SSRFOperation operation = new SSRFOperation(name, className, methodName, true);
-                NewRelicSecurity.getAgent().registerOperation(operation);
                 return operation;
             }
         } catch (URISyntaxException ignored) {
