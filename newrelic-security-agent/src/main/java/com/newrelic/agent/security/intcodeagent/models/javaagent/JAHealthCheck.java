@@ -31,11 +31,11 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private Boolean scanActive = false;
 
-    private AtomicInteger invokedHookCount;
+    private final AtomicInteger invokedHookCount;
 
     private IdentifierEnvs kind;
 
-    private EventStats eventStats;
+    private final EventStats eventStats;
 
     private ThreadPoolStats threadPoolStats;
 
@@ -49,8 +49,9 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private SchedulerRuns schedulerRuns = new SchedulerRuns();
 
+    private String iastTestIdentifier;
 
-    public JAHealthCheck(String applicationUUID) {
+    public JAHealthCheck() {
         super();
         this.invokedHookCount = new AtomicInteger(0);
         this.threadPoolStats = new ThreadPoolStats();
@@ -59,6 +60,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventStats = new EventStats();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
         this.procStartTime = ManagementFactory.getRuntimeMXBean().getStartTime();
+        this.iastTestIdentifier = AgentConfig.getInstance().getScanControllers().getIastTestIdentifier();
         if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getNextScanTime() != null) {
             this.csecActivationTime = AgentConfig.getInstance().getAgentMode().getScanSchedule().getNextScanTime().getTime();
         } else {
@@ -90,6 +92,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.csecActivationTime = jaHealthCheck.getCsecActivationTime();
         this.iastDataRequestTime = jaHealthCheck.getIastDataRequestTime();
         this.scanActive = jaHealthCheck.getScanActive();
+        this.iastTestIdentifier = jaHealthCheck.getIastTestIdentifier();
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
@@ -210,6 +213,14 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public long getIastDataRequestTime() {
         return iastDataRequestTime;
+    }
+
+    public String getIastTestIdentifier() {
+        return iastTestIdentifier;
+    }
+
+    public void setIastTestIdentifier(String iastTestIdentifier) {
+        this.iastTestIdentifier = iastTestIdentifier;
     }
 
     public void reset(){

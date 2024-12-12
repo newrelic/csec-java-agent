@@ -4,7 +4,6 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
@@ -71,7 +70,7 @@ public class WSClient extends WebSocketClient {
 
     private WebSocketImpl connection = null;
 
-    private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
+    private final Map<String, String> noticeErrorCustomParameters = new HashMap<>();
 
 
     private SSLContext createSSLContext() throws Exception {
@@ -157,7 +156,9 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-IGNORED-VUL-CATEGORIES", AgentConfig.getInstance().getAgentMode().getSkipScan().getIastDetectionCategory().getDisabledCategoriesCSV());
         this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
         this.addHeader("NR-CSEC-IAST-TEST-IDENTIFIER", AgentConfig.getInstance().getScanControllers().getIastTestIdentifier());
-        this.addHeader("NR-CSEC-IAST-SCAN-INSTANCE-COUNT", String.valueOf(AgentConfig.getInstance().getScanControllers().getScanInstanceCount()));
+        if (AgentConfig.getInstance().getScanControllers().getScanInstanceCount() >= 0) {
+            this.addHeader("NR-CSEC-IAST-SCAN-INSTANCE-COUNT", String.valueOf(AgentConfig.getInstance().getScanControllers().getScanInstanceCount()));
+        }
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);
@@ -314,7 +315,7 @@ public class WSClient extends WebSocketClient {
         NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
-                        ex.toString(), ex.getCause()),
+                        ex, ex.getCause()),
                 WSClient.class.getName());
         logger.log(LogLevel.FINER, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
