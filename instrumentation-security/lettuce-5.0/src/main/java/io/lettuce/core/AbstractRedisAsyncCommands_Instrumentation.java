@@ -68,7 +68,7 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
 
     private <T> AbstractOperation preprocessSecurityHook(RedisCommand_Instrumentation<K,V,T> cmd, String methodDispatch) {
         try {
-            String type = cmd.getType().name();
+            String type = cmd.getType().toString();
             CommandArgs_Instrumentation commandArgs = cmd.getArgs();
             List<Object> arguments = new ArrayList<>();
             for(int i=0 ; i<commandArgs.count(); i++){
