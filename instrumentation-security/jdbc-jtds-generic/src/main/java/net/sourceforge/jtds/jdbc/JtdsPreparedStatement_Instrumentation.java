@@ -50,9 +50,7 @@ public abstract class JtdsPreparedStatement_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String sql, Map<String, String> params, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()){
+            if (sql == null || sql.trim().isEmpty()){
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -74,9 +72,7 @@ public abstract class JtdsPreparedStatement_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            JdbcHelper.releaseLock();
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType sqlDbCommand) {
