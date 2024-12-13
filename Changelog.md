@@ -6,22 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.6.0] - 2024-12-16
 ### Adds
-- Apache Pekko Server Support: The security agent now supports Apache Pekko Server version 1.0.0 and newer, compatible with Scala 2.13 and above.
-- HTTP4s Ember Server Support: Added support for HTTP4s Ember Server version 0.23 and newer, compatible with Scala 2.12 and above.
-- HTTP4s Blaze Server Support: The security agent now supports HTTP4s Blaze Server version 0.21 and newer, compatible with Scala 2.12 and above.
-- HTTP4s Ember Client Support: Introduced support for HTTP4s Ember Client version 0.23 and above, compatible with Scala 2.12 and above.
-- HTTP4s Blaze Client Support: Added support for HTTP4s Blaze Client version 0.21 and newer, compatible with Scala 2.12 and above.
-- GraphQL Support: GraphQL support is now enabled by default.
+- [PR-329](https://github.com/newrelic/csec-java-agent/pull/329) Apache Pekko Server Support: The security agent now supports Apache Pekko Server version 1.0.0 and newer, compatible with Scala 2.13 and above. [NR-308780](https://new-relic.atlassian.net/browse/NR-308780), [NR-308781](https://new-relic.atlassian.net/browse/NR-308781), [NR-308791](https://new-relic.atlassian.net/browse/NR-308791), [NR-308792](https://new-relic.atlassian.net/browse/NR-308792) [NR-308782](https://new-relic.atlassian.net/browse/NR-308782)
+- [PR-228](https://github.com/newrelic/csec-java-agent/pull/228) HTTP4s Ember Server Support: Added support for HTTP4s Ember Server version 0.23 and newer, compatible with Scala 2.12 and above. [NR-293957](https://new-relic.atlassian.net/browse/NR-293957), [NR-293847](https://new-relic.atlassian.net/browse/NR-293847), [NR-293844](https://new-relic.atlassian.net/browse/NR-293844)
+- [PR-344](https://github.com/newrelic/csec-java-agent/pull/344) HTTP4s Blaze Server Support: The security agent now supports HTTP4s Blaze Server version 0.21 and newer, compatible with Scala 2.12 and above. [NR-325523](https://new-relic.atlassian.net/browse/NR-325523), [NR-325525](https://new-relic.atlassian.net/browse/NR-325525), [NR-293846](https://new-relic.atlassian.net/browse/NR-293846)
+- [PR-228](https://github.com/newrelic/csec-java-agent/pull/228) HTTP4s Ember Client Support: Introduced support for HTTP4s Ember Client version 0.23 and above, compatible with Scala 2.12 and above. [NR-307676](https://new-relic.atlassian.net/browse/NR-307676)
+- [PR-346](https://github.com/newrelic/csec-java-agent/pull/346) HTTP4s Blaze Client Support: Added support for HTTP4s Blaze Client version 0.21 and newer, compatible with Scala 2.12 and above. [NR-325526](https://new-relic.atlassian.net/browse/NR-325526), [NR-325527](https://new-relic.atlassian.net/browse/NR-325527)
+- [PR-363](https://github.com/newrelic/csec-java-agent/pull/363) GraphQL Support: GraphQL support is now enabled by default.
 
 ### Changes
-- REST Client Update for IAST Request Replay: Migrated to utilize the Apache HTTP Client for enhanced request replay functionality.
-- Status File Removed: The status file used for debugging has been eliminated. All debugging capabilities have been integrated into Init Logging or the Error Inbox.
-- Code Optimization: Optimized code to minimize the overhead of the Security Agent in relation to the APM Agent.
-
+- [PR-331](https://github.com/newrelic/csec-java-agent/pull/331) REST Client Update for IAST Request Replay: Migrated to utilize the Apache HTTP Client for enhanced request replay functionality. [NR-283130](https://new-relic.atlassian.net/browse/NR-283130)
+- [PR-311](https://github.com/newrelic/csec-java-agent/pull/311) Status File Removed: The status file used for debugging has been eliminated. All debugging capabilities have been integrated into Init Logging or the Error Inbox. [NR-297214](https://new-relic.atlassian.net/browse/NR-297214)
+- [PR-356](https://github.com/newrelic/csec-java-agent/pull/356) Code Optimization: Optimized code to minimize the overhead of the Security Agent in relation to the APM Agent. [NR-338596](https://new-relic.atlassian.net/browse/NR-338596)
 
 ### Fixes
-- Corrected the issue regarding inaccurate user class details in the mule-demo-app.
-- Improved logging for scenarios where delay is set to a negative value.
+- [PR-352](https://github.com/newrelic/csec-java-agent/pull/352) Corrected the issue regarding inaccurate user class details in the mule-demo-app. [NR-336715](https://new-relic.atlassian.net/browse/NR-336715)
+- [PR-355](https://github.com/newrelic/csec-java-agent/pull/355) Improved logging for scenarios where delay is set to a negative value. [NR-338578](https://new-relic.atlassian.net/browse/NR-338578)
 
 
 ## [1.5.1] - 2024-11-9
