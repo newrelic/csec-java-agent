@@ -25,6 +25,7 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
@@ -98,7 +99,7 @@ public class ApacheHttpClientWrapper {
                 .disableCookieManagement()
                 .disableAuthCaching()
                 .disableConnectionState()
-                .setSSLHostnameVerifier(new DefaultHostnameVerifier())
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                 .setDefaultRequestConfig(RequestConfig.custom()
                         // Timeout in millis until a connection is established.
                         .setConnectTimeout(requestTimeoutInMillis)
@@ -137,7 +138,7 @@ public class ApacheHttpClientWrapper {
                 RegistryBuilder.<ConnectionSocketFactory>create()
                         .register("http", PlainConnectionSocketFactory.getSocketFactory())
                         .register("https", sslContext != null ?
-                                new SSLConnectionSocketFactory(sslContext) : SSLConnectionSocketFactory.getSocketFactory())
+                                new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE) : SSLConnectionSocketFactory.getSocketFactory())
                         .build());
 
         // We only allow one connection at a time to the backend.
