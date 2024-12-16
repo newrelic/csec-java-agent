@@ -245,14 +245,7 @@ public class ApacheHttpClientWrapper {
         if (StringUtils.isBlank(requestUrl)) {
             throw new ApacheHttpExceptionWrapper("Request URL is empty");
         }
-        String path = StringUtils.substringBefore(requestUrl, SEPARATOR_QUESTION_MARK);
-        uriBuilder.setPath(path);
-        String queryString = StringUtils.substringAfter(requestUrl, SEPARATOR_QUESTION_MARK);
-        if (StringUtils.isNotBlank(queryString)) {
-            //Use of this deprecated method is intentional as we are building the query string exactly as provided by SE.
-            uriBuilder.setQuery(queryString);
-        }
-        requestBuilder.setUri(uriBuilder.build());
+        requestBuilder.setUri(requestUrl);
         if(StringUtils.startsWith(httpRequest.getContentType(), APPLICATION_X_WWW_FORM_URLENCODED)){
             requestBuilder.setEntity(new UrlEncodedFormEntity(buildFormParameters(httpRequest.getParameterMap())));
         }
