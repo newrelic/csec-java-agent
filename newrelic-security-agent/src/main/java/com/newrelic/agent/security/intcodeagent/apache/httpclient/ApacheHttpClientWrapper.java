@@ -233,7 +233,7 @@ public class ApacheHttpClientWrapper {
         } catch (IOException hostConnectException) {
             String message = "IOException Error while executing request %s: %s message : %s";
             logger.log(LogLevel.FINE, String.format(message, fuzzRequestId, request, hostConnectException.getMessage()), ApacheHttpClientWrapper.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, fuzzRequestId, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
             throw hostConnectException;
         }
     }
