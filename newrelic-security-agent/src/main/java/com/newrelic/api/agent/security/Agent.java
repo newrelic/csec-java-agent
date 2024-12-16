@@ -889,7 +889,9 @@ public class Agent implements SecurityAgent {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
         appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
-        logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
+        if(logger != null) {
+            logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
+        }
 //        verifyConnectionAndPut(port, scheme, appServerInfo);
     }
 
