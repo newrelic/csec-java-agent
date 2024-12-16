@@ -68,9 +68,6 @@ public class RequestHandler_Instrumentation {
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
             securityRequest.setContentType(MuleHelper.getContentType(securityRequest.getHeaders()));
-
-            // TODO: need to update UserClassEntity
-            ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }
@@ -80,6 +77,7 @@ public class RequestHandler_Instrumentation {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
+            ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());

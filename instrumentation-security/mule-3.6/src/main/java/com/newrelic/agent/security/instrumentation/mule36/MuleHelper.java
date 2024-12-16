@@ -120,9 +120,7 @@ public class MuleHelper {
                 }
             }
             for (String method : messageSource.getAllowedMethods()){
-                if (handlerClass != null){
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method, path, handlerClass));
-                }
+                URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method, path, handlerClass));
             }
         }catch (Exception ignored){}
     }
