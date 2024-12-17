@@ -53,9 +53,7 @@ public abstract class AbstractOperation_Instrumentation<Q extends Request, S>
 
     private AbstractOperation preprocessSecurityHook (String name, String filter, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(filter)){
+            if (StringUtils.isBlank(filter)){
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), methodName);
@@ -74,9 +72,7 @@ public abstract class AbstractOperation_Instrumentation<Q extends Request, S>
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType ldap) {

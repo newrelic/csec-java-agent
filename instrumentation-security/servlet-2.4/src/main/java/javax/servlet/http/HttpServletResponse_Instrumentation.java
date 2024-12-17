@@ -22,10 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HttpServletResponse_Instrumentation {
 
     public void addCookie(Cookie cookie){
-        boolean isLockAcquired = acquireLockIfPossible(cookie.hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(cookie, getClass().getName(), "addCookie");
         }
@@ -41,7 +42,7 @@ public class HttpServletResponse_Instrumentation {
     private AbstractOperation preprocessSecurityHook(Cookie cookie, String className, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
+            if (securityMetaData.getRequest().isEmpty()
             ) {
                 return null;
             }
@@ -77,30 +78,11 @@ public class HttpServletResponse_Instrumentation {
         return null;
     }
 
-    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
-        try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
-                return;
-            }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, HttpServletResponse_Instrumentation.class.getName());
-        }
-    }
-
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME, hashCode);
     }
 }
