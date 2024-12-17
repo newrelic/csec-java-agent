@@ -56,10 +56,6 @@ public class ScriptRuntime_Instrumentation {
 
     private static AbstractOperation preprocessSecurityHook(int hashCode, String methodName, Context_Instrumentation context){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             if(StringUtils.isNotBlank(context.newScript)) {
                 JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(context.newScript), "org.mozilla.javascript.Script", methodName);
                 NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
@@ -77,15 +73,10 @@ public class ScriptRuntime_Instrumentation {
     }
 
     private static void releaseLock(int code) {
-        try {
-            GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
     }
 
     private static boolean acquireLockIfPossible(VulnerabilityCaseType javascriptInjection, int code) {
-        try {
-            return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
     }
 }

@@ -16,7 +16,6 @@ import akka.util.ByteString
 import com.newrelic.api.agent.{NewRelic, Trace}
 
 import java.lang
-import scala.collection.JavaConverters
 import scala.concurrent.Future
 import scala.runtime.AbstractFunction1
 

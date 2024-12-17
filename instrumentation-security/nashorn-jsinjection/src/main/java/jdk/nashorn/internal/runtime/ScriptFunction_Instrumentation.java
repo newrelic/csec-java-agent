@@ -10,7 +10,7 @@ import jdk.nashorn.internal.objects.Global;
 public class ScriptFunction_Instrumentation {
 
     private ScriptFunction_Instrumentation(ScriptFunctionData data, PropertyMap map, ScriptObject scope, Global global) {
-        if(data instanceof RecompilableScriptFunctionData) {
+        if(data instanceof RecompilableScriptFunctionData && NewRelicSecurity.getAgent().getSecurityMetaData() != null) {
             Source source = ((RecompilableScriptFunctionData) data).getSource();
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JSEngineUtils.NASHORN_CONTENT + this.hashCode(), String.valueOf(source.getContent()));
         }

@@ -28,7 +28,6 @@ abstract class AbstractOperations_Instrumentation {
     }
 
     byte[] rawKey(Object key) {
-        System.out.println("raw key : "+key);
         byte[] returnValue = null;
         returnValue = Weaver.callOriginal();
 
@@ -47,7 +46,6 @@ abstract class AbstractOperations_Instrumentation {
     }
 
     byte[] rawValue(Object value) {
-        System.out.println("raw value : "+value);
         byte[] returnValue = null;
         returnValue = Weaver.callOriginal();
 
@@ -57,8 +55,7 @@ abstract class AbstractOperations_Instrumentation {
     }
 
     private void createRedisArgumentEntry(int hashCode, Object entry) {
-        if (!NewRelicSecurity.isHookProcessingActive() ||
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
+        if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
             return;
         }
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GenericHelper.NR_SEC_CUSTOM_SPRING_REDIS_ATTR + hashCode, entry);

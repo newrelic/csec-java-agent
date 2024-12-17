@@ -18,10 +18,11 @@ import com.newrelic.api.agent.weaver.Weaver;
 public class HttpSession_Instrumentation {
 
     public void setAttribute(String name, Object value){
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "setAttribute");
         }
@@ -38,10 +39,11 @@ public class HttpSession_Instrumentation {
     }
 
     public void putValue(String name, Object value){
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "putValue");
         }
@@ -60,8 +62,7 @@ public class HttpSession_Instrumentation {
     private AbstractOperation preprocessSecurityHook(String name, Object value, String className, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
+            if (securityMetaData.getRequest().isEmpty()) {
                 return null;
             }
 
@@ -82,8 +83,7 @@ public class HttpSession_Instrumentation {
 
     private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerOperation(operation);
@@ -93,17 +93,10 @@ public class HttpSession_Instrumentation {
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(ServletHelper.NR_SEC_HTTP_SESSION_ATTRIB_NAME, hashCode);
     }
 }

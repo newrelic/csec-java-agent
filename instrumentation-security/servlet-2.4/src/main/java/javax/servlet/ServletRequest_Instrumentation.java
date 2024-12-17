@@ -31,7 +31,7 @@ public abstract class ServletRequest_Instrumentation {
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_IS_OPERATION_LOCK);
             obj = Weaver.callOriginal();
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
+            if (isLockAcquired && obj != null) {
                 ServletRequestCallback.registerInputStreamHashIfNeeded(obj.hashCode());
             }
         } finally {
@@ -49,7 +49,7 @@ public abstract class ServletRequest_Instrumentation {
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_READER_OPERATION_LOCK);
             obj = Weaver.callOriginal();
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
+            if (isLockAcquired && obj != null) {
                 ServletRequestCallback.registerReaderHashIfNeeded(obj.hashCode());
                 //            System.out.println("Allowing data gathering for servlet reader : " + obj.hashCode());
             }

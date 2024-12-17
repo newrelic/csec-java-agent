@@ -20,7 +20,7 @@ public abstract class XPath_Instrumentation {
 
     public String evaluate(String expression, InputSource source)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -43,7 +43,7 @@ public abstract class XPath_Instrumentation {
             InputSource source,
             QName returnType)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -63,7 +63,7 @@ public abstract class XPath_Instrumentation {
 
     public String evaluate(String expression, Object item)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -83,7 +83,7 @@ public abstract class XPath_Instrumentation {
 
     public Object evaluate(String expression, Object item, QName returnType)
             throws XPathExpressionException {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(expression, "evaluate");
@@ -103,7 +103,7 @@ public abstract class XPath_Instrumentation {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
@@ -116,9 +116,7 @@ public abstract class XPath_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String patternString, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(patternString)){
+            if (StringUtils.isBlank(patternString)){
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(patternString, this.getClass().getName(), methodName);
@@ -135,15 +133,10 @@ public abstract class XPath_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock("XPATH_OPERATION_LOCK_JAVAXPATH-");
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock("XPATH_OPERATION_LOCK_JAVAXPATH-");
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
-        try {
-            return GenericHelper.acquireLockIfPossible(xpath, "XPATH_OPERATION_LOCK_JAVAXPATH-");
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.XPATH, "XPATH_OPERATION_LOCK_JAVAXPATH-");
     }
 }

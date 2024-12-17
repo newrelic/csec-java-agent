@@ -32,9 +32,7 @@ public class BuilderSupport_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String expression, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(expression)){
+            if (StringUtils.isBlank(expression)){
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(expression, this.getClass().getName(), methodName);
@@ -50,21 +48,8 @@ public class BuilderSupport_Instrumentation {
         return null;
     }
 
-    private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-    }
-
-    private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
-        try {
-            return GenericHelper.acquireLockIfPossible(xpath, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     public ValueBuilder xpath(String value, Class<?> resultType, Namespaces namespaces) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.XPATH);
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.XPATH, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(value, XPATHUtils.METHOD_XPATH);
@@ -76,7 +61,7 @@ public class BuilderSupport_Instrumentation {
         } finally {
             if(isLockAcquired){
                 registerExitOperation(isLockAcquired, operation);
-                releaseLock();
+                GenericHelper.releaseLock(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
             }
         }
         return returnVal;

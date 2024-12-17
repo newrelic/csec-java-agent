@@ -50,7 +50,7 @@ public abstract class Server_Instrumentation {
     public void handle(HttpChannel connection) {
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -58,7 +58,7 @@ public abstract class Server_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
@@ -70,7 +70,7 @@ public abstract class Server_Instrumentation {
     public void handleAsync(HttpChannel connection) {
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -78,27 +78,12 @@ public abstract class Server_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
             HttpServletHelper.postProcessSecurityHook(request, response, this.getClass().getName(),
                     HttpServletHelper.SERVICE_ASYNC_METHOD_NAME);
-        }
-    }
-
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {
         }
     }
 }

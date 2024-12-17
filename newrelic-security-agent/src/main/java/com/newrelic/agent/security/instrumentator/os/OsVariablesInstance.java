@@ -15,7 +15,6 @@ public class OsVariablesInstance {
     public static final String LANGUAGE_AGENT = "language-agent";
 
     public static final String TMP = "tmp";
-    public static final String SNAPSHOTS = "snapshots";
 
     private static OsVariablesInstance instance;
 
@@ -29,7 +28,6 @@ public class OsVariablesInstance {
         if(StringUtils.isNotBlank(AgentConfig.getInstance().getSecurityHome())) {
             osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getSecurityHome(), LOGS).toString());
             osVariables.setTmpDirectory(Paths.get(AgentConfig.getInstance().getSecurityHome(), TMP, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
-            osVariables.setSnapshotDir(Paths.get(osVariables.getLogDirectory(), SNAPSHOTS).toString());
         }
 //        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
 
