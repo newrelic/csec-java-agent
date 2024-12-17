@@ -30,7 +30,6 @@ public class OkhttpHelper {
             }
             SSRFOperation ssrfOperation = new SSRFOperation(url, className, methodName);
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
-            NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
             return ssrfOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -50,7 +49,7 @@ public class OkhttpHelper {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, OKHTTP_3_5_0, e.getMessage()), e, OkhttpHelper.class.getName());
         }

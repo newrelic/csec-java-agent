@@ -51,10 +51,10 @@ abstract class RealCall_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                OkhttpHelper.registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        OkhttpHelper.registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
