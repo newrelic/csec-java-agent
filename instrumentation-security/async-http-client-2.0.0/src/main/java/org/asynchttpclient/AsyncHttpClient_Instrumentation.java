@@ -50,10 +50,10 @@ public abstract class AsyncHttpClient_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 GenericHelper.releaseLock(getNrSecCustomAttribName());
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -69,7 +69,6 @@ public abstract class AsyncHttpClient_Instrumentation {
 
             SSRFOperation operation = new SSRFOperation(url,
                     className, methodName);
-            NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -118,7 +117,7 @@ public abstract class AsyncHttpClient_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, AsynchttpHelper.NR_SEC_CUSTOM_ATTRIB_NAME, ignored.getMessage()), ignored, this.getClass().getName());
         }

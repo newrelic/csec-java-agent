@@ -43,10 +43,10 @@ public abstract class HttpMethodBase_Instrumentation {
             returnCode = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnCode;
     }
 
@@ -56,7 +56,12 @@ public abstract class HttpMethodBase_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            try {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+            }
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, ignored.getMessage()), ignored, this.getClass().getName());
         }
@@ -115,19 +120,12 @@ public abstract class HttpMethodBase_Instrumentation {
 
             SSRFOperation operation = new SSRFOperation(uri,
                     this.getClass().getName(), methodName);
-            try {
-                NewRelicSecurity.getAgent().registerOperation(operation);
-            } catch (Exception e) {
-                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
-                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+            if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                    operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                // Add Security distributed tracing header
+                this.setRequestHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
             }
-            finally {
-                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
-                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
-                    // Add Security distributed tracing header
-                    this.setRequestHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
-                }
-            }
+
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

@@ -67,10 +67,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -95,10 +95,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -123,10 +123,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -144,10 +144,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -165,10 +165,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -194,10 +194,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -223,10 +223,10 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -242,7 +242,12 @@ public abstract class HttpClient_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            try {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            }  catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+            }
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, HttpClient_Instrumentation.class.getName());
         }
@@ -269,18 +274,10 @@ public abstract class HttpClient_Instrumentation {
 
             SSRFOperation operation = new SSRFOperation(uri,
                     this.getClass().getName(), methodName);
-            try {
-                NewRelicSecurity.getAgent().registerOperation(operation);
-            }  catch (Exception e) {
-                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
-                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
-            }
-            finally {
-                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
-                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
-                    // Add Security distributed tracing header
-                    request.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
-                }
+            if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                    operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                // Add Security distributed tracing header
+                request.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
             }
             return operation;
         } catch (Throwable e) {

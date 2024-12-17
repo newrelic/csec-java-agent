@@ -58,10 +58,10 @@ public class HttpAsyncClient4_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -84,10 +84,10 @@ public class HttpAsyncClient4_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -140,10 +140,10 @@ public class HttpAsyncClient4_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -160,10 +160,10 @@ public class HttpAsyncClient4_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -180,10 +180,10 @@ public class HttpAsyncClient4_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -201,7 +201,7 @@ public class HttpAsyncClient4_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, ignored.getMessage()), ignored, HttpAsyncClient4_Instrumentation.class.getName());
         }
@@ -224,15 +224,12 @@ public class HttpAsyncClient4_Instrumentation {
 
             SSRFOperation operation = new SSRFOperation(uri,
                     this.getClass().getName(), methodName);
-            try {
-                NewRelicSecurity.getAgent().registerOperation(operation);
-            } finally {
-                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
-                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
-                    // Add Security distributed tracing header
-                    request.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
-                }
+            if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                    operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                // Add Security distributed tracing header
+                request.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
             }
+
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
