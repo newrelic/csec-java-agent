@@ -47,7 +47,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -67,7 +67,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -95,7 +95,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -123,7 +123,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -144,7 +144,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -165,7 +165,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -194,7 +194,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -223,7 +223,7 @@ public abstract class HttpClient_Instrumentation {
             returnObj = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                registerExitOperation(isLockAcquired, operation);
+                registerExitOperation(isLockAcquired, operation, this.getClass().getName());
                 releaseLock();
             }
         }
@@ -236,7 +236,7 @@ public abstract class HttpClient_Instrumentation {
         return new URI(scheme, null, target.getHostName(), target.getPort(), requestURI.getPath(), requestURI.getQuery(), null);
     }
 
-    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation, String className) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
@@ -245,8 +245,8 @@ public abstract class HttpClient_Instrumentation {
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }  catch (Exception e) {
-                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
-                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, className);
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, className);
             }
         } catch (Throwable ignored) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, HttpClient_Instrumentation.class.getName());
