@@ -273,6 +273,11 @@ public class AgentConfig {
             this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters().getHeader().setLocations(NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_MAPPING_PARAMETERS_HEADER_LOCATION, Collections.emptyList()).stream()
                     .map(Object::toString)
                     .collect(Collectors.toList()));
+            if(restrictionCriteria.getMappingParameters().getPath().isEnabled()) {
+                this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters().getPath().setLocations(restrictionCriteria.getAccountInfo().getAccountIds().stream()
+                        .map(Object::toString)
+                        .collect(Collectors.toList()));
+            }
 
             //Strict Criteria
             List<Map<String, String>> strictCriteria = NewRelic.getAgent().getConfig().getValue(RESTRICTION_CRITERIA_STRICT, Collections.emptyList());

@@ -11,6 +11,8 @@ public class SkipScanParameters {
 
     private List<String> body = new ArrayList<>();
 
+    private List<String> path = new ArrayList<>();
+
     public SkipScanParameters() {
     }
 
@@ -24,6 +26,14 @@ public class SkipScanParameters {
 
     public List<String> getBody() {
         return body;
+    }
+
+    public List<String> getPath() {
+        return path;
+    }
+
+    public void setPath(List<String> path) {
+        this.path = path;
     }
 
     public void setHeader(List<String> header) {
@@ -40,6 +50,10 @@ public class SkipScanParameters {
 
     public void addHeader(String header) {
         this.header.add(header);
+    }
+
+    public void addPath(String path) {
+        this.path.add(path);
     }
 
     public void addQuery(String query) {
