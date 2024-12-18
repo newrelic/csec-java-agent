@@ -241,6 +241,9 @@ public class AgentConfig {
         if(this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters().getHeader().isEnabled()){
             this.agentMode.getSkipScan().getParameters().getHeader().addAll(this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters().getHeader().getLocations());
         }
+        if(this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters().getPath().isEnabled()){
+            this.agentMode.getSkipScan().getParameters().getPath().addAll(this.agentMode.getIastScan().getRestrictionCriteria().getMappingParameters().getPath().getLocations());
+        }
     }
 
     private void readIastConfig() {
