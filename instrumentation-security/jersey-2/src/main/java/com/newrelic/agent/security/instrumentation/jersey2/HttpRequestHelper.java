@@ -66,7 +66,7 @@ public class HttpRequestHelper {
             securityMetaData.setTracingHeaderValue(HttpRequestHelper.getTraceHeader(securityRequest.getHeaders()));
             securityRequest.setUrl(requestContext.getRequestUri().toString());
 
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] trace = (new Exception()).getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e) {
@@ -255,7 +255,7 @@ public class HttpRequestHelper {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
-                StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                StackTraceElement[] trace = (new Exception()).getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             }
         } catch (Throwable ignored) {

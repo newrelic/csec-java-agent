@@ -87,7 +87,7 @@ public abstract class Servlet_Instrumentation {
             securityRequest.setContentType(httpServletRequest.getContentType());
 
 
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] trace = (new Exception()).getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){

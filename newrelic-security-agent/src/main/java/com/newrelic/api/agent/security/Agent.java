@@ -408,7 +408,7 @@ public class Agent implements SecurityAgent {
                 } else if (operation instanceof SecureCookieOperationSet) {
                     operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
                 } else {
-                    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                    StackTraceElement[] trace = (new Exception()).getStackTrace();
                     operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
 

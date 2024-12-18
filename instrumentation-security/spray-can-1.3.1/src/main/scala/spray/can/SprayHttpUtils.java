@@ -54,7 +54,7 @@ public class SprayHttpUtils {
                 securityRequest.setBody(new StringBuilder(request.entity().data().asString(StandardCharsets.UTF_8)));
             }
 
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] trace = (new Exception()).getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Exception e){

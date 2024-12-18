@@ -47,7 +47,7 @@ public abstract class ServerCallListener_Instrumentation<ReqT> {
     public void onHalfClose() {
         if (NewRelicSecurity.isHookProcessingActive()) {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] trace = (new Exception()).getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
         }
         if (tokenForCsec != null) {

@@ -36,7 +36,7 @@ public class ServletHelper {
     public static final String NR_SEC_HTTP_SESSION_ATTRIB_NAME = "NR-CSEC-HTTP-SESSION-";
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
 
-    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
+    private static final Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
     private static final Set<String> unsupportedContentType = new HashSet<String>() {{
         add("application/zip");
         add("application/epub+zip");
@@ -177,7 +177,7 @@ public class ServletHelper {
             if (!securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
-                StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                StackTraceElement[] trace = (new Exception()).getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, asyncContext?2:3, trace.length));
                 return true;
             }

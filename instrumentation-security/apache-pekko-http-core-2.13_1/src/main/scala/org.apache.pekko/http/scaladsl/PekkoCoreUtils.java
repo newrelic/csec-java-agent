@@ -137,7 +137,7 @@ public class PekkoCoreUtils {
                 securityRequest.setContentType(request.entity().getContentType().toString());
             }
 
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] trace = (new Exception()).getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);

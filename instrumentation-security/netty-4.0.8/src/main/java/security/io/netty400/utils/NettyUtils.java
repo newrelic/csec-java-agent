@@ -58,7 +58,7 @@ public class NettyUtils {
                 securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName().toLowerCase());
                 securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
                 if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(IO_NETTY)){
-                    StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                    StackTraceElement[] stack = (new Exception()).getStackTrace();
                     securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 2, stack.length));
                 }
                 securityRequest.setRequestParsed(true);

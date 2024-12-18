@@ -28,7 +28,7 @@ public class GrpcServerUtils {
     private static final String EMPTY = "";
     public static final String METHOD_NAME_START_CALL = "startCall";
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
-    private static Set<Descriptors.Descriptor> typeRegistries = new HashSet<>();
+    private static final Set<Descriptors.Descriptor> typeRegistries = new HashSet<>();
 
     public static <ReqT, ResT> void preprocessSecurityHook(ServerStream_Instrumentation call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
         try {
@@ -79,7 +79,7 @@ public class GrpcServerUtils {
             securityRequest.setContentType(meta.get(Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)));
 
             // TODO: moving this code to its proper place
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] trace = (new Exception()).getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
 
             securityRequest.setRequestParsed(true);
