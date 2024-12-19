@@ -77,7 +77,7 @@ public class RestrictionUtility {
             }
         }
         if(restrictionCriteria.getMappingParameters().getQuery().isEnabled()) {
-            Set<String> queryValues = getQueryString(restrictionCriteria.getMappingParameters().getHeader().getLocations(), request.getQueryParameters());
+            Set<String> queryValues = getQueryString(restrictionCriteria.getMappingParameters().getQuery().getLocations(), request.getQueryParameters());
             if(matcher(accountIds, queryValues)){
                 return true;
             }
