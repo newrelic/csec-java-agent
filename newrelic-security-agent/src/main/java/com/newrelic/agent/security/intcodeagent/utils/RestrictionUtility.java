@@ -185,7 +185,7 @@ public class RestrictionUtility {
             if(requestBodyParameters.containsKey(key)){
                 requestBodyParameters.get(key).addAll(valuesList);
             } else {
-                requestBodyParameters.put(key, valuesList);
+                requestBodyParameters.put(StringUtils.lowerCase(key), valuesList);
             }
         }
         return requestBodyParameters;
