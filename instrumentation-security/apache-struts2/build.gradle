@@ -11,7 +11,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.apache.struts:struts2-core:[2.1.2,)'
+    passes 'org.apache.struts:struts2-core:[2.1.2,7.0.0)'
     excludeRegex 'org.apache.struts:struts2-core:2.3.15.1-atlassian-[4-5]$'
 }
 
