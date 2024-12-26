@@ -1,0 +1,28 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation('org.apache.struts:struts2-core:7.0.0'){transitive = false}
+    implementation("jakarta.servlet:jakarta.servlet-api:5.0.0"){transitive = false}
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-struts2-7.0' }
+}
+
+verifyInstrumentation {
+    passes 'org.apache.struts:struts2-core:[7.0.0,)'
+    excludeRegex '.*[-atlassian|BETA].*'
+}
+
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+site {
+    title 'Struts2'
+    type 'Framework'
+}
