@@ -12,21 +12,19 @@ import akka.http.scaladsl.model.HttpEntity
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.logging.Level
-import com.newrelic.api.agent.{NewRelic, Trace}
 import com.newrelic.api.agent.security.NewRelicSecurity
 import com.newrelic.api.agent.security.utils.logging.LogLevel
+import com.newrelic.api.agent.{NewRelic, Trace}
 
 import java.lang
-import scala.collection.mutable
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.logging.Level
 import scala.concurrent.Future
 import scala.runtime.AbstractFunction1
 
 object CsecAkkaHttpContextFunction {
 
-  final val retransformed = new AtomicBoolean(false)
+  private final val retransformed = new AtomicBoolean(false)
 
   def contextWrapper(original: Function1[RequestContext, Future[RouteResult]]): Function1[RequestContext, Future[RouteResult]] = {
     if (retransformed.compareAndSet(false, true)) {

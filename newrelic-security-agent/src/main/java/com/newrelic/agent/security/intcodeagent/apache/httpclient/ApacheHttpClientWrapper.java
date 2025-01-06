@@ -25,6 +25,7 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
@@ -58,6 +59,7 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiCo
 
 public class ApacheHttpClientWrapper {
     public static final String SEPARATOR_QUESTION_MARK = "?";
+    public static final String SUFFIX_SLASH = "/";
     private final ApacheProxyManager proxyManager;
     private final PoolingHttpClientConnectionManager connectionManager;
     private final CloseableHttpClient httpClient;
@@ -97,7 +99,7 @@ public class ApacheHttpClientWrapper {
                 .disableCookieManagement()
                 .disableAuthCaching()
                 .disableConnectionState()
-                .setSSLHostnameVerifier(new DefaultHostnameVerifier())
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                 .setDefaultRequestConfig(RequestConfig.custom()
                         // Timeout in millis until a connection is established.
                         .setConnectTimeout(requestTimeoutInMillis)
@@ -136,7 +138,7 @@ public class ApacheHttpClientWrapper {
                 RegistryBuilder.<ConnectionSocketFactory>create()
                         .register("http", PlainConnectionSocketFactory.getSocketFactory())
                         .register("https", sslContext != null ?
-                                new SSLConnectionSocketFactory(sslContext) : SSLConnectionSocketFactory.getSocketFactory())
+                                new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE) : SSLConnectionSocketFactory.getSocketFactory())
                         .build());
 
         // We only allow one connection at a time to the backend.
@@ -233,26 +235,18 @@ public class ApacheHttpClientWrapper {
         } catch (IOException hostConnectException) {
             String message = "IOException Error while executing request %s: %s message : %s";
             logger.log(LogLevel.FINE, String.format(message, fuzzRequestId, request, hostConnectException.getMessage()), ApacheHttpClientWrapper.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(message, fuzzRequestId, request, hostConnectException.getMessage()), hostConnectException, ApacheHttpClientWrapper.class.getName());
             throw hostConnectException;
         }
     }
 
     private HttpUriRequest buildIastFuzzRequest(HttpRequest httpRequest, String endpoint, boolean addEventIgnoreHeader) throws URISyntaxException, UnsupportedEncodingException, ApacheHttpExceptionWrapper {
         RequestBuilder requestBuilder = getRequestBuilder(httpRequest.getMethod());
-        URIBuilder uriBuilder = new URIBuilder(endpoint);
         String requestUrl = httpRequest.getUrl();
         if (StringUtils.isBlank(requestUrl)) {
             throw new ApacheHttpExceptionWrapper("Request URL is empty");
         }
-        String path = StringUtils.substringBefore(requestUrl, SEPARATOR_QUESTION_MARK);
-        uriBuilder.setPath(path);
-        String queryString = StringUtils.substringAfter(requestUrl, SEPARATOR_QUESTION_MARK);
-        if (StringUtils.isNotBlank(queryString)) {
-            //Use of this deprecated method is intentional as we are building the query string exactly as provided by SE.
-            uriBuilder.setQuery(queryString);
-        }
-        requestBuilder.setUri(uriBuilder.build());
+        requestBuilder.setUri(createURL(endpoint, requestUrl));
         if(StringUtils.startsWith(httpRequest.getContentType(), APPLICATION_X_WWW_FORM_URLENCODED)){
             requestBuilder.setEntity(new UrlEncodedFormEntity(buildFormParameters(httpRequest.getParameterMap())));
         }
@@ -266,6 +260,19 @@ public class ApacheHttpClientWrapper {
         }
 
         return requestBuilder.build();
+    }
+
+    private URI createURL(String endpoint, String requestUrl) {
+        if (StringUtils.isBlank(requestUrl)) {
+            return URI.create(endpoint);
+        }
+        if (StringUtils.endsWith(endpoint, SUFFIX_SLASH) && StringUtils.startsWith(requestUrl, SUFFIX_SLASH)) {
+            return URI.create(endpoint + requestUrl.substring(1));
+        } else if (StringUtils.endsWith(endpoint, SUFFIX_SLASH) || StringUtils.startsWith(requestUrl, SUFFIX_SLASH)) {
+            return URI.create(endpoint + requestUrl);
+        } else {
+            return URI.create(endpoint + SUFFIX_SLASH + requestUrl);
+        }
     }
 
     private List<? extends NameValuePair> buildFormParameters(Map<String, String[]> parameterMap) {

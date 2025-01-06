@@ -30,9 +30,7 @@ public class SpringWebClientHelper {
 
     public static AbstractOperation preprocessSecurityHook(URI url, HttpMethod method, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    url == null || url.getPath().isEmpty()) {
+            if (url == null || url.getPath().isEmpty()) {
                 return null;
             }
             ArrayList<String> springClientRequestURIs = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(SPRING_WEB_CLIENT_REQUEST_LIST_CUSTOM_ATTRIB, ArrayList.class);
@@ -61,7 +59,7 @@ public class SpringWebClientHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
             }
@@ -69,15 +67,6 @@ public class SpringWebClientHelper {
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SPRING_WEBCLIENT_5_0, e.getMessage()), e, SpringWebClientHelper.class.getName());
         }
-    }
-
-    public static boolean skipExistsEvent() {
-        if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-            return true;
-        }
-
-        return false;
     }
 
     public static ClientRequest addSecurityHeaders(ClientRequest request, AbstractOperation operation) {

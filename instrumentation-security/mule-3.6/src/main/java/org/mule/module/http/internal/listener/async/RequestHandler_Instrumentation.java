@@ -7,8 +7,10 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -36,15 +38,8 @@ public class RequestHandler_Instrumentation {
 
     private void preprocessSecurityHook(HttpRequestContext requestContext) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             com.newrelic.api.agent.security.schema.HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
@@ -73,9 +68,6 @@ public class RequestHandler_Instrumentation {
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
             securityRequest.setContentType(MuleHelper.getContentType(securityRequest.getHeaders()));
-
-            // TODO: need to update UserClassEntity
-            ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }
@@ -85,6 +77,7 @@ public class RequestHandler_Instrumentation {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
+            ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
@@ -101,22 +94,17 @@ public class RequestHandler_Instrumentation {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MuleHelper.MULE_36, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
         }
     }
 
     private boolean acquireLockIfPossible(int hashcode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName());
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, MuleHelper.getNrSecCustomAttribName());
     }
 
     private void releaseLock(int hashcode) {
-        try {
-            GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName());
-        } catch (Throwable e) {}
+        GenericHelper.releaseLock(MuleHelper.getNrSecCustomAttribName());
     }
 }
