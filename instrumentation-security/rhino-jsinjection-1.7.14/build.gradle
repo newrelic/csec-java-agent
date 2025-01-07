@@ -23,8 +23,8 @@ test {
 }
 
 verifyInstrumentation {
-    passes ('cat.inspiracio:rhino-js-engine:[1.7.14,)')
-    passes ('org.mozilla:rhino:[1.7.14,)')
+    passes ('cat.inspiracio:rhino-js-engine:[1.7.14,1.8.0)')
+    passes ('org.mozilla:rhino:[1.7.14,1.8.0)')
     excludeRegex ('.*[R|RC][0-9]')
 }
 
