@@ -14,15 +14,19 @@ public class SQLOperation extends AbstractOperation {
 
     private Map<String, String> params;
 
+    private Map<String, Object> objectParams;
+
     private String dbName = "UNKNOWN";
 
     private boolean isPreparedCall;
+    private boolean isStoredProcedureCall;
 
     public SQLOperation(String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.SQL_DB_COMMAND);
         this.query = EMPTY;
         this.params = new HashMap<>();
+        this.objectParams = new HashMap<>();
     }
 
     public String getQuery() {
@@ -53,7 +57,7 @@ public class SQLOperation extends AbstractOperation {
     public boolean isEmpty() {
         if (query == null || query.trim().isEmpty()) {
             return true;
-        } else if (isPreparedCall) {
+        } else if (isPreparedCall && params != null) {
             return query.contains("?") && params.isEmpty();
         }
         return false;
@@ -81,6 +85,14 @@ public class SQLOperation extends AbstractOperation {
         return dbName;
     }
 
+    public Map<String, Object> getObjectParams() {
+        return objectParams;
+    }
+
+    public void setObjectParams(Map<String, Object> objectParams) {
+        this.objectParams = objectParams;
+    }
+
     /**
      * @param dbName the dbName to set
      */
@@ -90,6 +102,14 @@ public class SQLOperation extends AbstractOperation {
         } else {
             this.dbName = dbName;
         }
+    }
+
+    public boolean isStoredProcedureCall() {
+        return isStoredProcedureCall;
+    }
+
+    public void setStoredProcedureCall(boolean storedProcedureCall) {
+        isStoredProcedureCall = storedProcedureCall;
     }
 }
 

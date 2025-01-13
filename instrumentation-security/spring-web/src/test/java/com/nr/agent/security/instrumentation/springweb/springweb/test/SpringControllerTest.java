@@ -1,9 +1,3 @@
-/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
 package com.nr.agent.security.instrumentation.springweb.springweb.test;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
@@ -27,10 +21,10 @@ public class SpringControllerTest {
         Assert.assertEquals("From Request Mapping", App.requestMapping());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-//        String expectedTransactionName = "OtherTransaction/SpringController/errorPath (GET)";
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -41,6 +35,7 @@ public class SpringControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -51,6 +46,7 @@ public class SpringControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -61,6 +57,7 @@ public class SpringControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -71,6 +68,7 @@ public class SpringControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -81,5 +79,62 @@ public class SpringControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
+    }
+
+
+    @Test
+    public void testBatchMapping() {
+        App.batchMapping();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
+        Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
+        Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
+    }
+
+    @Test
+    public void testMutation() {
+        App.mutation();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
+        Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
+        Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
+    }
+
+    @Test
+    public void testQuery() {
+        App.query();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
+        Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
+        Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
+    }
+
+    @Test
+    public void testSchemaMapping() {
+        App.schemaMapping();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
+        Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
+        Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
+    }
+
+    @Test
+    public void testSubscriptionMapping() {
+        App.subscriptionMapping();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
+        Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
+        Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 }

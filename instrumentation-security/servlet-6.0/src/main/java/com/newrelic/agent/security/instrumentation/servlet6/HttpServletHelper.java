@@ -5,7 +5,10 @@ import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +28,7 @@ public class HttpServletHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
+    public static final String SERVLET_6_0 = "SERVLET-6.0";
 
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest){
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -48,6 +52,9 @@ public class HttpServletHelper {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
 
             String headerFullValue = EMPTY;
@@ -95,22 +102,11 @@ public class HttpServletHelper {
     }
 
     public static boolean acquireServletLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isServletLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {
@@ -124,10 +120,11 @@ public class HttpServletHelper {
 
             for (ServletRegistration servletRegistration : servletRegistrations.values()) {
                 for (String s : servletRegistration.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s, servletRegistration.getClassName()));
                 }
             }
-        } catch (Exception ignored){
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -136,6 +133,10 @@ public class HttpServletHelper {
             if(dir.endsWith(SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
                 for (String path : resourcePaths) {
+                    String entry = StringUtils.removeStart(StringUtils.removeEnd(path, SEPARATOR), StringUtils.SEPARATOR);
+                    if ( StringUtils.equalsAny(entry, "META-INF", "WEB-INF")) {
+                        continue;
+                    }
                     if(path.endsWith(SEPARATOR)) {
                         getJSPMappings(servletContext, path);
                     }
@@ -144,7 +145,8 @@ public class HttpServletHelper {
                     }
                 }
             }
-        } catch (Exception ignored){
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

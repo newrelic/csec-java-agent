@@ -1,18 +1,24 @@
 package com.newrelic.agent.security.instrumentation.jetty11;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -24,9 +30,12 @@ public class HttpServletHelper {
     public static final String SERVICE_METHOD_NAME = "handle";
     public static final String SERVICE_ASYNC_METHOD_NAME = "handleAsync";
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    public static final String JETTY_11 = "JETTY-11";
+    public static final String WILDCARD = "*";
+    public static final String SEPARATOR = "/";
 
-    public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest) {
+    private static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest) {
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             boolean takeNextValue = false;
@@ -48,6 +57,9 @@ public class HttpServletHelper {
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+            } else if (ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, true);
             }
             String headerFullValue = EMPTY;
             Enumeration<String> headerElements = request.getHeaders(headerKey);
@@ -74,7 +86,7 @@ public class HttpServletHelper {
 
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -85,51 +97,26 @@ public class HttpServletHelper {
         return data;
     }
 
-    public static boolean isServletLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
     public static boolean acquireServletLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isServletLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {
-        return NR_SEC_CUSTOM_ATTRIB_NAME;
+        return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 
     public static void preprocessSecurityHook(HttpServletRequest httpServletRequest) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || httpServletRequest == null) {
+            if (httpServletRequest == null) {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
+
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
@@ -157,31 +144,77 @@ public class HttpServletHelper {
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
 
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
     public static void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response,
                                                String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
+            if (!NewRelicSecurity.isHookProcessingActive()) {
+                return;
+            }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
-            RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
-                    className, methodName);
-            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())){
+                RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                        className, methodName);
+                NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
+        }
+    }
+    public static void gatherURLMappings(ServletContext servletContext) {
+        try {
+            Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
+            getJSPMappings(servletContext, SEPARATOR);
+
+            for (ServletRegistration servletReg : servletRegistrations.values()) {
+                for (String mapping : servletReg.getMappings()) {
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, servletReg.getClassName()));
+                }
+            }
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
+        }
+    }
+
+    private static void getJSPMappings(ServletContext servletContext, String dir) {
+        try {
+            if(dir.endsWith(SEPARATOR)){
+                Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
+                for (String path : resourcePaths) {
+                    String entry = StringUtils.removeStart(StringUtils.removeEnd(path, SEPARATOR), StringUtils.SEPARATOR);
+                    if (StringUtils.equalsAny(entry, "META-INF", "WEB-INF")) {
+                        continue;
+                    }
+                    if(path.endsWith(SEPARATOR)) {
+                        getJSPMappings(servletContext, path);
+                    }
+                    else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX")) {
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
+                    }
+                }
+            }
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

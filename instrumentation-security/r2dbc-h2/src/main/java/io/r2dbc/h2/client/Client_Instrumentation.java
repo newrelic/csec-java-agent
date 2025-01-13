@@ -1,11 +1,14 @@
 package io.r2dbc.h2.client;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -16,7 +19,7 @@ import org.reactivestreams.Publisher;
 public class Client_Instrumentation {
 
     public void execute(String sql) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(sql, R2dbcHelper.METHOD_EXECUTE);
@@ -26,7 +29,7 @@ public class Client_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                releaseLock();
+                R2dbcHelper.releaseLock();
             }
         }
         registerExitOperation(isLockAcquired, operation);
@@ -37,20 +40,19 @@ public class Client_Instrumentation {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || R2dbcHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, "R2DBC H2", e.getMessage()), e, Client_Instrumentation.class.getName());
         }
     }
 
     private AbstractOperation preprocessSecurityHook(String sql, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()) {
+            if (sql == null || sql.trim().isEmpty()) {
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -63,25 +65,13 @@ public class Client_Instrumentation {
             return sqlOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, "R2DBC H2", e.getMessage()), e, Client_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "R2DBC H2", e.getMessage()), e, Client_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "R2DBC H2", e.getMessage()), e, Client_Instrumentation.class.getName());
         }
         return null;
     }
 
-    private void releaseLock() {
-        try {
-            R2dbcHelper.releaseLock();
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private boolean acquireLockIfPossible() {
-        try {
-            return R2dbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
 }

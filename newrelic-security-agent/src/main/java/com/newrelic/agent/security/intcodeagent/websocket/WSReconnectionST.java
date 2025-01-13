@@ -1,11 +1,11 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 
-import java.security.SecureRandom;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,6 +26,7 @@ public class WSReconnectionST {
         @Override
         public void run() {
             try {
+                AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementWebsocketReconnector();
                 if(!WSClient.getInstance().isOpen() || !WSUtils.isConnected()) {
                     logger.log(LogLevel.INFO, "WS is marked disconnected, reconnecting ...", WSReconnectionST.class.getName());
                     WSClient.reconnectWSClient();

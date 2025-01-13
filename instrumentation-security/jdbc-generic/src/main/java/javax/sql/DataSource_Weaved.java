@@ -10,6 +10,7 @@ package javax.sql;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -30,14 +31,17 @@ public abstract class DataSource_Weaved {
     private void postHookProcessing(Connection connection) {
         try {
             String vendor;
-            if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 vendor = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class);
                 if(vendor == null || vendor.trim().isEmpty()){
                     vendor = JdbcHelper.detectDatabaseProduct(connection.getMetaData().getDatabaseProductName());
                     NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, vendor);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, JdbcHelper.JDBC_GENERIC, e.getMessage()), e, this.getClass().getName());
+        }
     }
 
     public Connection getConnection() throws Exception {

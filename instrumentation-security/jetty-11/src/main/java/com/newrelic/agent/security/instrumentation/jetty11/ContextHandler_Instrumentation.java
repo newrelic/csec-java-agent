@@ -6,12 +6,14 @@ import com.newrelic.api.agent.weaver.Weaver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.ContextHandler;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.eclipse.jetty.server.handler.ContextHandler")
-public class ContextHandler_Instrumentation {
+public abstract class ContextHandler_Instrumentation {
+    public abstract ContextHandler.Context getServletContext();
 
     public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -19,7 +21,7 @@ public class ContextHandler_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
@@ -27,19 +29,11 @@ public class ContextHandler_Instrumentation {
                     HttpServletHelper.SERVICE_METHOD_NAME);
         }
     }
-
-    private boolean acquireServletLockIfPossible() {
+    protected void doStart() throws Exception {
         try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {
+            Weaver.callOriginal();
+        } finally {
+            HttpServletHelper.gatherURLMappings(getServletContext());
         }
     }
 }

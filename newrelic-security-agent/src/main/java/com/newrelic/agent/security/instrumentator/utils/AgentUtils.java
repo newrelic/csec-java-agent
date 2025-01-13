@@ -4,7 +4,8 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
@@ -21,8 +22,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
-import org.apache.commons.collections.BufferUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOUtils;
@@ -99,6 +99,7 @@ public class AgentUtils {
     private static AgentUtils instance;
 
     private static final Object lock = new Object();
+    private Object mutex = new Object();
 
     public Set<String> getProtectedVulnerabilties() {
         return protectedVulnerabilties;
@@ -123,9 +124,9 @@ public class AgentUtils {
     private boolean collectAppInfoFromEnv = false;
     private Map<String, String> statusLogValues = new HashMap<>();
 
-    private Collection<String> statusLogMostRecentHCs = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
+    private Collection<String> statusLogMostRecentHCs = new CircularFifoQueue<>(5);
 
-    private Collection<String> statusLogMostRecentErrors = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
+    private Collection<String> statusLogMostRecentErrors = new CircularFifoQueue<>(5);
 
     private boolean isPolicyOverridden = false;
 
@@ -202,12 +203,24 @@ public class AgentUtils {
         this.statusLogValues = statusLogValues;
     }
 
+    public boolean addStatusLogMostRecentHCs(String healthCheck) {
+        synchronized (mutex) {
+            return statusLogMostRecentHCs.add(healthCheck);
+        }
+    }
+
     public Collection<String> getStatusLogMostRecentHCs() {
         return statusLogMostRecentHCs;
     }
 
     public void setStatusLogMostRecentHCs(Collection<String> statusLogMostRecentHCs) {
         this.statusLogMostRecentHCs = statusLogMostRecentHCs;
+    }
+
+    public boolean addStatusLogMostRecentErrors(String error){
+        synchronized (mutex) {
+            return this.statusLogMostRecentErrors.add(error);
+        }
     }
 
     public Collection<String> getStatusLogMostRecentErrors() {
@@ -414,22 +427,6 @@ public class AgentUtils {
                     JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
             AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
             EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
-
-            // Start IAST data pull if policy allows
-            if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                    NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
-            ) {
-                IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
-                        NewRelicSecurity.getAgent().getCurrentPolicy()
-                                .getVulnerabilityScan().getIastScan().getProbing().getInterval(), TimeUnit.SECONDS);
-                logger.logInit(
-                        LogLevel.INFO,
-                        String.format(STARTED_MODULE_LOG, AgentServices.IASTDataPullService.name()),
-                        Agent.class.getName()
-                );
-            } else {
-                IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
-            }
 
             return true;
         } catch (Throwable e) {
@@ -655,8 +652,12 @@ public class AgentUtils {
 
 
     public static void sendApplicationURLMappings() {
-        //TODO mappings to be send once new mappings are discovered, after startup.
+        if (!WSUtils.isConnected()){
+            NewRelicSecurity.getAgent().reportURLMapping();
+            return;
+        }
         ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
+        applicationURLMappings.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings), Agent.class.getName());
         EventSendPool.getInstance().sendEvent(applicationURLMappings);
     }

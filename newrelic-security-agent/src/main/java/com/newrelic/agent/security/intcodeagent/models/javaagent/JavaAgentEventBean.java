@@ -4,11 +4,11 @@ import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.HttpResponse;
 import org.json.simple.JSONArray;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
     private Integer pid;
-    private String applicationUUID;
     private Long startTime;
     private String sourceMethod;
     private String userFileName;
@@ -19,6 +19,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private JSONArray parameters;
     private Long eventGenerationTime;
     private HttpRequest httpRequest;
+    private HttpResponse httpResponse;
     private String id;
     private String parentId;
     private StackTraceElement[] stacktrace;
@@ -157,20 +158,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     }
 
     /**
-     * @return the applicationUUID
-     */
-    public String getApplicationUUID() {
-        return applicationUUID;
-    }
-
-    /**
-     * @param applicationUUID the applicationUUID to set
-     */
-    public void setApplicationUUID(String applicationUUID) {
-        this.applicationUUID = applicationUUID;
-    }
-
-    /**
      * @return the servletInfo
      */
     public HttpRequest getHttpRequest() {
@@ -302,5 +289,13 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public HttpResponse getHttpResponse() {
+        return httpResponse;
+    }
+
+    public void setHttpResponse(HttpResponse httpResponse) {
+        this.httpResponse = httpResponse;
     }
 }

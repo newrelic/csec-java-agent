@@ -8,11 +8,14 @@
 package net.sourceforge.jtds.jdbc;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -20,6 +23,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper.JDBC_JTDS_GENERIC;
 
 @Weave(type = MatchType.BaseClass, originalName = "net.sourceforge.jtds.jdbc.JtdsStatement")
 public abstract class JtdsStatement_Instrumentation {
@@ -37,9 +42,7 @@ public abstract class JtdsStatement_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String sql, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()){
+            if (sql == null || sql.trim().isEmpty()){
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -50,24 +53,21 @@ public abstract class JtdsStatement_Instrumentation {
             return sqlOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());                
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
 
     private void releaseLock() {
-        try {
-            JdbcHelper.releaseLock();
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {

@@ -25,9 +25,11 @@ import com.newrelic.api.agent.DatastoreParameters;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,26 +47,27 @@ public abstract class DynamoDBUtil {
     private static final String OP_WRITE = "write";
     private static final String OP_UPDATE = "update";
     private static final String OP_DELETE = "delete";
+    public static final String DYNAMODB_1_11_453 = "DYNAMODB-1.11.453";
 
     public static <Y> AbstractOperation processDynamoDBRequest(Request<Y> yRequest, String klassName) {
         DynamoDBOperation operation = null;
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                List<DynamoDBRequest> requests = new ArrayList();
-                AmazonWebServiceRequest request = yRequest.getOriginalRequest();
+            List<DynamoDBRequest> requests = new ArrayList();
+            AmazonWebServiceRequest request = yRequest.getOriginalRequest();
 
-                operation = checkAndGenerateOperation(request, requests, klassName);
+            operation = checkAndGenerateOperation(request, requests, klassName);
 
-                if (operation!=null) {
-                    NewRelicSecurity.getAgent().registerOperation(operation);
-                }
+            if (operation!=null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
+                NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
-            e.printStackTrace();
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, DYNAMODB_1_11_453, e.getMessage()), e, DynamoDBUtil.class.getName());
+                throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_1_11_453, e.getMessage()), e, DynamoDBUtil.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_1_11_453, e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }
@@ -79,6 +82,7 @@ public abstract class DynamoDBUtil {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_1_11_453, ignored.getMessage()), DynamoDBUtil.class.getName());
         }
     }
 
@@ -89,9 +93,9 @@ public abstract class DynamoDBUtil {
         }
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+            return GenericHelper.acquireLockIfPossible(nosqlDbCommand, NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {
         }
         return false;
@@ -233,7 +237,9 @@ public abstract class DynamoDBUtil {
                 requests.add(new DynamoDBRequest(query, OP_UPDATE));
                 operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.DQL);
             }
-        } catch (NullPointerException ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, DYNAMODB_1_11_453, e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }

@@ -1,11 +1,9 @@
 package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+import com.newrelic.api.agent.security.schema.policy.SkipScanParameters;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AgentMetaData {
 
@@ -26,6 +24,8 @@ public class AgentMetaData {
 
     private Map<String, String> reflectedMetaData;
 
+    private SkipScanParameters skipScanParameters;
+
     @JsonIgnore
     private StackTraceElement[] serviceTrace;
 
@@ -36,7 +36,18 @@ public class AgentMetaData {
     private String userLevelServiceMethodEncounteredFramework;
 
     @JsonIgnore
+    private int fromJumpRequiredInStackTrace = 2;
+
+    @JsonIgnore
+    private boolean foundAnnotedUserLevelServiceMethod = false;
+
+    @JsonIgnore
+    private String framework;
+
+    @JsonIgnore
     private Set<String> ips;
+
+    private AppServerInfo appServerInfo;
 
     private DeserializationInfo deserializationInfo = new DeserializationInfo();
 
@@ -45,10 +56,14 @@ public class AgentMetaData {
         this.ips = new HashSet<>();
         this.userDataTranslationMap = new HashMap<>();
         this.reflectedMetaData = new HashMap<>();
+        this.appServerInfo = new AppServerInfo();
+        this.framework = StringUtils.EMPTY;
+        this.skipScanParameters = new SkipScanParameters();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
         this.rciMethodsCalls = new HashSet<>();
+        agentMetaData.rciMethodsCalls.remove(null);
         this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
         this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
         this.triggerViaRCI = agentMetaData.triggerViaRCI;
@@ -59,6 +74,13 @@ public class AgentMetaData {
         this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
+        this.appServerInfo = agentMetaData.appServerInfo;
+        this.triggerViaXXE = agentMetaData.triggerViaXXE;
+        this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
+        this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
+        this.fromJumpRequiredInStackTrace = agentMetaData.getFromJumpRequiredInStackTrace();
+        this.framework = agentMetaData.framework;
+        this.skipScanParameters = agentMetaData.skipScanParameters;
         this.deserializationInfo = new DeserializationInfo(agentMetaData.deserializationInfo);
     }
 
@@ -110,6 +132,13 @@ public class AgentMetaData {
         this.reflectedMetaData = reflectedMetaData;
     }
 
+    public void addReflectedMetaData(String metaKey, String metaData) {
+        if(this.reflectedMetaData==null) {
+            this.reflectedMetaData = new HashMap<>();
+        }
+        this.reflectedMetaData.put(metaKey, metaData);
+    }
+
     public StackTraceElement[] getServiceTrace() {
         return serviceTrace;
     }
@@ -153,6 +182,55 @@ public class AgentMetaData {
 
     public void setUserLevelServiceMethodEncountered(boolean userLevelServiceMethodEncountered) {
         this.userLevelServiceMethodEncountered = userLevelServiceMethodEncountered;
+    }
+
+    public String getUserLevelServiceMethodEncounteredFramework() {
+        return userLevelServiceMethodEncounteredFramework;
+    }
+
+    public void setUserLevelServiceMethodEncounteredFramework(String userLevelServiceMethodEncounteredFramework) {
+        this.userLevelServiceMethodEncounteredFramework = userLevelServiceMethodEncounteredFramework;
+    }
+
+    public AppServerInfo getAppServerInfo() {
+        return appServerInfo;
+    }
+
+    public void setAppServerInfo(AppServerInfo appServerInfo) {
+        this.appServerInfo = appServerInfo;
+    }
+
+    public int getFromJumpRequiredInStackTrace() {
+        return fromJumpRequiredInStackTrace;
+    }
+
+    public void setFromJumpRequiredInStackTrace(int fromJumpRequiredInStackTrace) {
+        this.fromJumpRequiredInStackTrace = fromJumpRequiredInStackTrace;
+    }
+    public boolean isFoundAnnotedUserLevelServiceMethod() {
+        return foundAnnotedUserLevelServiceMethod;
+    }
+
+    public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
+        this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
+    }
+
+    public String getFramework() {
+        return framework;
+    }
+
+    public void setFramework(Framework framework) {
+        if (StringUtils.isEmpty(this.framework) || StringUtils.equals(this.framework, Framework.SERVLET.name())) {
+            this.framework = framework.name();
+        }
+    }
+
+    public SkipScanParameters getSkipScanParameters() {
+        return skipScanParameters;
+    }
+
+    public void setSkipScanParameters(SkipScanParameters skipScanParameters) {
+        this.skipScanParameters = skipScanParameters;
     }
 
     public DeserializationInfo getDeserializationInfo() {

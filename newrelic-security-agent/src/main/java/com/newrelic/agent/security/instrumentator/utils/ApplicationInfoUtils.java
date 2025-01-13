@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import org.apache.commons.io.FileUtils;
@@ -104,9 +104,7 @@ public class ApplicationInfoUtils {
                     podId = StringUtils.substringBetween(line, "kubepods-besteffort-pod", ".slice");
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        } catch (Throwable ignored) {}
         return StringUtils.replaceChars(podId, "_", "-");
     }
 
@@ -212,7 +210,7 @@ public class ApplicationInfoUtils {
         AgentUtils.getInstance().getStatusLogValues().put(PROCESS_BINARY, NOT_AVAILABLE);
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-            ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(vmpid, applicationUUID, STATIC);
+            ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(vmpid, STATIC);
             applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
             identifier.setCollectorIp(getIpAddress());
             // TODO: Need to write platform agnostic alternative for this.

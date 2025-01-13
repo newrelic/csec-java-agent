@@ -110,6 +110,9 @@ public class SecurityMetaData {
     public void removeCustomAttribute(String key) {
         this.customData.remove(key);
     }
+    public void clearCustomAttr(){
+        customData.clear();
+    }
 
     public void addToDeserializationRoot(DeserializationInfo dinfo) {
         if (getCustomAttribute("deserializationRoot", DeserializationInfo.class) == null){

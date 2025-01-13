@@ -1,26 +1,33 @@
 package javax.servlet;
 
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.servlet24.HttpServletHelper;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.FilterChain")
 public abstract class FilterChain_Instrumentation {
 
     public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
+
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
@@ -28,7 +35,7 @@ public abstract class FilterChain_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isServletLockAcquired){
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if(isServletLockAcquired) {
@@ -38,9 +45,7 @@ public abstract class FilterChain_Instrumentation {
 
     private void preprocessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-                    || !(request instanceof HttpServletRequest)
-            ) {
+            if (!(request instanceof HttpServletRequest)) {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
@@ -77,44 +82,42 @@ public abstract class FilterChain_Instrumentation {
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
 
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, this.getClass().getName());
+        }
     }
 
     private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if (Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
-
+            if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
+                HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
+            }
+            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
-            RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
-                    this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);
-            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
+                RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                        this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);
+                NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
         }
-    }
-
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {}
     }
 }

@@ -1,24 +1,25 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventSendPool {
 
+    public static final int QUEUE_SIZE = 1500;
     /**
      * Thread pool executor.
      */
@@ -26,11 +27,9 @@ public class EventSendPool {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    private AtomicBoolean isWaiting = new AtomicBoolean(false);
-
     private EventSendPool() {
         // load the settings
-        int queueSize = 1500;
+        int queueSize = QUEUE_SIZE;
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 60;
@@ -44,13 +43,21 @@ public class EventSendPool {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 try {
-                    if (t != null) {
-                        AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
-                        AgentInfo.getInstance().getJaHealthCheck().incrementEventSendErrorCount();
-                        incrementCount(r, IUtilConstants.ERROR);
-                    } else {
-                        incrementCount(r, IUtilConstants.SENT);
+                    if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof EventSender) {
+                        EventSender task = (EventSender) ((CustomFutureTask<?>) r).getTask();
+                        if(task.getEvent() instanceof JavaAgentEventBean){
+                            if (t != null) {
+                                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();
+                            } else {
+                                AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementCompleted();
+                            }
+                        }
                     }
+//                    if (t != null) {
+//                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();
+//                    } else {
+//                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementCompleted();
+//                    }
                 } catch (Throwable ignored){}
                 super.afterExecute(r, t);
             }
@@ -65,6 +72,10 @@ public class EventSendPool {
                 return t;
             }
         });
+    }
+
+    public int getMaxQueueSize() {
+        return QUEUE_SIZE;
     }
 
     private static final class InstanceHolder {
@@ -82,13 +93,13 @@ public class EventSendPool {
     }
 
     public void sendEvent(JavaAgentEventBean event) {
+
         if(!event.getIsIASTRequest() && !AgentUsageMetric.isRASPProcessingActive()){
-            AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
-            AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementRaspProcessingDeactivated();
             return;
         }
         executor.submit(new EventSender(event));
-        AgentInfo.getInstance().getJaHealthCheck().incrementEventSentCount();
+        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementSubmitted();
     }
 
     public void sendEvent(Object event) {
@@ -140,68 +151,26 @@ public class EventSendPool {
                     JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
                     if(event.getIsIASTRequest()){
                         String fuzzRequestId = event.getParentId();
-                        RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
-                        AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
-                    } else {
-                        AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
+                        if (event.getHttpRequest().getIsGrpc()) {
+                            GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(fuzzRequestId);
+                        } else {
+                            RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                        }
                     }
-                } else if (eventSender.getEvent() instanceof ExitEventBean) {
-                    AgentInfo.getInstance().getJaHealthCheck().getExitEventStats().incrementRejectedCount();
                 }
             }
 
             logger.log(LogLevel.FINER, "Event Send Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
-            AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
-            AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementRejected();
         }
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public ThreadPoolExecutor getExecutor() {
         return executor;
     }
 
-    private void incrementCount(Runnable r, String type) {
-        EventStats eventStats = null;
-        if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof EventSender) {
-            EventSender eventSender = (EventSender) ((CustomFutureTask<?>) r).getTask();
-            if (eventSender.getEvent() instanceof JavaAgentEventBean) {
-                JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
-                if (event.getIsIASTRequest()) {
-                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getIastEventStats();
-                } else {
-                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats();
-                }
-            } else if (eventSender.getEvent() instanceof ExitEventBean) {
-                eventStats = AgentInfo.getInstance().getJaHealthCheck().getExitEventStats();
-            }
-        }
-
-        if(eventStats == null){
-            return;
-        }
-        switch (type){
-            case IUtilConstants.ERROR:
-                eventStats.incrementErrorCount();
-                break;
-            case IUtilConstants.PROCESSED:
-                eventStats.incrementProcessedCount();
-                break;
-            case IUtilConstants.SENT:
-                eventStats.incrementSentCount();
-                break;
-            case IUtilConstants.REJECTED:
-                eventStats.incrementRejectedCount();
-                break;
-            default:
-                logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), DispatcherPool.class.getName());
-        }
-    }
-
     public void reset() {
         executor.getQueue().clear();
+        executor.purge();
     }
 }

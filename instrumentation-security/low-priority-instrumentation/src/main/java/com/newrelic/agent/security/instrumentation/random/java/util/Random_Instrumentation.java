@@ -5,8 +5,10 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RandomOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -21,10 +23,11 @@ import static com.newrelic.agent.security.instrumentation.random.RandomUtils.WEA
 public class Random_Instrumentation {
 
     public int nextInt() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextInt");
         }
@@ -43,10 +46,11 @@ public class Random_Instrumentation {
     }
 
     public int nextInt(int bound) {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextInt");
         }
@@ -65,10 +69,11 @@ public class Random_Instrumentation {
     }
 
     public void nextBytes(byte[] bytes) {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextBytes");
         }
@@ -85,10 +90,11 @@ public class Random_Instrumentation {
     }
 
     public long nextLong() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextLong");
         }
@@ -107,10 +113,11 @@ public class Random_Instrumentation {
     }
 
     public float nextFloat() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextFloat");
         }
@@ -129,10 +136,11 @@ public class Random_Instrumentation {
     }
 
     public double nextDouble() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextDouble");
         }
@@ -151,10 +159,11 @@ public class Random_Instrumentation {
     }
 
     public double nextGaussian() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextGaussian");
         }
@@ -173,10 +182,11 @@ public class Random_Instrumentation {
     }
 
     public boolean nextBoolean() {
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = false;
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
+            isLockAcquired = acquireLockIfPossible(hashCode());
             if (isLockAcquired)
                 operation = preprocessSecurityHook(getClass().getName(), "nextBoolean");
         }
@@ -196,12 +206,6 @@ public class Random_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String className, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
-
             RandomOperation operation = null;
             Object obj = this;
             if (obj instanceof SecureRandom) {
@@ -216,9 +220,12 @@ public class Random_Instrumentation {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(
+                        LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, Random_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, Random_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, Random_Instrumentation.class.getName());
         }
         return null;
     }
@@ -230,22 +237,16 @@ public class Random_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, LowSeverityHelper.LOW_PRIORITY_INSTRUMENTATION, e.getMessage()), e, Random_Instrumentation.class.getName());
         }
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.RANDOM, RandomUtils.NR_SEC_RANDOM_ATTRIB_NAME, hashCode);
     }
 }

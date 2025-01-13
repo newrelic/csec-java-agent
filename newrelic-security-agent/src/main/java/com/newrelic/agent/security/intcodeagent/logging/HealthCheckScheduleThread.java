@@ -2,13 +2,16 @@ package com.newrelic.agent.security.intcodeagent.logging;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
-import com.newrelic.agent.security.instrumentator.httpclient.RestClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolActiveStat;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolStats;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
@@ -36,19 +39,7 @@ import java.util.stream.Collectors;
 
 public class HealthCheckScheduleThread {
 
-    public static final String STATUS_TIMESTAMP = "timestamp";
-    public static final String CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S = "Can't write status log file : %s , reason : %s ";
-    public static final String LAST_5_ERRORS = "last-5-errors";
-    public static final String LAST_5_HC = "last-5-hc";
-    public static final String K_2_AGENT_STATUS_LOG = "java-security-collector-status-%s.log";
-    public static final String LATEST_PROCESS_STATS = "latest-process-stats";
-    public static final String LATEST_SERVICE_STATS = "latest-service-stats";
-    public static final String VALIDATOR_SERVER_STATUS = "validator-server-status";
-    public static final String ENFORCED_POLICY = "enforced-policy";
-
     public static final String WEBSOCKET = "websocket";
-    public static final String SEPARATOR = ": ";
-    public static final String CAN_T_CREATE_STATUS_LOG_FILE = "Can't create status log file!!!";
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -76,8 +67,9 @@ public class HealthCheckScheduleThread {
                 }
 
                 logger.log(LogLevel.INFO, String.format("Pending CCs to be processed : %s", RestRequestThreadPool.getInstance().getQueueSize()), this.getClass().getName());
-                AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
-                AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(RestRequestThreadPool.getInstance().getQueueSize());
+                AgentInfo.getInstance().getJaHealthCheck().getIastReplayRequest().incrementPendingControlCommandsBy(GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
+                AgentUtils.getInstance().addStatusLogMostRecentHCs(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                 if (WSClient.getInstance().isOpen()) {
                     synchronized (AgentInfo.getInstance().getJaHealthCheck()){
@@ -93,16 +85,23 @@ public class HealthCheckScheduleThread {
             } catch (Throwable e) {
                 logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
                         HealthCheckScheduleThread.class.getName());
-            } finally {
-                writeStatusLogFile(sendJaHealthCheck);
             }
         }
     };
 
     private ThreadPoolStats populateThreadPoolStats() {
         ThreadPoolStats threadPoolStats = new ThreadPoolStats();
-        threadPoolStats.setDispatcherQueueSize(DispatcherPool.getInstance().getExecutor().getQueue().size());
-        threadPoolStats.setEventSendQueueSize(EventSendPool.getInstance().getExecutor().getQueue().size());
+        threadPoolStats.setDispatcher(new ThreadPoolActiveStat(DispatcherPool.getInstance().getExecutor().getActiveCount(),
+                DispatcherPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setEventSender(new ThreadPoolActiveStat(EventSendPool.getInstance().getExecutor().getActiveCount(),
+                EventSendPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setControlCommandProcessor(new ThreadPoolActiveStat(ControlCommandProcessorThreadPool.getInstance().getExecutor().getActiveCount(),
+                ControlCommandProcessorThreadPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setIastHttpRequestProcessor(new ThreadPoolActiveStat(RestRequestThreadPool.getInstance().getExecutor().getActiveCount(),
+                RestRequestThreadPool.getInstance().getExecutor().getQueue().size()));
+        threadPoolStats.setFileLogger(new ThreadPoolActiveStat(FileLoggerThreadPool.getInstance().getExecutor().getActiveCount(),
+                FileLoggerThreadPool.getInstance().getExecutor().getQueue().size()));
+
         return threadPoolStats;
     }
 
@@ -124,41 +123,6 @@ public class HealthCheckScheduleThread {
         return false;
     }
 
-    private void writeStatusLogFile(JAHealthCheck sendJaHealthCheck) {
-        JAHealthCheck writerHealthCheck = sendJaHealthCheck;
-        if(writerHealthCheck == null){
-            writerHealthCheck = AgentInfo.getInstance().getJaHealthCheck();
-        }
-        File statusLog = new File(osVariables.getSnapshotDir(), String.format(K_2_AGENT_STATUS_LOG, AgentInfo.getInstance().getApplicationUUID()));
-        try {
-            FileUtils.deleteQuietly(statusLog);
-            if (statusLog.createNewFile()) {
-                Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
-                substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
-                JAHealthCheck finalWriterHealthCheck = writerHealthCheck;
-                substitutes.put(LATEST_PROCESS_STATS, finalWriterHealthCheck.getStats().keySet().stream()
-                        .map(key -> key + SEPARATOR + finalWriterHealthCheck.getStats().get(key))
-                        .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
-                substitutes.put(LATEST_SERVICE_STATS, finalWriterHealthCheck.getServiceStatus().keySet().stream()
-                        .map(key -> key + SEPARATOR + finalWriterHealthCheck.getServiceStatus().get(key))
-                        .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
-                substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
-                substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
-                substitutes.put(VALIDATOR_SERVER_STATUS, finalWriterHealthCheck.getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
-                substitutes.put(ENFORCED_POLICY, JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
-                StringSubstitutor substitutor = new StringSubstitutor(substitutes);
-                FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
-                isStatusLoggingActive = true;
-            } else {
-                isStatusLoggingActive = false;
-                logger.log(LogLevel.SEVERE, CAN_T_CREATE_STATUS_LOG_FILE, HealthCheckScheduleThread.class.getName());
-            }
-        } catch (IOException e) {
-            String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
-            isStatusLoggingActive = false;
-            logger.log(LogLevel.SEVERE, error, e, HealthCheckScheduleThread.class.getName());
-        }
-    }
 
     private static Map<String, Object> getServiceStatus() {
         Map<String, Object> serviceStatus = new HashMap<>();
@@ -178,7 +142,7 @@ public class HealthCheckScheduleThread {
 
         serviceStatus.put("agentActiveStat", AgentInfo.getInstance().isAgentActive() ? "OK" : "Error");
 
-        serviceStatus.put("iastRestClient", RestClient.getInstance().isConnected() ? "OK" : "Error");
+        serviceStatus.put("iastRestClient", IastHttpClient.getInstance().isConnected() ? "OK" : "Error");
 
         return serviceStatus;
     }

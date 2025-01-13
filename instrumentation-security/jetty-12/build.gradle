@@ -1,0 +1,35 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("org.eclipse.jetty:jetty-server:12.0.0")
+    testImplementation('jakarta.servlet:jakarta.servlet-api:6.0.0')
+    testImplementation("org.eclipse.jetty:jetty-servlet:11.0.16")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jetty-12', 'Priority': '10' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.eclipse.jetty:jetty-server:[12.0.0,)'
+    excludeRegex '.*(alpha|beta|rc).*'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+test {
+    // These instrumentation tests only run on Java 17+ regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        !project.hasProperty('test8') && !project.hasProperty('test11')
+    }
+}
+
+site {
+    title 'Jetty'
+    type 'Appserver'
+}

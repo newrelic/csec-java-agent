@@ -12,6 +12,8 @@ public class ForkExecOperation extends AbstractOperation {
 
     private Map<String, String> environment;
 
+    private Map<String, String> scriptContent = new HashMap<>();
+
     public ForkExecOperation(String cmd, Map<String, String> environment, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.SYSTEM_COMMAND);
@@ -50,4 +52,11 @@ public class ForkExecOperation extends AbstractOperation {
         this.environment = environment;
     }
 
+    public Map<String, String> getScriptContent() {
+        return scriptContent;
+    }
+
+    public void setScriptContent(Map<String, String> scriptContent) {
+        this.scriptContent = scriptContent;
+    }
 }

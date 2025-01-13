@@ -29,9 +29,7 @@ public abstract class ServletOutputStream_Instrumentation {
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(ServletResponseCallback.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(ServletResponseCallback.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     protected ServletOutputStream_Instrumentation(){}

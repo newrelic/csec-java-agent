@@ -1,0 +1,20 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("io.projectreactor.ipc:reactor-netty:0.7.0.RELEASE")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.netty-reactor-0.7.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'io.projectreactor.ipc:reactor-netty:[0.6.0.RELEASE,)'
+    fails 'io.projectreactor.netty:reactor-netty:[0.8.0.RELEASE,)'
+}
+
+site {
+    title 'Netty Reactor'
+    type 'Appserver'
+}

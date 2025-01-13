@@ -1,0 +1,29 @@
+apply plugin: 'scala'
+
+isScalaProjectEnabled(project, "scala-2.13")
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.akka-http-core-2.13_10.2.0' }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.typesafe.akka:akka-http-core_2.13:10.2.0")
+    implementation("com.typesafe.akka:akka-stream_2.13:2.6.10")
+}
+
+verifyInstrumentation {
+    passesOnly('com.typesafe.akka:akka-http-core_2.13:[10.2.0-RC2,)') {
+        implementation("com.typesafe.akka:akka-stream_2.13:2.5.23")
+    }
+    passesOnly('com.typesafe.akka:akka-http-core_2.12:[10.2.0,)') {
+        implementation("com.typesafe.akka:akka-stream_2.12:2.5.23")
+    }
+}
+
+site {
+    title 'Akka Http Core'
+    type 'Framework'
+}

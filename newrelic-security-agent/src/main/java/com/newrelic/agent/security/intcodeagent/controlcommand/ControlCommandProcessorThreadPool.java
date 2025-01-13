@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 
 import java.util.concurrent.*;
@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ControlCommandProcessorThreadPool {
 
+    public static final String UNEXPECTED_ERROR_WHILE_PROCESSING_CONTROL_COMMAND = "Unexpected error while processing control command";
     /**
      * Thread pool executor.
      */
@@ -25,6 +26,12 @@ public class ControlCommandProcessorThreadPool {
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
     private static Object mutex = new Object();
+
+    private long scanStartTime = 0;
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
 
     /**
      * A handler for rejected tasks that throws a
@@ -70,6 +77,8 @@ public class ControlCommandProcessorThreadPool {
                             future.get();
                         }
                     } catch (Throwable e) {
+                        logger.postLogMessageIfNecessary(LogLevel.WARNING, UNEXPECTED_ERROR_WHILE_PROCESSING_CONTROL_COMMAND, e,
+                                this.getClass().getName());
                     }
                 }
                 super.afterExecute(r, t);
@@ -95,6 +104,10 @@ public class ControlCommandProcessorThreadPool {
         });
     }
 
+    public BlockingQueue<Runnable> getQueue() {
+        return executor.getQueue();
+    }
+
     public static ControlCommandProcessorThreadPool getInstance() {
 
         if (instance == null) {
@@ -106,6 +119,20 @@ public class ControlCommandProcessorThreadPool {
             }
         }
         return instance;
+    }
+
+    public static void clearAllTasks() {
+        if (instance != null) {
+            instance.clearAllTasks(true);
+        }
+    }
+
+    private void clearAllTasks(boolean force) {
+        executor.getQueue().clear();
+        executor.purge();
+        if(force) {
+
+        }
     }
 
     public static void shutDownPool() {
@@ -132,4 +159,11 @@ public class ControlCommandProcessorThreadPool {
         }
     }
 
+    public long getScanStartTime() {
+        return scanStartTime;
+    }
+
+    public void setScanStartTime(long scanStartTime) {
+        this.scanStartTime = scanStartTime;
+    }
 }

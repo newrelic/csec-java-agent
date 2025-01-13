@@ -1,80 +1,70 @@
 package com.newrelic.api.agent.security;
 
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
-import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
-import com.newrelic.agent.security.instrumentator.utils.ExecutionIDGenerator;
-import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
-import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
+import com.newrelic.agent.security.intcodeagent.constants.HttpStatusCodes;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
+import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
+import com.newrelic.agent.security.intcodeagent.utils.*;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
+import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationURLMappings;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.*;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
-import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
-import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.UserClassEntity;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
+import org.java_websocket.framing.CloseFrame;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.AGENT_INIT_LOG_STEP_FIVE_END;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.COM_SUN;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
 
 public class Agent implements SecurityAgent {
 
-    private static final String AGENT_INIT_SUCCESSFUL = "[STEP-2][PROTECTION][COMPLETE] Protecting new process with PID %s and UUID %s : %s.";
     private static final String EVENT_ZERO_PROCESSED = "[EVENT] First event processed : %s";
-    public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
-    public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
-    public static final String ERROR_WHILE_BLOCKING_FOR_RESPONSE = "Error while blocking for response: ";
-    public static final String ERROR = "Error: ";
-    public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S = "CSEC Critical error. Unable to read buildInfo and version: {1} : {2}";
+    public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S = "CSEC Critical error. Unable to read buildInfo and version: %s : %s";
     public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION = "CSEC Critical error. Unable to read buildInfo and version: ";
 
     public static final String DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL = "Dropping event as it was generated by agent internal API call : ";
-    private static AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
-
-    private static final Object lock = new Object();
-
-    private static Agent instance;
+    private static final AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
+    private long trafficStartedAt = 0;
+    public static final String ERROR_WHILE_GENERATING_TRACE_ID_FOR_CATEGORY_S = "Error while generating trace id for category : %s";
+    public static final String SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST = "Skipping the API %s as it is part of the skip scan list";
+    public static final String INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE = "Invalid cron expression provided for IAST Mode";
 
     private AgentInfo info;
 
@@ -87,15 +77,14 @@ public class Agent implements SecurityAgent {
     private java.net.URL agentJarURL;
     private Instrumentation instrumentation;
 
+    private static final Map<String, String> customNoticeErrorParameters = new ConcurrentHashMap<>();
+
+    private static final class InstanceHolder {
+        static final Agent instance = new Agent();
+    }
+
     public static SecurityAgent getInstance() {
-        if(instance == null) {
-            synchronized (lock){
-                if(instance == null){
-                    instance = new Agent();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     private Agent(){
@@ -111,9 +100,24 @@ public class Agent implements SecurityAgent {
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
     }
 
-    private void initialise() {
-        // TODO: All the bring up tasks are to be performed here.
-        /**
+    public static Map<String, String> getCustomNoticeErrorParameters() {
+        return customNoticeErrorParameters;
+    }
+
+    private void initialise() throws RestrictionModeException {
+        if (!isInitialised()) {
+            config = AgentConfig.getInstance();
+            info = AgentInfo.getInstance();
+        }
+        long delay = config.instantiate();
+        AgentInfo.initialiseLogger();
+        SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+    }
+
+    private void triggerNrSecurity() {
+        // All the bring up tasks are to be performed here.
+
+        /* *
          * 1. populate policy
          * 2. create application info
          * 3. initialise health check
@@ -121,55 +125,117 @@ public class Agent implements SecurityAgent {
          * */
 
         //NOTE: The bellow call sequence is critical and dependent on each other
-        if (!isInitialised()) {
-            config = AgentConfig.getInstance();
-            info = AgentInfo.getInstance();
-        }
-        config.instantiate();
-        logger = FileLoggerThreadPool.getInstance();
-        logger.logInit(
-                LogLevel.INFO,
-                "[STEP-1] => Security agent is starting",
-                Agent.class.getName());
-        logger.logInit(
-                LogLevel.INFO,
-                String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
-        config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
-
         try {
-            info.setBuildInfo(readCollectorBuildInfo());
-            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", new JavaPropsMapper().writeValueAsProperties(info.getBuildInfo())), this.getClass().getName());
-        } catch (IOException e) {
-            // TODO: Need to confirm requirement of this throw.
-            throw new RuntimeException("Unable to read CSEC Collector build info", e);
-        }
-        logger.logInit(
-                LogLevel.INFO,
-                "[STEP-3] => Gathering information about the application",
-                this.getClass().getName());
-        info.setIdentifier(ApplicationInfoUtils.envDetection());
-        ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
-        info.generateAppInfo(config.getConfig());
-        info.initialiseHC();
-        config.populateAgentPolicy();
-        config.populateAgentPolicyParameters();
-        config.setupSnapshotDir();
-        info.initStatusLogValues();
-        setInitialised(true);
-        populateLinkingMetadata();
+            logger = FileLoggerThreadPool.getInstance();
+            logger.logInit(
+                    LogLevel.INFO,
+                    "[STEP-1] => Security agent is starting",
+                    Agent.class.getName());
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
+            config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
-        startK2Services();
-        info.agentStatTrigger();
+            info.setBuildInfo(readCollectorBuildInfo());
+            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", info.getBuildInfo()), this.getClass().getName());
+
+            logger.logInit(
+                    LogLevel.INFO,
+                    "[STEP-3] => Gathering information about the application",
+                    this.getClass().getName());
+            logger.logInit(LogLevel.INFO, !config.getAgentMode().getSkipScan().getIastDetectionCategory().getInsecureSettingsEnabled() ?
+                    "Low priority instrumentations are enabled." : "Low priority instrumentations are disabled!", this.getClass().getName());
+            if (NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false)) {
+                logger.logInit(LogLevel.INFO, "App being scanned is a Newrelic's Home Grown application", this.getClass().getName());
+            }
+            info.setIdentifier(ApplicationInfoUtils.envDetection());
+            ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
+            info.generateAppInfo(config.getConfig());
+            info.initialiseHC();
+            config.populateAgentPolicy();
+            config.populateAgentPolicyParameters();
+//            config.setupSnapshotDir();
+            info.initStatusLogValues();
+            setInitialised(true);
+            populateLinkingMetadata();
+            populateApplicationTmpDir();
+            startSecurityServices();
+            info.agentStatTrigger(true);
+            //Schedule NR csec shutdown if required
+            scheduleShutdownTrigger();
+        } catch (Exception e){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", e.getMessage());
+            NewRelic.noticeError(e, customNoticeErrorParameters, true);
+        }
+    }
+
+    private void scheduleShutdownTrigger() {
+        if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDuration() > 0) {
+            int duration = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDuration();
+            Instant now = Instant.now();
+            if(AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime() != null){
+                now = AgentConfig.getInstance().getAgentMode().getScanSchedule().getDataCollectionTime().toInstant();
+            }
+            Instant shutdownInstant = now.plus(duration, ChronoUnit.MINUTES);
+            long shutdownTime = shutdownInstant.getEpochSecond() - Instant.now().getEpochSecond();
+            SchedulerHelper.getInstance().scheduleIastTrigger(this::IastDeactivate, shutdownTime, TimeUnit.SECONDS);
+        }
+    }
+
+    private void IastDeactivate() {
+        if(ControlCommandProcessor.getIastReplayRequestMsgReceiveTime().isAfter(Instant.now().minus(5, ChronoUnit.MINUTES))){
+            logger.log(LogLevel.WARNING, "IAST scan is still in progress, may have undetected vulnerabilities. Please increase scan duration and restart application.", Agent.class.getName());
+        }
+        logger.log(LogLevel.INFO, "Scan duration completed, IAST going under hibernate mode.", Agent.class.getName());
+        deactivateSecurity();
+        if(!config.getAgentMode().getScanSchedule().isScheduleOnce()){
+            try {
+                config.getAgentMode().getScanSchedule().setNextScanTime(new CronExpression(config.getAgentMode().getScanSchedule().getSchedule()).getTimeAfter(new Date()));
+                config.getAgentMode().getScanSchedule().setDataCollectionTime(config.getAgentMode().getScanSchedule().getNextScanTime());
+                if(config.getAgentMode().getScanSchedule().isCollectSamples()){
+                    config.getAgentMode().getScanSchedule().setNextScanTime(new Date(Instant.now().toEpochMilli()));
+                }
+                long delay = config.triggerIAST();
+                SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+            } catch (RestrictionModeException | SecurityException exception){
+                NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", exception.getMessage());
+                NewRelic.noticeError(exception, customNoticeErrorParameters, true);
+            } catch (ParseException e) {
+                System.err.println("[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled.");
+                NewRelic.getAgent().getLogger().log(Level.WARNING, "[NR-CSEC-JA] Error while reading IAST Scan Configuration. Security will be disabled. Message :{0}", e.getMessage());
+                NewRelic.noticeError(new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE, e), Agent.getCustomNoticeErrorParameters(), true);
+                AgentInfo.getInstance().agentStatTrigger(false);
+            }
+        }
+    }
+
+    private void IastRestrictedShutdown() {
+        try {
+            InstrumentationUtils.shutdownLogic();
+            long delay = config.triggerIAST();
+            SchedulerHelper.getInstance().scheduleIastTrigger(this::triggerNrSecurity, delay, TimeUnit.MILLISECONDS);
+        } catch (RestrictionModeException | SecurityException exception){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", exception.getMessage());
+            NewRelic.noticeError(exception, customNoticeErrorParameters, true);
+        }
+    }
+
+    private void populateApplicationTmpDir() {
+        String tmpDir = System.getProperty(IUtilConstants.JAVA_IO_TMPDIR);
+        setServerInfo(IUtilConstants.APPLICATION_TMP_DIRECTORY, tmpDir);
     }
 
     private BuildInfo readCollectorBuildInfo() {
         BuildInfo buildInfo = new BuildInfo();
         try {
-            JavaPropsMapper mapper = new JavaPropsMapper();
-            buildInfo = mapper.
-                    readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
+            Properties properties = new Properties();
+            properties.load(ResourceUtils.getResourceStreamFromAgentJar("Agent.properties"));
+            buildInfo = new ObjectMapper().convertValue(properties, BuildInfo.class);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
+                    String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()),
+                    e, this.getClass().getName());
             logger.log(LogLevel.FINER, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
         }
         return buildInfo;
@@ -181,11 +247,13 @@ public class Agent implements SecurityAgent {
         info.setLinkingMetadata(linkingMetaData);
     }
 
-    private void startK2Services() {
+    private void startSecurityServices() {
         HealthCheckScheduleThread.getInstance().scheduleNewTask();
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
+        SchedulerHelper.getInstance().scheduleApplicationRuntimeErrorPosting(RuntimeErrorReporter.getInstance()::reportApplicationRuntimeError,
+                30 , 30, TimeUnit.SECONDS);
         SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         logger.logInit(
                 LogLevel.INFO,
@@ -194,13 +262,32 @@ public class Agent implements SecurityAgent {
         );
         WSReconnectionST.getInstance().submitNewTaskSchedule(0);
         EventSendPool.getInstance();
+        ControlCommandProcessorThreadPool.getInstance();
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
                 Agent.class.getName()
         );
         logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, Agent.class.getName());
+        // Start IAST data pull if policy allows
+        if (config.getAgentMode().getIastScan().getEnabled()) {
+            IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
+                    config.getAgentMode().getIastScan().getProbing().getInterval(), TimeUnit.SECONDS);
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTED_MODULE_LOG, AgentServices.IASTDataPullService.name()),
+                    Agent.class.getName()
+            );
+        } else {
+            IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
+        }
+        AgentInfo.getInstance().getJaHealthCheck().setControlCommandRequestedTime(IASTDataTransferRequestProcessor.getInstance().getControlCommandRequestedAtEpochMilli());
+        AgentInfo.getInstance().getJaHealthCheck().setScanStartTime(ControlCommandProcessorThreadPool.getInstance().getScanStartTime());
+    }
 
+    @Override
+    public IastDetectionCategory getIastDetectionCategory() {
+        return AgentConfig.getInstance().getAgentMode().getSkipScan().getIastDetectionCategory();
     }
 
     @Override
@@ -208,96 +295,278 @@ public class Agent implements SecurityAgent {
         /**
          * restart k2 services
          **/
-        this.agentJarURL = agentJarURL;
-        this.instrumentation = instrumentation;
-        if (isInitialised()) {
-            config.setNRSecurityEnabled(false);
-            cancelActiveServiceTasks();
+        try {
+            this.agentJarURL = agentJarURL;
+            this.instrumentation = instrumentation;
+            if (isInitialised()) {
+                AgentInfo.getInstance().setAgentActive(false);
+                cancelActiveServiceTasks();
+            }
+            initialise();
+            NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
+        } catch (RestrictionModeException | SecurityException exception){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "[NR-CSEC-JA] Deactivating NewRelic Security Agent due to {0}", exception.getMessage());
+            NewRelic.noticeError(exception, customNoticeErrorParameters, true);
+        } catch (Exception e){
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "Newrelic Security Startup failed!!!", e);
+            NewRelic.noticeError(e, customNoticeErrorParameters, true);
         }
-        initialise();
-        NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
         return true;
     }
 
     private void cancelActiveServiceTasks() {
 
         /**
-         * Drain the pools (RestClient, EventSend, Dispatcher) before websocket close
          * Websocket
          * policy
          * HealthCheck
          */
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClientAbnormal(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
+        WSReconnectionST.cancelTask(true);
         FileCleaner.cancelTask();
+        ControlCommandProcessorThreadPool.clearAllTasks();
 
     }
 
     @Override
     public boolean deactivateSecurity() {
         if(isInitialised()) {
-            config.setNRSecurityEnabled(false);
             deactivateSecurityServices();
         }
         return true;
     }
 
     private void deactivateSecurityServices(){
-        /**
-         * ShutDown following
-         * 1. policy + policy parameter
-         * 2. websocket
-         * 3. event pool
-         * 4. HealthCheck
-         **/
-        HealthCheckScheduleThread.getInstance().cancelTask(true);
-        FileCleaner.cancelTask();
-        WSClient.shutDownWSClient();
-        WSReconnectionST.shutDownPool();
-        EventSendPool.shutDownPool();
+        /*
+          ShutDown following
+          1. policy + policy parameter
+          2. websocket
+          3. event pool
+          4. HealthCheck
+         */
+//        InstrumentationUtils.shutdownLogic();
+        IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
+        info.getJaHealthCheck().setScanActive(false);
+        if(!config.getAgentMode().getScanSchedule().isCollectSamples()) {
+            AgentInfo.getInstance().setAgentActive(false);
+            HealthCheckScheduleThread.getInstance().cancelTask(true);
+            ControlCommandProcessorThreadPool.clearAllTasks();
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+            RestRequestThreadPool.getInstance().getRejectedIds().clear();
+            GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
+            DispatcherPool.getInstance().reset();
+            EventSendPool.getInstance().reset();
+            FileCleaner.cancelTask();
+            WSReconnectionST.cancelTask(true);
+            WSClient.shutDownWSClient(true, CloseFrame.NORMAL, "Deactivating Security Agent");
+        }
+
+
     }
 
     @Override
     public void registerOperation(AbstractOperation operation) {
-        if (operation == null || operation.isEmpty()) {
-            return;
-        }
-        String executionId = ExecutionIDGenerator.getExecutionId();
-        operation.setExecutionId(executionId);
-        operation.setStartTime(Instant.now().toEpochMilli());
-        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
-            logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
-        }
-        if (operation instanceof RXSSOperation) {
-            operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
-        } else {
-            operation.setStackTrace(Thread.currentThread().getStackTrace());
-        }
+        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
+        // added to fetch request/response in case of grpc requests
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
 
-        if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
-            logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
-                            JsonConverter.toJSON(operation),
-                    Agent.class.getName());
-            return;
-        }
+                SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+                if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), securityMetaData.getRequest())){
+                    logger.log(LogLevel.FINER, String.format(SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST, securityMetaData.getRequest().getUrl()), Agent.class.getName());
+                    return;
+                }
+                isRequestBodyDataExccedsAllowedLimit(securityMetaData);
 
-        logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
+                if (securityMetaData != null && securityMetaData.getRequest().getIsGrpc()) {
+                    securityMetaData.getRequest().setBody(
+                            new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+                    securityMetaData.getResponse().setResponseBody(
+                            new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
+                }
 
-        setRequiredStackTrace(operation, securityMetaData);
-        setUserClassEntity(operation, securityMetaData);
-        processStackTrace(operation);
+                if (operation == null || operation.isEmpty()) {
+                    return;
+                }
+                Boolean csecJavaHeadRequest = securityMetaData.getCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, Boolean.class);
+                if(csecJavaHeadRequest != null && csecJavaHeadRequest){
+                    return;
+                }
+
+                String executionId = ExecutionIDGenerator.getExecutionId();
+                operation.setExecutionId(executionId);
+                operation.setStartTime(Instant.now().toEpochMilli());
+                if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+                    logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
+                }
+                if (operation instanceof RXSSOperation) {
+                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                    securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
+                } else if (operation instanceof SecureCookieOperationSet) {
+                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                } else {
+                    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                    operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
+                }
+
+                // added to fetch request/response in case of grpc requests
+                if (securityMetaData.getRequest().getIsGrpc()) {
+                    securityMetaData.getRequest().setBody(
+                            new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+                    securityMetaData.getResponse().setResponseBody(
+                            new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
+                }
+
+                if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfCSECGeneratedEvent(operation)) {
+                    logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                                    JsonConverter.toJSON(operation),
+                            Agent.class.getName());
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementCsecInternalEvent();
+                    return;
+                }
+
+                if(!NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfNRGeneratedEvent(operation)) {
+                    logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                                    JsonConverter.toJSON(operation),
+                            Agent.class.getName());
+                    AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementNrInternalEvent();
+                    return;
+                }
+
+                if(AgentConfig.getInstance().getAgentMode().getIastScan().getEnabled() && AgentConfig.getInstance().getAgentMode().getIastScan().getRestricted()) {
+                    if(!RestrictionUtility.hasValidAccountId(AgentConfig.getInstance().getAgentMode().getIastScan().getRestrictionCriteria(), securityMetaData.getRequest())){
+                        return;
+                    }
+                    logger.log(LogLevel.FINER, String.format("Valid event for iast restricted environment : %s", operation), Agent.class.getName());
+                }
+
+                logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
+
+                setRequiredStackTrace(operation, securityMetaData);
+                if(operation.getUserClassEntity() == null || !operation.getUserClassEntity().isCalledByUserCode()){
+                    operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
+                }
+                processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
-        if (needToGenerateEvent(operation.getApiID())) {
-            DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
-            if (!firstEventProcessed.get()) {
-                logger.logInit(LogLevel.INFO,
-                        String.format(EVENT_ZERO_PROCESSED, securityMetaData.getRequest()),
-                        this.getClass().getName());
-                firstEventProcessed.set(true);
+                HttpRequest request = securityMetaData.getRequest();
+                Framework frameWork = Framework.UNKNOWN;
+                if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
+                    frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
+                }
+                if (!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isEmpty(request.getRoute())){
+                    String route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork);
+                    if (route != null) {
+                        request.setRoute(route);
+                        logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
+                    }
+                }
+
+                if (needToGenerateEvent(operation.getApiID())) {
+                    DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
+                    if (!firstEventProcessed.get()) {
+                        logger.logInit(LogLevel.INFO,
+                                String.format(EVENT_ZERO_PROCESSED, securityMetaData.getRequest()),
+                                this.getClass().getName());
+                        firstEventProcessed.set(true);
+                        trafficStartedAt = Instant.now().toEpochMilli();
+                        AgentInfo.getInstance().getJaHealthCheck().setTrafficStartedTime(trafficStartedAt);
+                    }
+                }
+            }
+        } finally {
+            if(lockAcquired){
+                ThreadLocalLockHelper.releaseLock();
             }
         }
+    }
+    private String getEndpointRoute(String uri, Framework framework){
+        switch (framework){
+            default: return getEndpointRoute(uri);
+        }
+    }
+
+    private String getEndpointRoute(String uri) {
+        List<String> uriSegments = URLMappingsHelper.getSegments(uri);
+        if (uriSegments.isEmpty()){
+            return null;
+        }
+        for (RouteSegments routeSegments : URLMappingsHelper.getRouteSegments()) {
+            int uriSegIdx = 0;
+            if (StringUtils.equals(routeSegments.getRoute(), uri)){
+                return routeSegments.getRoute();
+            }
+            for (int routeSegIdx = 0; routeSegIdx < routeSegments.getSegments().size(); routeSegIdx++) {
+                RouteSegment routeSegment = routeSegments.getSegments().get(routeSegIdx);
+                if (uriSegIdx >= uriSegments.size()){
+                    break;
+                }
+                if (routeSegment.isPathParam() || StringUtils.equals(routeSegment.getSegment(), uriSegments.get(uriSegIdx))){
+                    ++uriSegIdx;
+                } else if (routeSegment.isAllowMultipleSegments()) {
+                    // TODO handle * case
+                    // uriSegIdx = jumpRoute(routeSegments.getSegments(), routeSegIdx, uriSegments, uriSegIdx);
+                } else {
+                    break;
+                }
+
+                if (routeSegIdx == routeSegments.getSegments().size()-1){
+                    return routeSegments.getRoute();
+                }
+            }
+        }
+        return null;
+    }
+
+    private int jumpRoute(List<RouteSegment> value, int i1, List<String> uriSegments, int i) {
+        if (i1 <= value.size()-1 || value.get(i1 + 1).isPathParam()){
+            return ++i;
+        }
+        RouteSegment routeSegment = value.get(i1 + 1);
+        for (; i < uriSegments.size(); i++) {
+            if (uriSegments.get(i).equals(routeSegment.getSegment())){
+                return i;
+            }
+        }
+        return i;
+    }
+
+    private static boolean isRequestBodyDataExccedsAllowedLimit(SecurityMetaData securityMetaData) {
+        if(securityMetaData != null && StringUtils.length(securityMetaData.getRequest().getBody()) > HttpRequest.MAX_ALLOWED_REQUEST_BODY_LENGTH) {
+            securityMetaData.getRequest().setDataTruncated(true);
+            securityMetaData.getRequest().setBody(new StringBuilder());
+            return true;
+            //TODO send IASTScanFailure for body truncation and drop event.
+        }
+        if(!securityMetaData.getRequest().getParameterMap().isEmpty()) {
+            boolean parameterTruncated = false;
+            for (String[] requestParam : securityMetaData.getRequest().getParameterMap().values()) {
+                if(requestParam.length > HttpRequest.MAX_ALLOWED_REQUEST_BODY_LENGTH) {
+                    securityMetaData.getRequest().setDataTruncated(true);
+                    parameterTruncated = true;
+                }
+            }
+            if(parameterTruncated) {
+                securityMetaData.getRequest().getParameterMap().clear();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkIfCSECGeneratedEvent(AbstractOperation operation) {
+        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+                j++;
+            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
@@ -313,16 +582,35 @@ public class Agent implements SecurityAgent {
         }
     }
 
-    private static boolean checkIfNRGeneratedEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
+    private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
+        boolean isNettyReactor = false, isNRGeneratedEvent = false;
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
+                    "com.nr.instrumentation.TokenLinkingSubscriber",
+                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
+                    "com.nr.vertx.instrumentation.VertxUtil$1",
+                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
+                isNettyReactor = true;
+                continue;
+            }
+
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
             if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
                 j++;
             } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                return true;
+                isNRGeneratedEvent = true;
             }
         }
-        return false;
+        if (isNettyReactor) {
+            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
+        }
+        return isNRGeneratedEvent;
+    }
+
+    private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
+        return Arrays.stream(stackTrace).filter(stackTraceElement ->
+            !StringUtils.equalsAny(stackTraceElement.getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")
+        ).toArray(StackTraceElement[]::new);
     }
 
     private static boolean needToGenerateEvent(String apiID) {
@@ -332,18 +620,101 @@ public class Agent implements SecurityAgent {
         );
     }
 
-    private void setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+    private UserClassEntity setUserClassEntityByAnnotation(StackTraceElement[] serviceTrace) {
         UserClassEntity userClassEntity = new UserClassEntity();
-        userClassEntity.setUserClassElement(operation.getStackTrace()[operation.getStackTrace().length - 2]);
-        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-        operation.setUserClassEntity(userClassEntity);
+        userClassEntity.setUserClassElement(serviceTrace[0]);
+        userClassEntity.setCalledByUserCode(true);
+        return userClassEntity;
+    }
+
+    private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        boolean frameworkSpecificEntityFound = false;
+        UserClassEntity userClassEntity = new UserClassEntity();
+        StackTraceElement userStackTraceElement = securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class);
+        if(userStackTraceElement == null && securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
+            userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
+        }
+
+        String framework = securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework();
+        if (framework == null){
+            framework = StringUtils.EMPTY;
+        }
+        for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
+            StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+
+            // Section for user class identification using API handlers
+            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
+                //Found -> assign user class and return
+                userClassEntity.setUserClassElement(stackTraceElement);
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                userClassEntity.setCalledByUserCode(true);
+                return userClassEntity;
+            }
+            switch (framework){
+                case "vertx-web":
+                case "GRPC":
+                    if(!frameworkSpecificEntityFound && i-1 >= 0) {
+                        userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
+                        if(userClassEntity.getUserClassElement() != null){
+                            frameworkSpecificEntityFound = true;
+                        }
+                    }
+                    break;
+                default:
+                    if(userStackTraceElement != null && StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                            && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                        userClassEntity.setUserClassElement(stackTraceElement);
+                        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+                    }
+            }
+        }
+        if (securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class) != null){
+            userClassEntity.setUserClassElement(userStackTraceElement);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            return userClassEntity;
+        }
+
+        if (frameworkSpecificEntityFound && userClassEntity.getUserClassElement() != null && !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()){
+            return userClassEntity;
+        }
+
+        if (userClassEntity.getUserClassElement() != null){
+            return userClassEntity;
+        }
+
+        // user class identification using annotations
+        if (securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+            return setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace());
+        }
+
+        if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
+            userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+        }
+        return userClassEntity;
+    }
+
+    private UserClassEntity setUserClassEntityForVertx(AbstractOperation operation, StackTraceElement userStackTraceElement, UserClassEntity userClassEntity, boolean userLevelServiceMethodEncountered, int i) {
+        StackTraceElement serviceTraceElement = operation.getStackTrace()[i];
+        if(serviceTraceElement != null){
+            if(StringUtils.equals(serviceTraceElement.getClassName(), userStackTraceElement.getClassName())
+                    && StringUtils.equals(serviceTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                StackTraceElement stackTraceElement = operation.getStackTrace()[i-1];
+                userClassEntity.setUserClassElement(stackTraceElement);
+                userClassEntity.setCalledByUserCode(userLevelServiceMethodEncountered);
+                return userClassEntity;
+            }
+        }
+        return new UserClassEntity();
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
         StackTraceElement[] currentStackTrace = operation.getStackTrace();
-        int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
-        currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
-        operation.setStackTrace(currentStackTrace);
+        if (securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length + 3 < currentStackTrace.length) {
+            int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
+            currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
+            operation.setStackTrace(currentStackTrace);
+        }
     }
 
     private static void processStackTrace(AbstractOperation operation) {
@@ -352,13 +723,12 @@ public class Agent implements SecurityAgent {
 
         ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
 
-        resetFactor++;
-        boolean markedForRemoval = false;
-        for (int i = 1, j = 0; i < stackTrace.length; i++) {
+        boolean markedForRemoval;
+        for (int i = 0, j = -1; i < stackTrace.length; i++) {
             markedForRemoval = false;
 
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.", "com.nr.")) {
+            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
                 resetFactor++;
                 j++;
                 markedForRemoval = true;
@@ -375,7 +745,8 @@ public class Agent implements SecurityAgent {
                     AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
                     if (stackTrace[i - 1].getLineNumber() > 0 &&
                             StringUtils.isNotBlank(stackTrace[i - 1].getFileName()) &&
-                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.", "com.nr.")
+                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.",
+                                    "com.newrelic.agent.deps.", "com.nr.instrumentation.")
                     ) {
                         metaData.setTriggerViaRCI(true);
                         metaData.getRciMethodsCalls()
@@ -399,8 +770,11 @@ public class Agent implements SecurityAgent {
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
             traceForIdCalc.add(operation.getSourceMethod().hashCode());
-            traceForIdCalc.add(operation.getUserClassEntity().getUserClassElement().hashCode());
-            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
+            int[] traceArray = new int[traceForIdCalc.size()];
+            for (int i = 0; i < traceForIdCalc.size(); i++) {
+                traceArray[i] = traceForIdCalc.get(i);
+            }
+            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceArray));
         } catch (IOException e) {
             operation.setApiID("UNDEFINED");
         }
@@ -408,21 +782,29 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerExitEvent(AbstractOperation operation) {
-        if (operation == null) {
-            return;
-        }
-        K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
-        HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                if (operation == null) {
+                    return;
+                }
+                K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
+                HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
 
-        // TODO: Generate for only native payloads
-        if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
-            if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
-                    && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
-                ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
-                exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
-                logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
-                DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
-                AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
+                // TODO: Generate for only native payloads
+                if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
+                    if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
+                            && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
+                        ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
+                        exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
+                        logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
+                        DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
+                    }
+                }
+            }
+        } finally {
+            if(lockAcquired){
+                ThreadLocalLockHelper.releaseLock();
             }
         }
     }
@@ -453,9 +835,7 @@ public class Agent implements SecurityAgent {
                     return (SecurityMetaData) meta;
                 }
             }
-        } catch (Throwable e) {
-//            e.printStackTrace();
-        }
+        } catch (Throwable ignored) {}
         return new SecurityMetaData();
     }
 
@@ -484,7 +864,7 @@ public class Agent implements SecurityAgent {
     }
 
     public static java.net.URL getAgentJarURL() {
-        return instance.agentJarURL;
+        return InstanceHolder.instance.agentJarURL;
     }
 
     public boolean isInitialised() {
@@ -502,6 +882,203 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
-        return NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+        return NewRelicSecurity.isHookProcessingActive() && !config.getAgentMode().getSkipScan().getIastDetectionCategory().getInsecureSettingsEnabled();
     }
+
+    public void setApplicationConnectionConfig(int port, String scheme) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
+        appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
+        if(logger != null) {
+            logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
+        }
+//        verifyConnectionAndPut(port, scheme, appServerInfo);
+    }
+
+    public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        return appServerInfo.getConnectionConfiguration().get(port);
+    }
+
+    @Override
+    public Map<Integer, ServerConnectionConfiguration> getApplicationConnectionConfig() {
+        return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
+    }
+
+    @Override
+    public void setServerInfo(String key, String value) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        switch (key) {
+            case IUtilConstants.APPLICATION_DIRECTORY:
+                File appBase = new File(value);
+                if(appBase.isAbsolute()){
+                    appServerInfo.setApplicationDirectory(value);
+                } else if(StringUtils.isNotBlank(appServerInfo.getServerBaseDirectory())) {
+                    appServerInfo.setApplicationDirectory(new File(appServerInfo.getServerBaseDirectory(), value).getAbsolutePath());
+                } else if(appBase.isDirectory()) {
+                    appServerInfo.setApplicationDirectory(appBase.getAbsolutePath());
+                }
+                break;
+            case IUtilConstants.SERVER_BASE_DIRECTORY:
+                appServerInfo.setServerBaseDirectory(value);
+                break;
+            case IUtilConstants.SAME_SITE_COOKIES:
+                appServerInfo.setSameSiteCookies(value);
+                break;
+            case IUtilConstants.APPLICATION_TMP_DIRECTORY:
+                appServerInfo.setApplicationTmpDirectory(value);
+            default:
+                break;
+        }
+
+    }
+
+    @Override
+    public String getServerInfo(String key) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        switch (key) {
+            case IUtilConstants.APPLICATION_DIRECTORY:
+                return appServerInfo.getApplicationDirectory();
+            case IUtilConstants.SERVER_BASE_DIRECTORY:
+                return appServerInfo.getServerBaseDirectory();
+            case IUtilConstants.SAME_SITE_COOKIES:
+                return appServerInfo.getSameSiteCookies();
+            case IUtilConstants.APPLICATION_TMP_DIRECTORY:
+                return appServerInfo.getApplicationTmpDirectory();
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+        if(logger != null){
+            logger.log(logLevel, event, throwableEvent, logSourceClassName);
+        }
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, String logSourceClassName) {
+        if(logger != null){
+            logger.log(logLevel, event, logSourceClassName);
+        }
+    }
+
+    @Override
+    public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
+        if(logger != null){
+            logger.postLogMessageIfNecessary(logLevel, event, exception, caller);
+        }
+    }
+
+    @Override
+    public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception,
+                                      String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
+        if(WSUtils.isConnected()){
+            LogMessageException message = null; SecurityMetaData metaData = null;
+            if(exception != null) {
+                message = new LogMessageException(exception, 0, 1);
+            }
+            if(securityMetaData != null){
+                metaData = new SecurityMetaData(securityMetaData);
+            }
+            IASTReplayFailure replayFailure = new IASTReplayFailure(apiId, nrCsecFuzzRequestId, controlCommandId, failureMessage, message);
+            IASTScanFailure scanFailure = new IASTScanFailure(replayFailure, metaData);
+            EventSendPool.getInstance().sendEvent(scanFailure);
+        }
+    }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+        if (!classToRetransform.isAnnotationPresent(InstrumentedClass.class)) {
+            try {
+                getInstrumentation().retransformClasses(classToRetransform);
+            } catch (UnmodifiableClassException e) {
+                NewRelic.getAgent().getLogger().log(Level.FINE, "Unable to retransform class ", classToRetransform, " : ", e.getMessage());
+            }
+        } else {
+            NewRelic.getAgent().getLogger().log(Level.FINER, "Class ", classToRetransform, " already instrumented.");
+        }
+    }
+
+    @Override
+    public String decryptAndVerify(String encryptedData, String hashVerifier) {
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
+                if (EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
+                    return decryptedData;
+                } else {
+                    NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
+                    return null;
+                }
+            }
+        } finally {
+            ThreadLocalLockHelper.releaseLock();
+        }
+        return null;
+    }
+
+    @Override
+    public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if (lockAcquired) {
+                LogMessageException messageException = new LogMessageException(exception, 0, 1, 20);
+                String traceId = generateTraceIdForRuntimeError(securityMetaData, exception.getClass().getSimpleName(), messageException);
+                ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, exception.getClass().getSimpleName(), AgentInfo.getInstance().getApplicationUUID(), traceId);
+                RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+            }
+        } finally {
+            if(lockAcquired) {
+                ThreadLocalLockHelper.releaseLock();
+            }
+        }
+    }
+
+    private String generateTraceIdForRuntimeError(SecurityMetaData securityMetaData, String category, LogMessageException messageException) {
+        HttpRequest httpRequest = securityMetaData.getRequest();
+        List<String> traceData = new ArrayList<>();
+
+        if(messageException != null) {
+            traceData.addAll(Arrays.asList(messageException.getStackTrace()));
+        }
+
+        if(httpRequest != null) {
+            traceData.add(httpRequest.getUrl());
+            traceData.add(httpRequest.getMethod());
+        }
+        traceData.add(category);
+
+        try {
+            return HashGenerator.getXxHash64Digest(traceData);
+        } catch (IOException e) {
+            log(LogLevel.FINER, String.format(ERROR_WHILE_GENERATING_TRACE_ID_FOR_CATEGORY_S, category), Agent.class.getName());
+            return StringUtils.EMPTY;
+        }
+    }
+
+    @Override
+    public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
+        int responseCode = securityMetaData.getResponse().getResponseCode();
+        String route = securityMetaData.getRequest().getUrl();
+        //TODO turn on after api endpoint route detection is merged.
+//        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
+//            route = securityMetaData.getRequest().getRoute();
+//        }
+        LogMessageException messageException = null;
+        if (exception != null) {
+            messageException = new LogMessageException(exception, 0, 1, 20);
+        }
+        String traceId = generateTraceIdForRuntimeError(securityMetaData, HttpStatusCodes.getStatusCode(responseCode), messageException);
+        ApplicationRuntimeError applicationRuntimeError = new ApplicationRuntimeError(securityMetaData.getRequest(), messageException, responseCode, route, HttpStatusCodes.getStatusCode(responseCode), AgentInfo.getInstance().getApplicationUUID(), traceId);
+        return RuntimeErrorReporter.getInstance().addApplicationRuntimeError(applicationRuntimeError);
+    }
+
+    @Override
+    public void reportURLMapping() {
+        SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
+    }
+
 }
