@@ -98,6 +98,7 @@ public class DeserializationInfo implements Serializable {
         if (depth > MAX_DEPTH_POPULATION){
             return new HashMap<>();
         }
+        // TODO: Update this to ObjectMapper.readObject to parse complete deseriaized object and return json str.
         try {
             Field[] fields = obj.getClass().getFields();
             for (Field field : fields) {
