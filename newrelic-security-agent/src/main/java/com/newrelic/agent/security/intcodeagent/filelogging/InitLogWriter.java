@@ -192,7 +192,7 @@ public class InitLogWriter implements Runnable {
             if (Files.size(currentFile.toPath()) > maxFileSize) {
                 try (FileLock lock = FileChannel.open(currentFile.toPath(), StandardOpenOption.WRITE).lock()) {
                     if (lock.isValid() && currentFile.exists() && Files.size(currentFile.toPath()) > maxFileSize) {
-                        File rolloverFile = new File(fileName + STRING_DOT + Instant.now().toEpochMilli());
+                        File rolloverFile = new File(fileName + STRING_DOT + Instant.now().toEpochMilli() + STRING_DOT + "rolled-over.log");
                         FileUtils.moveFile(currentFile, rolloverFile);
                     }
                     lock.release();
