@@ -136,7 +136,7 @@ public class HttpServletHelper {
 
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
-            String url = request.getHttpURI().asString();
+            String url = request.getHttpURI().getPath();
             if (url != null && !url.trim().isEmpty()) {
                 securityRequest.setUrl(url);
             }
