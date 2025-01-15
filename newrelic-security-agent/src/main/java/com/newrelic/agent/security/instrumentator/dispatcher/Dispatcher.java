@@ -657,7 +657,12 @@ public class Dispatcher implements Callable {
 
     private static JavaAgentEventBean prepareDeserializationEvent(JavaAgentEventBean eventBean,
                                                        DeserialisationOperation deserialisationOperation) {
+        DeserializationInfo rootDeserializationInfo = deserialisationOperation.getRootDeserializationInfo();
         JSONArray params = new JSONArray();
+        if(rootDeserializationInfo != null) {
+            eventBean.getMetaData().setDeserializationInfo(rootDeserializationInfo);
+            params.add(GsonUtil.toJson(rootDeserializationInfo.getInstance()));
+        }
         eventBean.setParameters(params);
         return eventBean;
     }

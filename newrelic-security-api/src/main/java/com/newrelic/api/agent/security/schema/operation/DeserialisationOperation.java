@@ -12,6 +12,7 @@ public class DeserialisationOperation extends AbstractOperation {
 
     private String entityName;
     private Map<String, DeserializationInfo> params;
+    private DeserializationInfo rootDeserializationInfo;
 
 
     public DeserialisationOperation(String className, String methodName) {
@@ -20,15 +21,17 @@ public class DeserialisationOperation extends AbstractOperation {
                 NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot()!=null) {
             this.entityName = NewRelicSecurity.getAgent().getSecurityMetaData()
                     .peekDeserializationRoot().getType();
-            this.params = NewRelicSecurity.getAgent().getSecurityMetaData()
-                    .peekDeserializationRoot().computeObjectMap();
+//            this.params = NewRelicSecurity.getAgent().getSecurityMetaData()
+//                    .peekDeserializationRoot().computeObjectMap();
+            this.rootDeserializationInfo = NewRelicSecurity.getAgent().getSecurityMetaData()
+                    .peekDeserializationRoot();
         }
         this.setCaseType(VulnerabilityCaseType.UNSAFE_DESERIALIZATION);
     }
 
     @Override
     public boolean isEmpty() {
-        return this.params==null || this.params.isEmpty() || StringUtils.isEmpty(this.entityName);
+        return this.rootDeserializationInfo==null || StringUtils.isEmpty(this.entityName);
     }
 
     public String getEntityName() {
@@ -45,5 +48,13 @@ public class DeserialisationOperation extends AbstractOperation {
 
     public void setParams(Map<String, DeserializationInfo> params) {
         this.params = params;
+    }
+
+    public DeserializationInfo getRootDeserializationInfo() {
+        return rootDeserializationInfo;
+    }
+
+    public void setRootDeserializationInfo(DeserializationInfo rootDeserializationInfo) {
+        this.rootDeserializationInfo = rootDeserializationInfo;
     }
 }

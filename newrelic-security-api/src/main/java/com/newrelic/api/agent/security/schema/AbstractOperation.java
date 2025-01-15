@@ -48,7 +48,7 @@ public abstract class AbstractOperation {
                     NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() != null) {
                 this.deserializationInfo = NewRelicSecurity.getAgent().getSecurityMetaData()
                         .peekDeserializationRoot();
-                this.deserializationInfo.computeObjectMap();
+//                this.deserializationInfo.computeObjectMap();
             }
     }
 

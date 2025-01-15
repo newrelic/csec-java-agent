@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -68,10 +70,10 @@ public class DeserializationInfo implements Serializable {
                 this.value.put(entry.getKey(), new DeserializationInfo(entry.getValue()));
             }
         }
-        for(DeserializationInfo value: instance.unlinkedChildren){
-            value.computeObjectMap();
-            this.unlinkedChildren.add(new DeserializationInfo(value));
-        }
+//        for(DeserializationInfo value: instance.unlinkedChildren){
+//            value.computeObjectMap();
+//            this.unlinkedChildren.add(new DeserializationInfo(value));
+//        }
     }
 
     public DeserializationInfo() {
@@ -98,6 +100,7 @@ public class DeserializationInfo implements Serializable {
         if (depth > MAX_DEPTH_POPULATION){
             return new HashMap<>();
         }
+
         // TODO: Update this to ObjectMapper.readObject to parse complete deseriaized object and return json str.
         try {
             Field[] fields = obj.getClass().getFields();
