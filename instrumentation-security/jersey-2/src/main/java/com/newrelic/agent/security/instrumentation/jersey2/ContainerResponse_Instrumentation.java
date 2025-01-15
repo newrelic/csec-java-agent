@@ -26,11 +26,12 @@ public abstract class ContainerResponse_Instrumentation {
 
     ContainerResponse_Instrumentation(final ContainerRequest requestContext, final OutboundJaxrsResponse response) {
         if (NewRelicSecurity.getAgent().getSecurityMetaData() != null) {
-            if(response != null) {
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(response.getStatus());
-        }
+            if (response != null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(response.getStatus());
+            }
 
-            if (GenericHelper.isLockAcquired(HttpRequestHelper.getNrSecCustomAttribForPostProcessing()) && response != null && response.getContext() != null && response.getContext().hasEntity()){
+            if (GenericHelper.isLockAcquired(HttpRequestHelper.getNrSecCustomAttribForPostProcessing()) && response != null && response.getContext() != null &&
+                    response.getContext().hasEntity()) {
                 Object responseObject = response.getContext().getEntity();
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(new StringBuilder(String.valueOf(responseObject)));
             }

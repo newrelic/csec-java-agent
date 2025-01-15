@@ -18,7 +18,7 @@ import org.junit.{Assert, FixMethodOrder, Test}
 import java.net.ServerSocket
 import java.util.UUID
 import scala.concurrent.Await
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._
 import scala.jdk.javaapi.FutureConverters
 
@@ -224,7 +224,7 @@ class PekkoHttpCoreTest {
 
     Assert.assertFalse("response should not be empty", operation.getResponse.isEmpty)
     Assert.assertEquals("Invalid response content-type.", contentType, operation.getResponse.getResponseContentType)
-    Assert.assertEquals("Invalid responseBody.", responseBody, operation.getResponse.getResponseBody.toString)
+    Assert.assertEquals("Invalid responseBody.", responseBody, operation.getResponse.getBody.toString)
   }
   private def assertMetaData(metaData: SecurityMetaData): Unit = {
     Assert.assertFalse("response should not be empty", metaData.getRequest.isEmpty)
@@ -232,7 +232,7 @@ class PekkoHttpCoreTest {
     Assert.assertEquals("Invalid responseBody.", requestBody, metaData.getRequest.getBody.toString)
     Assert.assertFalse("response should not be empty", metaData.getResponse.isEmpty)
     Assert.assertEquals("Invalid response content-type.", contentType, metaData.getResponse.getResponseContentType)
-    Assert.assertEquals("Invalid responseBody.", responseBody, metaData.getResponse.getResponseBody.toString)
+    Assert.assertEquals("Invalid responseBody.", responseBody, metaData.getResponse.getBody.toString)
     Assert.assertEquals("Invalid protocol.", metaData.getRequest.getProtocol, "http")
   }
 }

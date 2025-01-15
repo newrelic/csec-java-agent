@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.instrumentation.servlet5;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -16,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {

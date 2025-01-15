@@ -72,7 +72,7 @@ public class RequestHandler_Instrumentation {
             securityRequest.setContentType(MuleHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_3_7, ignored.getMessage()), ignored, HttpRequestToMuleEvent_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_37, ignored.getMessage()), ignored, RequestHandler_Instrumentation.class.getName());
         }
     }
 
@@ -101,8 +101,8 @@ public class RequestHandler_Instrumentation {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_3_7, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_3_7, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());
         }
     }
 

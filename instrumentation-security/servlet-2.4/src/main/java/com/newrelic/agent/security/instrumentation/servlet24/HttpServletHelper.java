@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {
@@ -102,5 +103,14 @@ public class HttpServletHelper {
     private static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
-
+    public static Map<String, String> getHttpResponseHeaders(HttpServletResponse httpServletResponse) {
+        Map<String, String> headers = new java.util.HashMap<>();
+        Collection<String> headerNames = httpServletResponse.getHeaderNames();
+        Iterator<String> iterator = headerNames.iterator();
+        while (iterator.hasNext()) {
+            String headerName = iterator.next();
+            headers.put(headerName, httpServletResponse.getHeader(headerName));
+        }
+        return headers;
+    }
 }

@@ -65,7 +65,7 @@ public class HttpHandler_Instrumentation {
                 securityRequest.setUrl(securityRequest.getUrl() + HttpServerHelper.QUESTION_MARK + queryString);
             }
 
-            securityRequest.setContentType(HttpServerHelper.getContentType(exchange.getRequestHeaders()));
+            securityRequest.setContentType(HttpServerHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
@@ -81,7 +81,7 @@ public class HttpHandler_Instrumentation {
             HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);
             securityResponse.setContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
 
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

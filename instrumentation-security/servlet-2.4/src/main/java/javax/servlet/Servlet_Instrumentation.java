@@ -127,4 +127,5 @@ public abstract class Servlet_Instrumentation {
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, Servlet_Instrumentation.class.getName());
         }
     }
+
 }
