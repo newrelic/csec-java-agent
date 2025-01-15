@@ -49,7 +49,7 @@ public class SprayTest {
         Assert.assertEquals("Wrong Content-type detected", StringUtils.EMPTY, operation.getRequest().getContentType());
 
         Assert.assertNotNull("Empty response detected", operation.getResponse());
-        Assert.assertEquals("Wrong port detected", "testing API", operation.getResponse().getResponseBody().toString());
+        Assert.assertEquals("Wrong port detected", "testing API", operation.getResponse().getBody().toString());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getResponse().getResponseContentType());
 
     }
@@ -73,7 +73,7 @@ public class SprayTest {
         Assert.assertEquals("Wrong Content-type detected", "data", operation.getRequest().getBody().toString());
 
         Assert.assertNotNull("Empty response detected", operation.getResponse());
-        Assert.assertEquals("Wrong port detected", "testing API", operation.getResponse().getResponseBody().toString());
+        Assert.assertEquals("Wrong port detected", "testing API", operation.getResponse().getBody().toString());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getResponse().getResponseContentType());
 
     }
@@ -98,7 +98,7 @@ public class SprayTest {
         Assert.assertEquals("Wrong Content-type detected", StringUtils.EMPTY, operation.getRequest().getContentType());
 
         Assert.assertNotNull("Empty response detected", operation.getResponse());
-        Assert.assertEquals("Wrong port detected", "testing API", operation.getResponse().getResponseBody().toString());
+        Assert.assertEquals("Wrong port detected", "testing API", operation.getResponse().getBody().toString());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getResponse().getResponseContentType());
 
         Map<String, String> headers = operation.getRequest().getHeaders();

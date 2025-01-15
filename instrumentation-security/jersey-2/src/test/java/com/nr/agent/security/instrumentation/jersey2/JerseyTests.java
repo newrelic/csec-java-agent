@@ -205,7 +205,7 @@ public class JerseyTests {
         assertFalse(response.isEmpty());
         assertEquals(MediaType.TEXT_HTML, response.getResponseContentType());
         assertEquals(2, responseBody.length);
-        assertEquals(responseBody[0], response.getResponseBody().toString());
+        assertEquals(responseBody[0], response.getBody().toString());
         assertFalse(hashCode.isEmpty());
         assertEquals(Collections.singleton(Integer.parseInt(responseBody[1])), hashCode);
     }
