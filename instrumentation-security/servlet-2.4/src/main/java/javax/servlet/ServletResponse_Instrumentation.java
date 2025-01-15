@@ -29,7 +29,7 @@ public abstract class ServletResponse_Instrumentation {
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_OS_OPERATION_LOCK);
             obj = Weaver.callOriginal();
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
+            if (isLockAcquired && obj != null) {
                 ServletResponseCallback.registerOutputStreamHashIfNeeded(obj.hashCode());
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(getContentType());
             }
@@ -48,7 +48,7 @@ public abstract class ServletResponse_Instrumentation {
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_WRITER_OPERATION_LOCK);
             obj = Weaver.callOriginal();
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
+            if (isLockAcquired && obj != null) {
                 ServletResponseCallback.registerWriterHashIfNeeded(obj.hashCode());
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(getContentType());
             }

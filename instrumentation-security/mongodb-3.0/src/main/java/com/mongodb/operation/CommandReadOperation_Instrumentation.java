@@ -3,6 +3,7 @@ package com.mongodb.operation;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.binding.AsyncReadBinding;
 import com.mongodb.binding.ReadBinding;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -19,7 +20,9 @@ public class CommandReadOperation_Instrumentation<T> {
     public T execute(final ReadBinding binding) {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
+
         if (isLockAcquired) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_READ, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         T returnVal = null;
@@ -38,6 +41,7 @@ public class CommandReadOperation_Instrumentation<T> {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, this.hashCode());
         if (isLockAcquired) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_READ, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         try {

@@ -32,7 +32,7 @@ object ResponseFutureHelper {
       try {
         val stringResponse: lang.StringBuilder = new lang.StringBuilder();
         val dataBytes: Source[ByteString, _] = response.entity.getDataBytes()
-        val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
+        val isLockAquired = GenericHelper.acquireLockIfPossible(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
         val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
           val chunk = byteString.utf8String
           stringResponse.append(chunk)
@@ -63,7 +63,7 @@ object ResponseFutureHelper {
     try {
       val stringResponse: lang.StringBuilder = new lang.StringBuilder();
       val dataBytes: Source[ByteString, _] = httpResponse.entity.getDataBytes()
-      val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
+      val isLockAquired = GenericHelper.acquireLockIfPossible(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
       val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
         val chunk = byteString.utf8String
         stringResponse.append(chunk)

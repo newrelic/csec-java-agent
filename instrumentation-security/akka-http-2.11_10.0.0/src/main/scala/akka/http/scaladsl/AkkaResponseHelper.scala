@@ -17,6 +17,7 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel
 
 import java.lang
 import java.util.{HashMap => JavaHashMap}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.runtime.AbstractFunction1
 
 class AkkaResponseHelper extends AbstractFunction1[HttpResponse, HttpResponse] {
@@ -24,7 +25,7 @@ class AkkaResponseHelper extends AbstractFunction1[HttpResponse, HttpResponse] {
   override def apply(httpResponse: HttpResponse): HttpResponse = {
     try {
       val stringResponse = new lang.StringBuilder()
-      val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible()
+      val isLockAquired = GenericHelper.acquireLockIfPossible(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
       stringResponse.append(httpResponse.entity.asInstanceOf[HttpEntity.Strict].getData().decodeString("utf-8"))
       val headers = new JavaHashMap[String, String]()
       httpResponse.headers.foreach(header => headers.put(header.name(), header.value()))

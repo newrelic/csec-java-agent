@@ -202,7 +202,7 @@ public class GrpcClient {
         return null;
     }
 
-    public static Object customBiDiStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) throws InterruptedException {
+    private static Object customBiDiStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) throws InterruptedException {
         GrpcStubs.CustomStub stub = GrpcStubs.newStub(channel);
         StringBuilder body = requestBean.getBody();
         String[] methodSplitData = requestBean.getMethod().split("/");

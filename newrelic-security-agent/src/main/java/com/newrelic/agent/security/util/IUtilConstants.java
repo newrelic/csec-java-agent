@@ -75,6 +75,7 @@ public interface IUtilConstants {
 
     String NR_SECURITY_HOME_APP = "security.is_home_app";
     String IAST_TEST_IDENTIFIER = "security.iast_test_identifier";
+    String IAST_SCAN_INSTANCE_COUNT = "security.scan_controllers.scan_instance_count";
 
     String NR_SECURITY_CA_BUNDLE_PATH = "ca_bundle_path";
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";

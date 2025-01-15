@@ -73,8 +73,7 @@ public class MessageDigest_Instrumentation {
     private static AbstractOperation preprocessSecurityHook(String algorithm, String provider, String className, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
+            if (securityMetaData.getRequest().isEmpty()) {
                 return null;
             }
 

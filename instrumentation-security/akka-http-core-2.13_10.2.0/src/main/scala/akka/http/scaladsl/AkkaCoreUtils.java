@@ -27,37 +27,14 @@ public class AkkaCoreUtils {
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
     public static final String AKKA_HTTP_CORE_2_13_10_2_0 = "AKKA_HTTP_CORE_2.13_10.2.0";
-    public static final String QUESTION_MARK = "?";
-
-    public static boolean isServletLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    public static void releaseServletLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
-    }
+    private static final String QUESTION_MARK = "?";
 
     private static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME;
     }
 
     public static boolean acquireServletLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isServletLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+        return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, Map<String, String> headers, int responseCode, String className, String methodName, Token token) {
@@ -91,7 +68,7 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_2_13_10_2_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
         } finally {
             if(isServletLockAcquired){
-                releaseServletLock();
+                GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME);
             }
         }
     }
@@ -118,7 +95,6 @@ public class AkkaCoreUtils {
             securityRequest.setMethod(httpRequest.method().value());
             //TODO Client IP and PORT extraction is pending
 
-//            securityRequest.setClientIP();
             securityRequest.setServerPort(httpRequest.getUri().getPort());
 
             processHttpRequestHeader(httpRequest, securityRequest);
@@ -147,8 +123,8 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_CORE_2_13_10_2_0, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
         }
         finally {
-            if(isServletLockAcquired()){
-                releaseServletLock();
+            if(GenericHelper.isLockAcquired(NR_SEC_CUSTOM_ATTRIB_NAME)){
+                GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME);
             }
         }
     }
@@ -163,7 +139,7 @@ public class AkkaCoreUtils {
         }
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -174,7 +150,7 @@ public class AkkaCoreUtils {
         return data;
     }
 
-    public static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){
+    private static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){
         Iterator<HttpHeader> headers = request.getHeaders().iterator();
         while (headers.hasNext()) {
             boolean takeNextValue = false;

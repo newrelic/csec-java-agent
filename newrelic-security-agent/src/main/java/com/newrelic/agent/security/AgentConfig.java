@@ -1,15 +1,13 @@
 package com.newrelic.agent.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
-import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.AgentMode;
+import com.newrelic.agent.security.intcodeagent.models.collectorconfig.ScanControllers;
 import com.newrelic.agent.security.intcodeagent.utils.CronExpression;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.policy.*;
@@ -20,13 +18,10 @@ import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,8 +36,6 @@ import java.util.stream.Collectors;
 import static com.newrelic.agent.security.util.IUtilConstants.*;
 
 public class AgentConfig {
-
-    public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from snapshots directory, max %s file count reached removed : %s";
 
     public static final String AGENT_JAR_LOCATION = "agent_jar_location";
     public static final String AGENT_HOME = "agent_home";
@@ -74,7 +67,7 @@ public class AgentConfig {
 
     private Map<String, String> noticeErrorCustomParams = new HashMap<>();
 
-    private String iastTestIdentifier;
+    private ScanControllers scanControllers = new ScanControllers();
 
     private AgentConfig(){
     }
@@ -101,7 +94,21 @@ public class AgentConfig {
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
 
-        iastTestIdentifier = NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER);
+        try {
+            scanControllers.setScanInstanceCount(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT, 0));
+        } catch (NumberFormatException | ClassCastException e){
+            logger.log(LogLevel.FINEST, String.format("Error while reading IAST_SCAN_INSTANCE_COUNT %s , setting to default", NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_SCAN_INSTANCE_COUNT)), AgentConfig.class.getName());
+            scanControllers.setScanInstanceCount(0);
+        }
+
+        //Always set IAST Test Identifier after IAST_SCAN_INSTANCE_COUNT
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER) instanceof String) {
+            scanControllers.setIastTestIdentifier(NewRelic.getAgent().getConfig().getValue(IUtilConstants.IAST_TEST_IDENTIFIER));
+            scanControllers.setScanInstanceCount(1);
+        } else {
+            scanControllers.setIastTestIdentifier(StringUtils.EMPTY);
+        }
+
 
         instantiateAgentMode(groupName);
 
@@ -214,6 +221,8 @@ public class AgentConfig {
                 } else {
                     throw new RestrictionModeException(INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE);
                 }
+            } else {
+                agentMode.getScanSchedule().setNextScanTime(new Date(Instant.now().toEpochMilli()));
             }
             agentMode.getScanSchedule().setDataCollectionTime(agentMode.getScanSchedule().getNextScanTime());
             if(agentMode.getScanSchedule().isCollectSamples()){
@@ -398,37 +407,6 @@ public class AgentConfig {
         return logLevel;
     }
 
-    public void createSnapshotDirectory() throws IOException {
-        if (osVariables.getSnapshotDir() == null){
-            return;
-        }
-        Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
-        // Remove any file with this name from target.
-        if (!snapshotDir.toFile().isDirectory()) {
-            FileUtils.deleteQuietly(snapshotDir.toFile());
-        }
-        CommonUtils.forceMkdirs(snapshotDir, DIRECTORY_PERMISSION);
-    }
-
-    private void keepMaxStatusLogFiles(int max) {
-        Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getSnapshotDir()), FileFilterUtils.trueFileFilter(), null);
-        if (statusFiles.size() >= max) {
-            File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
-            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
-            FileUtils.deleteQuietly(sortedStatusFiles[0]);
-            logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), AgentConfig.class.getName());
-        }
-    }
-
-    public void setupSnapshotDir() {
-        try {
-            createSnapshotDirectory();
-            keepMaxStatusLogFiles(100);
-        } catch (Exception e) {
-            logger.log(LogLevel.WARNING, String.format("Snapshot directory creation failed !!! Please check file permissions. error:%s ", e.getMessage()), e, AgentConfig.class.getName());
-        }
-    }
-
     public String getGroupName() {
         return groupName;
     }
@@ -441,11 +419,15 @@ public class AgentConfig {
         return NR_CSEC_HOME;
     }
 
-    public String getIastTestIdentifier() {
-        return iastTestIdentifier;
-    }
-
     public AgentMode getAgentMode() {
         return agentMode;
+    }
+
+    public ScanControllers getScanControllers() {
+        return scanControllers;
+    }
+
+    public void setScanControllers(ScanControllers scanControllers) {
+        this.scanControllers = scanControllers;
     }
 }

@@ -146,6 +146,7 @@ public class FileHelper {
                             if (fbean.isIntegrityBreached(file)) {
                                 //Lock release is required here, as this register operation inside lock is intentional
                                 ThreadLocalLockHelper.releaseLock();
+                                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                                 NewRelicSecurity.getAgent().registerOperation(fbean);
                             }
                         }
@@ -157,33 +158,6 @@ public class FileHelper {
                 ThreadLocalLockHelper.releaseLock();
             }
         }
-    }
-
-    public static boolean isFileLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    public static boolean acquireFileLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isFileLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
-    }
-
-    public static void releaseFileLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
     }
 
     public static String getNrSecCustomAttribName() {

@@ -16,12 +16,30 @@ import com.newrelic.api.agent.weaver.Weaver;
 public class HttpResponseBuilder_Instrumentation {
     
     private ResponseStatus responseStatus = Weaver.callOriginal();
+    private HttpEntity body = Weaver.callOriginal();
 
     public HttpResponse build() {
-        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(responseStatus.getStatusCode());
-        return Weaver.callOriginal();
+        HttpResponse response = Weaver.callOriginal();
+        postProcessSecurityHook(response);
+
+        return response;
     }
 
-
-
+    private void postProcessSecurityHook(HttpResponse response) {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive()) {
+                return;
+            }
+            if (body != null) {
+                MuleHelper.registerStreamHashIfNeeded(body.hashCode(), MuleHelper.RESPONSE_ENTITY_STREAM);
+            }
+            com.newrelic.api.agent.security.schema.HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
+            MuleHelper.processHttpResponseHeaders(securityResponse, response);
+            securityResponse.setResponseCode(response.getStatusCode());
+            securityResponse.setContentType(MuleHelper.getContentType(securityResponse.getHeaders()));
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());
+        }
+    }
 }

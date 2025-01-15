@@ -41,7 +41,7 @@ public abstract class BaseXPath_Instrumentation {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
@@ -54,9 +54,7 @@ public abstract class BaseXPath_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String patternString, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(patternString)){
+            if (StringUtils.isBlank(patternString)){
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(patternString, this.getClass().getName(), methodName);
@@ -74,15 +72,10 @@ public abstract class BaseXPath_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType xpath) {
-        try {
-            return GenericHelper.acquireLockIfPossible(xpath, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(xpath, XPATHUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

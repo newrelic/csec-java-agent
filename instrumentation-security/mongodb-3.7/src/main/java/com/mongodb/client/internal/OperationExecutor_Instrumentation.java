@@ -32,18 +32,11 @@ public abstract class OperationExecutor_Instrumentation {
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(nosqlDbCommand, MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(nosqlDbCommand, MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     public <T> T execute(ReadOperation<T> operation, ReadPreference readPreference, @Nullable ClientSession session) {

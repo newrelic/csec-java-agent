@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Map;
@@ -19,6 +20,18 @@ public class GrailsHelper {
             }
         } catch (Exception ignored){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, GRAILS_13, ignored.getMessage()), ignored, GrailsHelper.class.getName());
+        }
+    }
+
+    public static void setRoute(String uri) {
+        if (!NewRelicSecurity.isHookProcessingActive()){
+            return;
+        }
+        try {
+            NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(uri);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.GRAILS);
+        } catch (Exception ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, GRAILS_13, ignored.getMessage()), ignored, GrailsHelper.class.getName());
         }
     }
 }

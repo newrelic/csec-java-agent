@@ -8,7 +8,6 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -41,9 +40,6 @@ public class NettyUtils {
 
     public static void processSecurityRequest(ChannelHandlerContext ctx, Object msg, String className) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             if (msg instanceof HttpRequest) {
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 com.newrelic.api.agent.security.schema.HttpRequest securityRequest =
@@ -52,6 +48,7 @@ public class NettyUtils {
                 if (!NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && securityRequest.isRequestParsed()) {
                     return;
                 }
+
                 securityRequest.setMethod(((HttpRequest) msg).getMethod().name());
                 securityRequest.setUrl(((HttpRequest) msg).getUri());
                 setClientAddressDetails(securityMetaData, ctx.channel().remoteAddress().toString());
@@ -189,7 +186,7 @@ public class NettyUtils {
 
     public static void sendRXSSEvent(ChannelHandlerContext ctx, Object msg, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse)) {
+            if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse) || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(((FullHttpResponse) msg).getStatus().code());
@@ -230,8 +227,8 @@ public class NettyUtils {
         return false;
     }
 
-    public static boolean acquireNettyLockIfPossible(VulnerabilityCaseType reflectedXss, String operationLock) {
-        return GenericHelper.acquireLockIfPossible(reflectedXss, operationLock+ Thread.currentThread().getId());
+    public static boolean acquireNettyLockIfPossible(String operationLock) {
+        return GenericHelper.acquireLockIfPossible(operationLock+ Thread.currentThread().getId());
     }
 
     public static void releaseNettyLock(String operationLock) {
