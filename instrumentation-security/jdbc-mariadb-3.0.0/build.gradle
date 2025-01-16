@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.0.3")
+
+    testImplementation ("ch.vorburger.mariaDB4j:mariaDB4j:2.2.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-mariadb-3.0.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.mariadb.jdbc:mariadb-java-client:(3.0.2-rc,)'
+    exclude 'org.mariadb.jdbc:mariadb-java-client:[3.0.0-alpha,3.0.2-rc]'
+}
+
+site {
+    title 'MariaDB Java Client'
+    type 'Datastore'
+}
