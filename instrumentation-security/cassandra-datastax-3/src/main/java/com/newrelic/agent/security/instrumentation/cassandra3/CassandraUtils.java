@@ -26,15 +26,11 @@ public class CassandraUtils {
     public static final String METHOD_EXECUTE_ASYNC = "executeAsync";
     public static final String NR_SEC_CUSTOM_ATTRIB_CQL_STMT = "NR-CQL-STMT";
     public static final String EVENT_CATEGORY = "CQL";
-    public static final String NR_SEC_CASSANDRA_LOCK = "CASSANDRA_OPERATION_LOCK";
+    private static final String NR_SEC_CASSANDRA_LOCK = "CASSANDRA_OPERATION_LOCK";
     public static final String CASSANDRA_DATASTAX_3 = "CASSANDRA-DATASTAX-3";
 
     public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashcode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(nosqlDbCommand, NR_SEC_CASSANDRA_LOCK + hashcode);
-        } catch (Exception ignored){
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(nosqlDbCommand, NR_SEC_CASSANDRA_LOCK, hashcode);
     }
 
     public static AbstractOperation preProcessSecurityHook(Statement statement, Configuration config, String klass) {
@@ -114,7 +110,7 @@ public class CassandraUtils {
         return params;
     }
 
-    public static Map<String, String> setParams(BoundStatement statement) {
+    private static Map<String, String> setParams(BoundStatement statement) {
         Map<String, String> params = new HashMap<>();
         List<ColumnDefinitions.Definition> variables = statement.preparedStatement().getVariables().asList();
         try{
@@ -136,9 +132,6 @@ public class CassandraUtils {
     }
 
     public static void releaseLock(int hashcode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_CASSANDRA_LOCK + hashcode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(NR_SEC_CASSANDRA_LOCK, hashcode);
     }
 }

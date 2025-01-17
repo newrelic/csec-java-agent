@@ -39,7 +39,7 @@ final class HttpClientImpl_Instrumentation {
     @Trace
     private <T> CompletableFuture<HttpResponse<T>>
     sendAsync(HttpRequest request, HttpResponse.BodyHandler<T> responseHandler, HttpResponse.PushPromiseHandler<T> pushPromiseHandler, Executor exchangeExecutor) {
-        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
@@ -63,12 +63,6 @@ final class HttpClientImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
-
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
@@ -86,18 +80,11 @@ final class HttpClientImpl_Instrumentation {
 
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
-    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
-        try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private static HttpRequest addSecurityHeader(AbstractOperation operation, HttpRequest req) {

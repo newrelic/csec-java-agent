@@ -135,8 +135,7 @@ public abstract class URLConnection_Instrumentation {
     private AbstractOperation preprocessSecurityHook(boolean currentCascadedCall, String callArgs, String protocol, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-                    || callArgs == null || callArgs.trim().isEmpty() || currentCascadedCall
+            if (callArgs == null || callArgs.trim().isEmpty() || currentCascadedCall
             ) {
                 return null;
             }

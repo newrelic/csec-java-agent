@@ -9,6 +9,7 @@ package org.apache.solr.client.solrj.impl;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SolrDbOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -40,7 +41,7 @@ public abstract class Http2SolrClient_Instrumentation {
     }
 
     public NamedList<Object> request(SolrRequest<?> solrRequest, String collection) throws SolrServerException, IOException {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible("HTTP_SOLR_REQUEST-", solrRequest.hashCode());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SOLR_DB_REQUEST, "HTTP_SOLR_REQUEST-", solrRequest.hashCode());
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSolrRequest(solrRequest, "REQUEST");

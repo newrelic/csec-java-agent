@@ -18,7 +18,7 @@ public class R2dbcHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper.skipExitEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExitEvent()
             ) {
                 return;
             }
@@ -30,9 +30,7 @@ public class R2dbcHelper {
 
     public static AbstractOperation preprocessSecurityHook(String sql, String methodName, String className, Map<String, String> params, boolean isPrepared) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()) {
+            if (sql == null || sql.trim().isEmpty()) {
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(className, methodName);
@@ -54,23 +52,6 @@ public class R2dbcHelper {
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, R2DBC_GENERIC, e.getMessage()), e, R2dbcHelper.class.getName());
         }
         return null;
-    }
-
-    public static boolean skipExitEvent() {
-        if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public static boolean isLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
     }
 
     public static boolean acquireLockIfPossible(VulnerabilityCaseType sqlDbCommand) {

@@ -77,7 +77,10 @@ public class IastHttpClient {
             for (Map.Entry<String, String> endpoint : endpoints.entrySet()) {
                 try {
                     ReadResult result = httpClient.execute(request, endpoint.getValue(), null, true);
-                    if(result.getStatusCode() >= 200 && result.getStatusCode() <= 500) {
+                    int statusCode = result.getStatusCode();
+                    if ((statusCode >= 200 && statusCode < 300) ||
+                            statusCode == 401 || statusCode == 402 ||
+                            statusCode == 406 || statusCode == 409) {
                         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(serverPort, endpoint.getKey(), endpoint.getValue(), true);
                         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
                         appServerInfo.getConnectionConfiguration().put(serverPort, serverConnectionConfiguration);

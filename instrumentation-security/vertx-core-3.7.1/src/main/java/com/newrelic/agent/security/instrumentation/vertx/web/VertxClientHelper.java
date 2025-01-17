@@ -13,7 +13,7 @@ import io.vertx.core.MultiMap;
 
 public class VertxClientHelper {
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "VERTX_WEB_OPERATION_LOCK-";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "VERTX_WEB_OPERATION_LOCK-";
 
     public static final String METHOD_END = "end";
 
@@ -22,14 +22,12 @@ public class VertxClientHelper {
 
     public static AbstractOperation preprocessSecurityHook(String url, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    url == null || url.trim().isEmpty()) {
+            if (url == null || url.trim().isEmpty()) {
                 return null;
             }
 
-            SSRFOperation operation = new SSRFOperation(url,
-                    className, methodName);
+            SSRFOperation operation = new SSRFOperation(url, className, methodName);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
@@ -74,7 +72,7 @@ public class VertxClientHelper {
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || skipExitEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExitEvent()
             ) {
                 return;
             }
@@ -82,15 +80,6 @@ public class VertxClientHelper {
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_7_1, e.getMessage()), e, VertxClientHelper.class.getName());
         }
-    }
-
-    public static boolean skipExitEvent() {
-        if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-            return true;
-        }
-
-        return false;
     }
 
     public static String getNrSecCustomAttribName() {

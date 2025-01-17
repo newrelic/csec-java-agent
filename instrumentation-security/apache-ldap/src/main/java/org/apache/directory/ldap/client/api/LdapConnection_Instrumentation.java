@@ -37,9 +37,7 @@ public abstract class LdapConnection_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String name, String filter, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(filter)){
+            if (StringUtils.isBlank(filter)){
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), methodName);
@@ -57,16 +55,11 @@ public abstract class LdapConnection_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType caseType) {
-        try {
-            return GenericHelper.acquireLockIfPossible(caseType, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(caseType, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     public EntryCursor search(Dn baseDn, String filter, SearchScope scope, String... attributes )
