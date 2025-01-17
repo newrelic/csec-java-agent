@@ -55,10 +55,10 @@ public abstract class ExchangeCodec_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                OkhttpHelper.registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        OkhttpHelper.registerExitOperation(isLockAcquired, operation);
     }
 
 }

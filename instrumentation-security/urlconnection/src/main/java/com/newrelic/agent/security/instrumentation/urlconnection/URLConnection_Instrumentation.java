@@ -62,10 +62,10 @@ public abstract class URLConnection_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(operation);
                 GenericHelper.releaseLock(Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
             }
         }
-        registerExitOperation(operation);
     }
 
     public synchronized OutputStream getOutputStream() throws IOException {
@@ -87,10 +87,11 @@ public abstract class URLConnection_Instrumentation {
             returnStream = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(operation);
                 GenericHelper.releaseLock(Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
             }
         }
-        registerExitOperation(operation);
+
         return returnStream;
     }
 
@@ -113,10 +114,10 @@ public abstract class URLConnection_Instrumentation {
             returnStream = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(operation);
                 GenericHelper.releaseLock(Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
             }
         }
-        registerExitOperation(operation);
         return returnStream;
     }
 
@@ -126,7 +127,7 @@ public abstract class URLConnection_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, URLConnection_Instrumentation.class.getClass().getName());
         }
@@ -165,18 +166,10 @@ public abstract class URLConnection_Instrumentation {
 
             SSRFOperation operation = new SSRFOperation(callArgs,
                     this.getClass().getName(), methodName);
-            try {
-                NewRelicSecurity.getAgent().registerOperation(operation);
-            } catch (Throwable e) {
-                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
-                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE,
-                        Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
-            } finally {
-                if(operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
-                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
-                    // Add Security distributed tracing header
-                    this.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
-                }
+            if(operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                    operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                // Add Security distributed tracing header
+                this.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
             }
             return operation;
         } catch (Throwable e) {

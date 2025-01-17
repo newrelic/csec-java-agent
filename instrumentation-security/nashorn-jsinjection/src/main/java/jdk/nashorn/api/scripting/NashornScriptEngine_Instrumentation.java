@@ -34,10 +34,10 @@ public class NashornScriptEngine_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -53,10 +53,10 @@ public class NashornScriptEngine_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
+                registerExitOperation(isLockAcquired, operation);
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
@@ -67,7 +67,7 @@ public class NashornScriptEngine_Instrumentation {
             ) {
                 return;
             }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JSEngineUtils.NASHORN_JS_INJECTION, e.getMessage()), e, NashornScriptEngine_Instrumentation.class.getName());
         }
@@ -80,7 +80,6 @@ public class NashornScriptEngine_Instrumentation {
                 return null;
             }
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(content, this.getClass().getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
