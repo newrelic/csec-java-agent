@@ -3,6 +3,7 @@ package com.newrelic.agent.security.intcodeagent.utils;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class TTLMap<K, V> {
 
@@ -18,6 +19,7 @@ public class TTLMap<K, V> {
         public TTLMap(String id, long ttl) {
             this.id = id;
             TTL = ttl;
+            SchedulerHelper.getInstance().scheduleTTLMapCleanup(this::removeExpiredEntries, ttl, ttl, TimeUnit.MILLISECONDS, id);
         }
 
         public void put(K key, V value) {
@@ -48,7 +50,7 @@ public class TTLMap<K, V> {
             SchedulerHelper.getInstance().cancelTTLMapCleanup(this.id);
         }
 
-    public boolean containsKey(K traceId) {
-        return map.containsKey(traceId);
-    }
+        public boolean containsKey(K traceId) {
+            return map.containsKey(traceId);
+        }
 }
