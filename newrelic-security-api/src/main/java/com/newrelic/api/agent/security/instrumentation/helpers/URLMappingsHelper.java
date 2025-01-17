@@ -22,7 +22,7 @@ public class URLMappingsHelper {
 
     public static final String subResourceSegment = "/*";
 
-    private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
+    private static final Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
 
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
@@ -47,15 +47,17 @@ public class URLMappingsHelper {
         add("org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet");
         add("org.codehaus.groovy.grails.web.pages.GroovyPagesServlet");
         add("org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet");
+        add("org.eclipse.jetty.ee9.servlet.NoJspServlet");
+        add("org.eclipse.jetty.ee9.servlet.DefaultServlet");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
         return mappings;
     }
 
-    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+    private static final Set<Integer> handlers = ConcurrentHashMap.newKeySet();
 
-    private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
+    private static final Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
 
     public static Set<Integer> getHandlersHash() {
         return handlers;
