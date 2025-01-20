@@ -96,9 +96,10 @@ public abstract class FilterChain_Instrumentation {
             if (Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
-            if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
+            if(NewRelic.getAgent().getTransaction().isWebTransaction() && response != null) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(httpServletResponse.getContentType());
             }
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
