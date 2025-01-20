@@ -29,7 +29,7 @@ public class Client_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                releaseLock();
+                R2dbcHelper.releaseLock();
             }
         }
         registerExitOperation(isLockAcquired, operation);
@@ -40,7 +40,7 @@ public class Client_Instrumentation {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || R2dbcHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
             }
@@ -52,9 +52,7 @@ public class Client_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String sql, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()) {
+            if (sql == null || sql.trim().isEmpty()) {
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -76,10 +74,4 @@ public class Client_Instrumentation {
         return null;
     }
 
-    private void releaseLock() {
-        try {
-            R2dbcHelper.releaseLock();
-        } catch (Throwable ignored) {
-        }
-    }
 }
