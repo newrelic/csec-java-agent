@@ -904,11 +904,7 @@ public class Agent implements SecurityAgent {
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 return true;
-            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                return true;
-            } else {
-                return false;
-            }
+            } else return responseCode == HttpURLConnection.HTTP_NOT_FOUND;
         } catch (IOException e) {
             return false;
         }
@@ -1082,10 +1078,9 @@ public class Agent implements SecurityAgent {
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
         int responseCode = securityMetaData.getResponse().getResponseCode();
         String route = securityMetaData.getRequest().getUrl();
-        //TODO turn on after api endpoint route detection is merged.
-//        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
-//            route = securityMetaData.getRequest().getRoute();
-//        }
+        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
+            route = securityMetaData.getRequest().getRoute();
+        }
         LogMessageException messageException = null;
         if (exception != null) {
             messageException = new LogMessageException(exception, 0, 1, 20);
