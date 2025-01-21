@@ -17,7 +17,15 @@ public class ServerConnectionConfiguration {
     public ServerConnectionConfiguration(int port, String scheme) {
         this.port = port;
         this.protocol = scheme;
+        this.endpoint = String.format("%s://localhost:%s", scheme, port);
         this.confirmed = false;
+    }
+
+    public ServerConnectionConfiguration(int port, String scheme, String endpoint, boolean confirmed) {
+        this.port = port;
+        this.protocol = scheme;
+        this.endpoint = endpoint;
+        this.confirmed = confirmed;
     }
 
     public Integer getPort() {

@@ -33,10 +33,6 @@ public class NingHelper {
     public static AbstractOperation preprocessSecurityHook(Request request, String uri, String methodName, String className) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
 
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
@@ -73,17 +69,10 @@ public class NingHelper {
     }
 
     public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest, int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(httpRequest, NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 }

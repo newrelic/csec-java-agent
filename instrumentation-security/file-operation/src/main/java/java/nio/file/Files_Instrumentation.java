@@ -70,9 +70,7 @@ public class Files_Instrumentation {
     private static AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, boolean isLowSeverityHook,
                                                             File... files) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || files == null || files.length == 0
+            if (files == null || files.length == 0
             ) {
                 return null;
             }
