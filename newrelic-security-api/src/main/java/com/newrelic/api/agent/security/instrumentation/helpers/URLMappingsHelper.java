@@ -47,6 +47,7 @@ public class URLMappingsHelper {
         add("org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet");
         add("org.codehaus.groovy.grails.web.pages.GroovyPagesServlet");
         add("org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet");
+        add("org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {
@@ -66,11 +67,12 @@ public class URLMappingsHelper {
     }
 
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
-        if (mapping.getHandler() == null || (mapping.getHandler() != null && !defaultHandlers.contains(mapping.getHandler()))) {
-            mappings.add(mapping);
-            generateRouteSegments(mapping.getPath());
+        if (mapping.getHandler() != null && defaultHandlers.contains(mapping.getHandler())){
+            return;
         }
-        if (mapping.getHandler() != null){
+        mappings.add(mapping);
+        generateRouteSegments(mapping.getPath());
+        if (mapping.getHandler() != null && StringUtils.isNotBlank(mapping.getHandler())){
             handlers.add(mapping.getHandler().hashCode());
         }
         NewRelicSecurity.getAgent().reportURLMapping();

@@ -27,6 +27,9 @@ public abstract class Filter_Instrumentation {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
+        if (request instanceof HttpServletRequest) {
+            HttpServletHelper.setRoute((HttpServletRequest)request);
+        }
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
