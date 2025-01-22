@@ -18,14 +18,13 @@ public class HttpServletHelper {
     private static final String SERVLET_3_0 = "SERVLET-3.0";
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
-            Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             String contextPath = StringUtils.removeStart(StringUtils.removeEnd(servletContext.getContextPath(), URLMappingsHelper.SEPARATOR), StringUtils.SEPARATOR);
-            if (!StringUtils.equalsAny(contextPath, "docs", "examples")) {
-                getJSPMappings(servletContext, URLMappingsHelper.SEPARATOR);
-            }
-            for (ServletRegistration servletRegistration : servletRegistrations.values()) {
-                for (String s : servletRegistration.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, s, servletRegistration.getClassName()));
+            Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
+            getJSPMappings(servletContext, URLMappingsHelper.SEPARATOR);
+
+            for (ServletRegistration servletReg : servletRegistrations.values()) {
+                for (String mapping : servletReg.getMappings()) {
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, mapping, servletReg.getClassName()));
                 }
             }
         } catch (Exception e){
