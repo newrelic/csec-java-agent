@@ -26,7 +26,7 @@ public class SprayToResponseMarshallingContext {
 
     @Trace(async = true)
     public void marshalTo(HttpResponse httpResponse) {
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SprayHttpUtils.getNrSecCustomAttribNameForResponse());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && httpResponse.entity().nonEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(httpResponse.entity().data().asString(StandardCharsets.UTF_8)));
