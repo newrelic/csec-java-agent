@@ -32,7 +32,7 @@ public class AkkaCoreUtils {
     private static final String QUESTION_MARK = "?";
 
     public static boolean acquireServletLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, NR_SEC_CUSTOM_ATTRIB_NAME);
+        return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder response, String contentType, int responseCode, String className, String methodName, Token token) {

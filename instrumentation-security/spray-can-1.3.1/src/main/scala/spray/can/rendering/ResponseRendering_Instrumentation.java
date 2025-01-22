@@ -19,7 +19,7 @@ public class ResponseRendering_Instrumentation {
     private static boolean renderResponse$1(ResponseRenderingComponent component, HttpResponse response,
             Rendering rendering, ResponsePartRenderingContext context, LoggingAdapter adapter) {
 
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SprayHttpUtils.getNrSecCustomAttribNameForResponse());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && response.entity().nonEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(response.entity().data().asString(StandardCharsets.UTF_8)));
