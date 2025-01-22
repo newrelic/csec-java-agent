@@ -54,7 +54,23 @@ public class HttpStatusCodes {
         codes.put(508, "Loop Detected");
         codes.put(510, "Not Extended");
         codes.put(511, "Network Authentication Required");
-
+        codes.put(0, "OK");
+        codes.put(1, "Cancelled");
+        codes.put(2, "Unknown");
+        codes.put(3, "Invalid Argument");
+        codes.put(4, "Deadline Exceeded");
+        codes.put(5, "Not Found");
+        codes.put(6, "Already Exists");
+        codes.put(7, "Permission Denied");
+        codes.put(8, "Resource Exhausted");
+        codes.put(9, "Failed Precondition");
+        codes.put(10, "Aborted");
+        codes.put(11, "Out Of Range");
+        codes.put(12, "Unimplemented");
+        codes.put(13, "Internal");
+        codes.put(14, "Unavailable");
+        codes.put(15, "Data Loss");
+        codes.put(16, "Unauthenticated");
     }
 
     public static String getStatusCode(int code) {
