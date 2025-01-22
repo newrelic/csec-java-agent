@@ -121,7 +121,6 @@ public class IastMonitoring {
         }
 
         IastMonitoring.getInstance().incrementSamplerCycle();
-        IastMonitoring.getInstance().setRemainingHarvestRequests(0);
         IastMonitoring.getInstance().getHarvestedTraceId().clear();
         logger.log( LogLevel.FINEST, String.format("IAST Monitoring: Sampling of Data started for sampling cycle %s", IastMonitoring.getInstance().getSamplerCycle()), IastMonitoring.class.getName());
     }
@@ -133,11 +132,11 @@ public class IastMonitoring {
             AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoringMode().getHarvesting().set(false);
             NewRelicSecurity.getAgent().getSecurityMetaData().removeCustomAttribute("HARVEST");
             IastMonitoring.getInstance().incrementRequestHarvested();
-            int remaining = IastMonitoring.getInstance().decrementRemainingHarvestRequests();
-            if(remaining <= 0){
-                IastMonitoring.getInstance().setHarvestActive(false);
-                logger.log(LogLevel.FINEST, "IAST Monitoring: Harvesting Completed", IastMonitoring.class.getName());
-            }
+//            int remaining = IastMonitoring.getInstance().decrementRemainingHarvestRequests();
+//            if(remaining <= 0){
+//                IastMonitoring.getInstance().setHarvestActive(false);
+//                logger.log(LogLevel.FINEST, "IAST Monitoring: Harvesting Completed", IastMonitoring.class.getName());
+//            }
             logger.log( LogLevel.FINEST, String.format("IAST Monitoring: %s:%s Sample collected", IastMonitoring.getInstance().getHarvestCycleCount(), IastMonitoring.getInstance().getRequestHarvested()), IastMonitoring.class.getName());
         }
     }
@@ -153,7 +152,7 @@ public class IastMonitoring {
 
     public static boolean shouldProcessInterception() {
         if(AgentConfig.getInstance().getAgentMode().getIastScan().getMonitoring()) {
-            return IastMonitoring.getInstance().getHarvestActive() && NewRelicSecurity.getAgent().getSecurityMetaData().customAttributeContainsKey("HARVEST") && NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("HARVEST", Boolean.class);
+            return NewRelicSecurity.getAgent().getSecurityMetaData().customAttributeContainsKey("HARVEST") && NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("HARVEST", Boolean.class);
         } else {
             return true;
         }

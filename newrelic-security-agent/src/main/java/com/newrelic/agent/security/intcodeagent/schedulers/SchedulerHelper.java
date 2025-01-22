@@ -2,6 +2,7 @@ package com.newrelic.agent.security.intcodeagent.schedulers;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
+import com.newrelic.agent.security.intcodeagent.iast.monitoring.IastMonitoring;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -113,6 +114,7 @@ public class SchedulerHelper {
     }
 
     public void shutdownSampling() {
+        IastMonitoring.getInstance().setHarvestActive(false);
         if(scheduledFutureMap.containsKey("sampling")){
             ScheduledFuture<?> future = scheduledFutureMap.get("sampling");
             future.cancel(false);
