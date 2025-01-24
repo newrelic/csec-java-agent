@@ -22,7 +22,11 @@ public class URLMappingsHelper {
 
     public static final String subResourceSegment = "/*";
 
-    private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
+    public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "javax.faces.webapp.FacesServlet";
+
+    public static final String JAKARTA_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
+
+    private static final Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
 
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
@@ -54,9 +58,9 @@ public class URLMappingsHelper {
         return mappings;
     }
 
-    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+    private static final Set<Integer> handlers = ConcurrentHashMap.newKeySet();
 
-    private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
+    private static final Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
 
     public static Set<Integer> getHandlersHash() {
         return handlers;

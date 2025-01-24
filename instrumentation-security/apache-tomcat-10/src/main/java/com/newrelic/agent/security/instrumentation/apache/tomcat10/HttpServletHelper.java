@@ -21,19 +21,24 @@ public class HttpServletHelper {
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
-            getJSPMappings(servletContext, SEPARATOR);
-
+            boolean isJSFSupported = false;
             for (ServletRegistration servletReg : servletRegistrations.values()) {
+                String handlerName = servletReg.getClassName();
+                if (StringUtils.equalsAny(handlerName, URLMappingsHelper.JAVAX_FACES_WEBAPP_FACES_SERVLET, URLMappingsHelper.JAKARTA_FACES_WEBAPP_FACES_SERVLET)) {
+                    isJSFSupported = true;
+                }
                 for (String mapping : servletReg.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, servletReg.getClassName()));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, handlerName));
                 }
             }
+            getJSPMappings(servletContext, SEPARATOR, isJSFSupported);
+
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, APACHE_TOMCAT_10, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
-    private static void getJSPMappings(ServletContext servletContext, String dir) {
+    private static void getJSPMappings(ServletContext servletContext, String dir, boolean isJSFSupported) {
         try {
             if(dir.endsWith(SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
@@ -43,9 +48,12 @@ public class HttpServletHelper {
                         continue;
                     }
                     if(path.endsWith(SEPARATOR)) {
-                        getJSPMappings(servletContext, path);
+                        getJSPMappings(servletContext, path, isJSFSupported);
                     }
-                    else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX")) {
+                    else if(StringUtils.endsWithAny(path, ".jsp", ".JSP", ".jspx", ".JSPX")) {
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
+                    }
+                    else if (isJSFSupported && StringUtils.endsWithAny(path, ".xhtml", ".faces", ".jsf", ".XHTML", ".FACES", ".JSF")) {
                         URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
                     }
                 }
