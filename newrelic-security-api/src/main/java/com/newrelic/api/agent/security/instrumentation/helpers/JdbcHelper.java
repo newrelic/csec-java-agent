@@ -67,8 +67,7 @@ public class JdbcHelper {
 
     public static boolean isLockAcquired() {
         try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
+            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
         } catch (Throwable ignored) {}
         return false;
     }
@@ -85,14 +84,10 @@ public class JdbcHelper {
     }
 
     public static void releaseLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
-    private static String getNrSecCustomAttribName() {
+    public static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 

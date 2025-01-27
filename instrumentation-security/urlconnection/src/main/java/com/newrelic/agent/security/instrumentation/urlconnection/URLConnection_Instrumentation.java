@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -45,43 +46,49 @@ public abstract class URLConnection_Instrumentation {
 
     public void connect() throws IOException {
         String url = null;
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
         AbstractOperation operation = null;
-        URL getURL = getURL();
-        if(getURL != null) {
-            url = getURL.toString();
-            boolean currentCascadedCall = cascadedCall;
-            // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_CONNECT);
+        if(isLockAcquired) {
+            URL getURL = getURL();
+            if (getURL != null) {
+                url = getURL.toString();
+                boolean currentCascadedCall = cascadedCall;
+                // Preprocess Phase
+                operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_CONNECT);
+            }
         }
         // Actual Call
         try {
             Weaver.callOriginal();
         } finally {
-            /* Not calling `cascadedCall = currentCascadedCall;` is intentional.
-            * This saves from generating additional getInputStream events while processing a call.
-            * */
+            if(isLockAcquired){
+                GenericHelper.releaseLock(Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
+            }
         }
         registerExitOperation(operation);
     }
 
     public synchronized OutputStream getOutputStream() throws IOException {
         String url = null;
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
         AbstractOperation operation = null;
-        URL getURL = getURL();
-        if(getURL != null) {
-            url = getURL.toString();
-            boolean currentCascadedCall = cascadedCall;
-            // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
+        if(isLockAcquired) {
+            URL getURL = getURL();
+            if (getURL != null) {
+                url = getURL.toString();
+                boolean currentCascadedCall = cascadedCall;
+                // Preprocess Phase
+                operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
+            }
         }
         // Actual Call
         OutputStream returnStream = null;
         try {
             returnStream = Weaver.callOriginal();
         } finally {
-            /* Not calling `cascadedCall = currentCascadedCall;` is intentional.
-             * This saves from generating additional getInputStream events while processing a call.
-             * */
+            if(isLockAcquired){
+                GenericHelper.releaseLock(Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
+            }
         }
         registerExitOperation(operation);
         return returnStream;
@@ -89,22 +96,25 @@ public abstract class URLConnection_Instrumentation {
 
     public synchronized InputStream getInputStream() throws IOException {
         String url = null;
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
         AbstractOperation operation = null;
-        URL getURL = getURL();
-        if(getURL != null) {
-            url = getURL.toString();
-            boolean currentCascadedCall = cascadedCall;
-            // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
+        if(isLockAcquired) {
+            URL getURL = getURL();
+            if (getURL != null) {
+                url = getURL.toString();
+                boolean currentCascadedCall = cascadedCall;
+                // Preprocess Phase
+                operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
+            }
         }
         // Actual Call
         InputStream returnStream = null;
         try {
             returnStream = Weaver.callOriginal();
         } finally {
-            /* Not calling `cascadedCall = currentCascadedCall;` is intentional.
-             * This saves from generating additional getInputStream events while processing a call on same object.
-             * */
+            if(isLockAcquired){
+                GenericHelper.releaseLock(Helper.NR_SEC_CUSTOM_ATTRIB_NAME);
+            }
         }
         registerExitOperation(operation);
         return returnStream;
@@ -125,8 +135,7 @@ public abstract class URLConnection_Instrumentation {
     private AbstractOperation preprocessSecurityHook(boolean currentCascadedCall, String callArgs, String protocol, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-                    || callArgs == null || callArgs.trim().isEmpty() || currentCascadedCall
+            if (callArgs == null || callArgs.trim().isEmpty() || currentCascadedCall
             ) {
                 return null;
             }

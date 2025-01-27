@@ -9,6 +9,7 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -27,49 +28,32 @@ public class HttpRequestHelper {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
-    public static final String QUESTION_MARK = "?";
     public static final String CONTAINER_RESPONSE_METHOD_NAME = "ContainerResponse";
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "REQUEST_LOCK-";
-    private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
-    public static final String HEADER_SEPARATOR = ";";
-    public static final String GRIZZLY_REQUEST_PROPERTIES_DELEGATE = "GRIZZLY_REQUEST_PROPERTIES_DELEGATE";
-    public static final String GRIZZLY_REQUEST = "GRIZZLY_REQUEST";
-    public static final String ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_GRIZZLY_REQUEST_PROPERTIES_DELEGATE = "org.glassfish.jersey.grizzly2.httpserver.GrizzlyRequestPropertiesDelegate";
-    public static final String ORG_GLASSFISH_GRIZZLY_HTTP_SERVER_REQUEST = "org.glassfish.grizzly.http.server.Request";
-    public static final String FIELD_REQUEST = "request";
-    public static final String METHOD_GET_REMOTE_ADDR = "getRemoteAddr";
-    public static final String METHOD_GET_REMOTE_PORT = "getRemotePort";
-    public static final String METHOD_GET_LOCAL_PORT = "getLocalPort";
-    public static final String METHOD_GET_SCHEME = "getScheme";
-    public static final String METHOD_GET_CONTENT_TYPE = "getContentType";
-    public static final String ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE = "org.glassfish.jersey.message.internal.TracingAwarePropertiesDelegate";
-    public static final String TRACING_AWARE_PROPERTIES_DELEGATE = "TRACING_AWARE_PROPERTIES_DELEGATE";
-    public static final String FIELD_PROPERTIES_DELEGATE = "propertiesDelegate";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME_POST_PROCESSING = "JERSEY_LOCK_POST_PROCESSING-";
+    private static final String HEADER_SEPARATOR = ";";
+    private static final String ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_GRIZZLY_REQUEST_PROPERTIES_DELEGATE = "org.glassfish.jersey.grizzly2.httpserver.GrizzlyRequestPropertiesDelegate";
+    private static final String FIELD_REQUEST = "request";
+    private static final String METHOD_GET_REMOTE_ADDR = "getRemoteAddr";
+    private static final String METHOD_GET_REMOTE_PORT = "getRemotePort";
+    private static final String METHOD_GET_LOCAL_PORT = "getLocalPort";
+    private static final String METHOD_GET_SCHEME = "getScheme";
+    private static final String METHOD_GET_CONTENT_TYPE = "getContentType";
+    private static final String ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE = "org.glassfish.jersey.message.internal.TracingAwarePropertiesDelegate";
+    private static final String FIELD_PROPERTIES_DELEGATE = "propertiesDelegate";
 
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
-    public static final String CONTENT_TYPE = "content-type";
-    public static final String HEADER_CONTENT_TYPE = "contenttype";
+    private static final String CONTENT_TYPE = "content-type";
+    private static final String HEADER_CONTENT_TYPE = "contenttype";
     public static final String JERSEY_2 = "JERSEY-2";
-
-    public static Class grizzlyRequestPropertiesDelegateKlass = null;
-
-    public static Class grizzlyRequest = null;
-
-    public static Class tracingAwarePropertiesDelegateKlass = null;
 
     public static void preprocessSecurityHook(ContainerRequest requestContext) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
 
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
+
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(requestContext.getMethod());
             HttpRequestHelper.processPropertiesDelegate(requestContext.getPropertiesDelegate(), securityRequest);
@@ -92,8 +76,7 @@ public class HttpRequestHelper {
 
     public static void postProcessSecurityHook(String className, OutboundMessageContext wrappedMessageContext) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if (Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
             ServletHelper.executeBeforeExitingTransaction();
@@ -131,7 +114,7 @@ public class HttpRequestHelper {
 
     }
 
-    public static void processHttpRequestHeader(ContainerRequest request, HttpRequest securityRequest){
+    private static void processHttpRequestHeader(ContainerRequest request, HttpRequest securityRequest){
         MultivaluedMap<String, String> headers = request.getHeaders();
         for (Map.Entry<String, List<String>> header : headers.entrySet()) {
             boolean takeNextValue = false;
@@ -187,7 +170,7 @@ public class HttpRequestHelper {
         return finalValue.toString();
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -198,56 +181,42 @@ public class HttpRequestHelper {
         return data;
     }
 
-    public static boolean isRequestLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     public static boolean acquireRequestLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isRequestLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
     }
 
     public static void releaseRequestLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 
-    public static void processPropertiesDelegate(PropertiesDelegate propertiesDelegate, HttpRequest securityRequest) {
+    public static String getNrSecCustomAttribForPostProcessing() {
+        return NR_SEC_CUSTOM_ATTRIB_NAME_POST_PROCESSING + Thread.currentThread().getId();
+    }
+
+    private static void processPropertiesDelegate(PropertiesDelegate propertiesDelegate, HttpRequest securityRequest) {
         if(StringUtils.equals(propertiesDelegate.getClass().getName(), ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_GRIZZLY_REQUEST_PROPERTIES_DELEGATE)){
             try {
-                Class grizzlyRequestPropertiesDelegateKlass = getClass(GRIZZLY_REQUEST_PROPERTIES_DELEGATE);
+                Class<? extends PropertiesDelegate> grizzlyRequestPropertiesDelegateKlass = propertiesDelegate.getClass();
                 Field requestField = grizzlyRequestPropertiesDelegateKlass.getDeclaredField(FIELD_REQUEST);
                 requestField.setAccessible(true);
                 Object requestObject = requestField.get(propertiesDelegate);
-                Class requestClass = getClass(GRIZZLY_REQUEST);
-                Method getRemoteAddr = requestClass.getDeclaredMethod(METHOD_GET_REMOTE_ADDR);
-                Method getRemotePort = requestClass.getDeclaredMethod(METHOD_GET_REMOTE_PORT);
-                Method getLocalPort = requestClass.getDeclaredMethod(METHOD_GET_LOCAL_PORT);
-                Method getScheme = requestClass.getDeclaredMethod(METHOD_GET_SCHEME);
-                Method getContentType = requestClass.getDeclaredMethod(METHOD_GET_CONTENT_TYPE);
+
+                Class<?> requestClass = requestObject.getClass();
+                Method getRemoteAddr = requestClass.getMethod(METHOD_GET_REMOTE_ADDR);
+                Method getRemotePort = requestClass.getMethod(METHOD_GET_REMOTE_PORT);
+                Method getLocalPort = requestClass.getMethod(METHOD_GET_LOCAL_PORT);
+                Method getScheme = requestClass.getMethod(METHOD_GET_SCHEME);
+                Method getContentType = requestClass.getMethod(METHOD_GET_CONTENT_TYPE);
                 securityRequest.setClientIP(String.valueOf(getRemoteAddr.invoke(requestObject)));
                 securityRequest.setClientPort(String.valueOf(getRemotePort.invoke(requestObject)));
                 securityRequest.setServerPort((int) getLocalPort.invoke(requestObject));
                 securityRequest.setProtocol((String) getScheme.invoke(requestObject));
                 securityRequest.setContentType((String) getContentType.invoke(requestObject));
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
+            } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
                      InvocationTargetException e) {
                 NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
                 NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
@@ -255,40 +224,18 @@ public class HttpRequestHelper {
 
         } else if (StringUtils.equals(propertiesDelegate.getClass().getName(), ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE)){
             try {
-                Class tracingAwarePropertiesDelegateKlass = getClass(TRACING_AWARE_PROPERTIES_DELEGATE);
+                Class<? extends PropertiesDelegate> tracingAwarePropertiesDelegateKlass = propertiesDelegate.getClass();
                 Field propertiesDelegateField = tracingAwarePropertiesDelegateKlass.getDeclaredField(FIELD_PROPERTIES_DELEGATE);
                 propertiesDelegateField.setAccessible(true);
                 Object propertiesDelegateObject = propertiesDelegateField.get(propertiesDelegate);
                 processPropertiesDelegate((PropertiesDelegate) propertiesDelegateObject, securityRequest);
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
                 NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
             }
         } else {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, "This case is not covered."), HttpRequestHelper.class.getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, "This case is not covered."), null, HttpRequestHelper.class.getName());
-        }
-    }
-
-    private static Class getClass(String klassName) throws ClassNotFoundException {
-        switch (klassName) {
-            case GRIZZLY_REQUEST_PROPERTIES_DELEGATE:
-                if (grizzlyRequestPropertiesDelegateKlass == null) {
-                    grizzlyRequestPropertiesDelegateKlass = Class.forName(ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_GRIZZLY_REQUEST_PROPERTIES_DELEGATE);
-                }
-                return grizzlyRequestPropertiesDelegateKlass;
-            case GRIZZLY_REQUEST:
-                if (grizzlyRequest == null) {
-                    grizzlyRequest = Class.forName(ORG_GLASSFISH_GRIZZLY_HTTP_SERVER_REQUEST);
-                }
-                return grizzlyRequest;
-            case TRACING_AWARE_PROPERTIES_DELEGATE:
-                if (tracingAwarePropertiesDelegateKlass == null) {
-                    tracingAwarePropertiesDelegateKlass = Class.forName(ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE);
-                }
-                return tracingAwarePropertiesDelegateKlass;
-            default:
-                throw new ClassNotFoundException(klassName);
         }
     }
 
@@ -305,10 +252,6 @@ public class HttpRequestHelper {
 
     public static void registerUserLevelCode(String frameworkName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);

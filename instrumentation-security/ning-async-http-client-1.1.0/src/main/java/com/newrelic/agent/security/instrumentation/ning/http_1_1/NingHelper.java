@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -29,10 +30,6 @@ public class NingHelper {
     public static AbstractOperation preprocessSecurityHook(Request request, String uri, String methodName, String className) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
 
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
@@ -67,17 +64,10 @@ public class NingHelper {
     }
 
     public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest, int hashCode) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 }

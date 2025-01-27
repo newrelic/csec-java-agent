@@ -13,6 +13,7 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RedisOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -30,7 +31,7 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
     @SuppressWarnings("unchecked")
     @Trace
     public <T> AsyncCommand<K, V, T> dispatch(RedisCommand_Instrumentation<K, V, T> cmd) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(cmd, LettuceUtils.METHOD_DISPATCH);
@@ -64,10 +65,6 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
 
     private <T> AbstractOperation preprocessSecurityHook(RedisCommand_Instrumentation<K,V,T> cmd, String methodDispatch) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             String type = cmd.getType().name();
             CommandArgs_Instrumentation commandArgs = cmd.getArgs();
             List<Object> arguments = new ArrayList<>();
@@ -90,15 +87,10 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
-    private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
-        return false;
+    private boolean acquireLockIfPossible(VulnerabilityCaseType cachingDataStore) {
+        return GenericHelper.acquireLockIfPossible(cachingDataStore, LettuceUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 }

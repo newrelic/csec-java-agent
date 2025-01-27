@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -18,7 +19,7 @@ import org.reactivestreams.Publisher;
 public class Client_Instrumentation {
 
     public void execute(String sql) {
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND);
         AbstractOperation operation = null;
         if (isLockAcquired) {
             operation = preprocessSecurityHook(sql, R2dbcHelper.METHOD_EXECUTE);
@@ -28,7 +29,7 @@ public class Client_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                releaseLock();
+                R2dbcHelper.releaseLock();
             }
         }
         registerExitOperation(isLockAcquired, operation);
@@ -39,7 +40,7 @@ public class Client_Instrumentation {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || R2dbcHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
             ) {
                 return;
             }
@@ -51,9 +52,7 @@ public class Client_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String sql, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()) {
+            if (sql == null || sql.trim().isEmpty()) {
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -75,18 +74,4 @@ public class Client_Instrumentation {
         return null;
     }
 
-    private void releaseLock() {
-        try {
-            R2dbcHelper.releaseLock();
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private boolean acquireLockIfPossible() {
-        try {
-            return R2dbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
 }

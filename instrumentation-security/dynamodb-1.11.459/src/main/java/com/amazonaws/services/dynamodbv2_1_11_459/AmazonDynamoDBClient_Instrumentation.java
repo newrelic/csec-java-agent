@@ -16,6 +16,7 @@ import com.amazonaws.Response;
 import com.amazonaws.http.ExecutionContext;
 import com.amazonaws.http.HttpResponseHandler;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.dynamodb_1_11_459.DynamoDBUtil;
@@ -35,7 +36,7 @@ public abstract class AmazonDynamoDBClient_Instrumentation extends AmazonWebServ
 
     private <X, Y extends AmazonWebServiceRequest> Response<X> doInvoke(Request<Y> request, HttpResponseHandler<AmazonWebServiceResponse<X>> responseHandler, ExecutionContext executionContext, URI discoveredEndpoint, URI uriFromEndpointTrait) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = DynamoDBUtil.acquireLockIfPossible(request.hashCode());
+        boolean isLockAcquired = DynamoDBUtil.acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, request.hashCode());
         if (isLockAcquired) {
             noSQLOperation = DynamoDBUtil.processDynamoDBRequest(request, this.getClass().getName());
         }

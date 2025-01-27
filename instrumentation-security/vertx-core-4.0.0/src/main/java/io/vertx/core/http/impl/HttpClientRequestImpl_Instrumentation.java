@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -35,7 +36,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
 
     public Future<Void> end(Buffer chunk) {
         Future<Void> result;
-        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible();
+        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(absoluteURI(), this.getClass().getName(), VertxClientHelper.METHOD_END);
@@ -53,7 +54,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
     }
     public void end(Buffer chunk, Handler<AsyncResult<Void>> handler) {
 
-        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible();
+        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(absoluteURI(), this.getClass().getName(), VertxClientHelper.METHOD_END);
@@ -71,7 +72,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
 
     public void end(Handler<AsyncResult<Void>> handler){
 
-        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible();
+        boolean isLockAcquired = VertxClientHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = preprocessSecurityHook(absoluteURI(), this.getClass().getName(),
@@ -89,7 +90,7 @@ public abstract class HttpClientRequestImpl_Instrumentation {
     }
     private AbstractOperation preprocessSecurityHook(String url, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || url == null || url.trim().isEmpty()) {
+            if (url == null || url.trim().isEmpty()) {
                 return null;
             }
             SSRFOperation operation = new SSRFOperation(url, className, methodName);

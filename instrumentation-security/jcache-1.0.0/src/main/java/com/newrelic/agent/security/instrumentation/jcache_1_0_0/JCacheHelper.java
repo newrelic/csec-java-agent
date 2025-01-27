@@ -3,6 +3,7 @@ package com.newrelic.agent.security.instrumentation.jcache_1_0_0;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JCacheOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -19,10 +20,8 @@ public class JCacheHelper {
 
     public static AbstractOperation preprocessSecurityHook(String command, List<Object> args, String klass, String method) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             JCacheOperation operation = new JCacheOperation(klass, method, command, args);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
@@ -49,15 +48,10 @@ public class JCacheHelper {
     }
 
     public static void releaseLock(int hashcode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
     }
 
     public static boolean acquireLockIfPossible(int hashcode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.CACHING_DATA_STORE, NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
     }
 }

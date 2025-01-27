@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -41,9 +42,7 @@ public abstract class JtdsStatement_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook (String sql, String methodName){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    sql == null || sql.trim().isEmpty()){
+            if (sql == null || sql.trim().isEmpty()){
                 return null;
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
@@ -64,16 +63,11 @@ public abstract class JtdsStatement_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            JdbcHelper.releaseLock();
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return JdbcHelper.acquireLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND, JdbcHelper.getNrSecCustomAttribName());
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {

@@ -15,6 +15,7 @@ import com.mongodb.operation.*;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.NoSQLOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -48,9 +49,9 @@ public class MongoUtil {
     public static AbstractOperation recordMongoOperation(BsonDocument command, String typeOfOperation, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && command != null) {
+            if (command != null) {
                 operation = new NoSQLOperation(command.toJson(), typeOfOperation, klassName, methodName);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
@@ -65,18 +66,15 @@ public class MongoUtil {
     public static AbstractOperation recordMongoOperation(List<BsonDocument> command, String typeOfOperation, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                List<String> operations = new ArrayList<>();
-                for (BsonDocument cmd : command) {
-                    if(cmd != null) {
-                        operations.add(cmd.toJson());
-                    }
+            List<String> operations = new ArrayList<>();
+            for (BsonDocument cmd : command) {
+                if(cmd != null) {
+                    operations.add(cmd.toJson());
                 }
-                operation = new NoSQLOperation(operations, typeOfOperation, klassName, methodName);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
-                NewRelicSecurity.getAgent().registerOperation(operation);
             }
+            operation = new NoSQLOperation(operations, typeOfOperation, klassName, methodName);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MONGODB_3_8, e.getMessage()), e, MongoUtil.class.getName());
@@ -102,43 +100,33 @@ public class MongoUtil {
     }
 
     public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
+        return GenericHelper.acquireLockIfPossible(nosqlDbCommand, MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     public static AbstractOperation recordWriteRequest(List<? extends WriteRequest> writeRequest, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                List<String> operations = new ArrayList<>();
-                for (WriteRequest request : writeRequest) {
-                    if(request instanceof InsertRequest){
-                        InsertRequest insertRequest = (InsertRequest) request;
-                        operations.add(insertRequest.getDocument().toJson());
-                    } else if (request instanceof DeleteRequest){
-                        DeleteRequest deleteRequest = (DeleteRequest) request;
-                        operations.add(deleteRequest.getFilter().toJson());
-                    } else if (request instanceof UpdateRequest){
-                        UpdateRequest updateRequest = (UpdateRequest) request;
-                        operations.add(updateRequest.getUpdate().toJson());
-                        operations.add(updateRequest.getFilter().toJson());
-                    }
+            List<String> operations = new ArrayList<>();
+            for (WriteRequest request : writeRequest) {
+                if(request instanceof InsertRequest){
+                    InsertRequest insertRequest = (InsertRequest) request;
+                    operations.add(insertRequest.getDocument().toJson());
+                } else if (request instanceof DeleteRequest){
+                    DeleteRequest deleteRequest = (DeleteRequest) request;
+                    operations.add(deleteRequest.getFilter().toJson());
+                } else if (request instanceof UpdateRequest){
+                    UpdateRequest updateRequest = (UpdateRequest) request;
+                    operations.add(updateRequest.getUpdate().toJson());
+                    operations.add(updateRequest.getFilter().toJson());
                 }
-                operation = new NoSQLOperation(operations, OP_WRITE, klassName, methodName);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
-                NewRelicSecurity.getAgent().registerOperation(operation);
             }
+            operation = new NoSQLOperation(operations, OP_WRITE, klassName, methodName);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
+            NewRelicSecurity.getAgent().registerOperation(operation);
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MONGODB_3_8, e.getMessage()), e, MongoUtil.class.getName());
@@ -233,6 +221,8 @@ public class MongoUtil {
         AbstractOperation noSQLOperation = null;
         try {
             List<BsonDocument> operations;
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(4);
+
             if (operation instanceof AggregateOperation) {
                 AggregateOperation aggregateOperation = (AggregateOperation) operation;
                 noSQLOperation = recordMongoOperation(aggregateOperation.getPipeline(), MongoUtil.OP_AGGREGATE, className, methodName);

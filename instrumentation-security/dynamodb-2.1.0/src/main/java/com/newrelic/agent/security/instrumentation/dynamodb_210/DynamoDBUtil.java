@@ -11,6 +11,7 @@ import com.newrelic.api.agent.DatastoreParameters;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
@@ -55,16 +56,14 @@ public abstract class DynamoDBUtil {
             ClientExecutionParams<InputT, OutputT> yRequest, String klassName) {
         DynamoDBOperation operation = null;
         try {
-            if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                List<DynamoDBRequest> requests = new ArrayList();
-                InputT request = yRequest.getInput();
+            List<DynamoDBRequest> requests = new ArrayList();
+            InputT request = yRequest.getInput();
 
-                operation = checkAndGenerateOperation(request, requests, klassName);
+            operation = checkAndGenerateOperation(request, requests, klassName);
 
-                if (operation!=null) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
-                    NewRelicSecurity.getAgent().registerOperation(operation);
-                }
+            if (operation!=null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
+                NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -96,7 +95,7 @@ public abstract class DynamoDBUtil {
         }
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
         try {
             return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {

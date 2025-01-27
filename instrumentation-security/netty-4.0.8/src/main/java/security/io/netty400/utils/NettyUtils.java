@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -40,14 +41,10 @@ public class NettyUtils {
 
     public static void processSecurityRequest(ChannelHandlerContext ctx, Object msg, String className) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             if (msg instanceof HttpRequest) {
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 com.newrelic.api.agent.security.schema.HttpRequest securityRequest =
                         securityMetaData.getRequest();
-
                 if (!NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && securityRequest.isRequestParsed()) {
                     return;
                 }
@@ -188,7 +185,7 @@ public class NettyUtils {
 
     public static void sendRXSSEvent(ChannelHandlerContext ctx, Object msg, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse)) {
+            if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse) || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(((FullHttpResponse) msg).getStatus().code());
@@ -230,21 +227,10 @@ public class NettyUtils {
     }
 
     public static boolean acquireNettyLockIfPossible(String operationLock) {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isNettyLockAcquired(operationLock)) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+        return GenericHelper.acquireLockIfPossible(operationLock + Thread.currentThread().getId());
     }
 
     public static void releaseNettyLock(String operationLock) {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(operationLock + Thread.currentThread().getId());
     }
 }

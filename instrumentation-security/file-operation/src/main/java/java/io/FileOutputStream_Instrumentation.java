@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -23,7 +24,7 @@ public abstract class FileOutputStream_Instrumentation {
 
     private void open(String name, boolean append)
             throws FileNotFoundException {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(name);
@@ -38,17 +39,12 @@ public abstract class FileOutputStream_Instrumentation {
         registerExitOperation(isFileLockAcquired, operation);
     }
 
-    private boolean acquireFileLockIfPossible() {
-        try {
-            return FileHelper.acquireFileLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
+    private static boolean acquireFileLockIfPossible(VulnerabilityCaseType fileOperation) {
+        return GenericHelper.acquireLockIfPossible(fileOperation, FileHelper.getNrSecCustomAttribName());
     }
 
-    private void releaseFileLock() {
-        try {
-            FileHelper.releaseFileLock();
-        } catch (Throwable e) {}
+    private static void releaseFileLock() {
+        GenericHelper.releaseLock(FileHelper.getNrSecCustomAttribName());
     }
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
@@ -67,9 +63,7 @@ public abstract class FileOutputStream_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String filename) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || filename == null || filename.trim().isEmpty()
+            if (filename == null || filename.trim().isEmpty()
             ) {
                 return null;
             }

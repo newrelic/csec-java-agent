@@ -3,6 +3,7 @@ package java.lang;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.ForkExecOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,8 +23,18 @@ abstract class ProcessImpl_Instrumentation {
                          ProcessBuilder.Redirect[] redirects,
                          boolean redirectErrorStream) throws IOException {
         Process p = null;
-        AbstractOperation operation = preprocessSecurityHook(cmdarray, environment);
-        p = Weaver.callOriginal();
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.SYSTEM_COMMAND, "SYSTEM_COMMAND_");
+        AbstractOperation operation = null;
+        if(isLockAcquired) {
+            operation = preprocessSecurityHook(cmdarray, environment);
+        }
+        try {
+            p = Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired){
+                GenericHelper.releaseLock("SYSTEM_COMMAND_");
+            }
+        }
         registerExitOperation(operation);
         return p;
     }
@@ -42,8 +53,7 @@ abstract class ProcessImpl_Instrumentation {
 
     private static AbstractOperation preprocessSecurityHook(String[] cmdarray, Map<String, String> environment) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                || cmdarray == null || cmdarray.length == 0
+            if (cmdarray == null || cmdarray.length == 0
             ) {
                 return null;
             }

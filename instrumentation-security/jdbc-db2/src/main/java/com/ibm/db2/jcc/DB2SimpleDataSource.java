@@ -18,7 +18,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 public abstract class DB2SimpleDataSource {
 
     public Connection getConnection(String userID, String pass) {
-        if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+        if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.IBMDB2);
         }
         return Weaver.callOriginal();

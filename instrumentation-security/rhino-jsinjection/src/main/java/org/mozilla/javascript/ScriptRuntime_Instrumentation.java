@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -22,7 +23,7 @@ public class ScriptRuntime_Instrumentation {
         AbstractOperation operation = null;
         if(cx != null) {
             code = cx.hashCode();
-            isLockAcquired = acquireLockIfPossible(code);
+            isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.JAVASCRIPT_INJECTION, code);
             if (isLockAcquired) {
                 operation = preprocessSecurityHook(code, JSEngineUtils.METHOD_EXEC, cx);
             }
@@ -55,10 +56,6 @@ public class ScriptRuntime_Instrumentation {
 
     private static AbstractOperation preprocessSecurityHook(int hashCode, String methodName, Context_Instrumentation context){
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
             if(StringUtils.isNotBlank(context.newScript)) {
                 JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(context.newScript), "org.mozilla.javascript.Script", methodName);
                 NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
@@ -76,15 +73,10 @@ public class ScriptRuntime_Instrumentation {
     }
 
     private static void releaseLock(int code) {
-        try {
-            GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
     }
 
-    private static boolean acquireLockIfPossible(int code) {
-        try {
-            return GenericHelper.acquireLockIfPossible(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
-        } catch (Throwable ignored) {}
-        return false;
+    private static boolean acquireLockIfPossible(VulnerabilityCaseType javascriptInjection, int code) {
+        return GenericHelper.acquireLockIfPossible(javascriptInjection, JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
     }
 }

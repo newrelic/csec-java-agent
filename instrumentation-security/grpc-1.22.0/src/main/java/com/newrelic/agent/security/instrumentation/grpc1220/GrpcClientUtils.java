@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -13,13 +14,13 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import io.grpc.Metadata;
 
 public class GrpcClientUtils {
-    public static final String METHOD_NAME_START = "start";
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_CLIENT_OPERATIONAL_LOCK_";
+    private static final String METHOD_NAME_START = "start";
+
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_CLIENT_OPERATIONAL_LOCK_";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
@@ -31,12 +32,6 @@ public class GrpcClientUtils {
 
     public static AbstractOperation preprocessSecurityHook(String uri, Metadata meta, String klass) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
-
             SSRFOperation operation = new SSRFOperation(uri, klass, METHOD_NAME_START);
 
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
@@ -67,34 +62,15 @@ public class GrpcClientUtils {
 
 
     public static void releaseLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), null);
-            }
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(getNrSecCustomAttrName());
     }
 
     private static String getNrSecCustomAttrName() {
         return GrpcClientUtils.NR_SEC_CUSTOM_ATTRIB_NAME+Thread.currentThread().getId();
     }
 
-    public static boolean acquireLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired(getNrSecCustomAttrName())) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
+        return GenericHelper.acquireLockIfPossible(httpRequest, getNrSecCustomAttrName());
     }
 
-    private static boolean isLockAcquired(String nrSecCustomAttrName) {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(nrSecCustomAttrName, Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
 }

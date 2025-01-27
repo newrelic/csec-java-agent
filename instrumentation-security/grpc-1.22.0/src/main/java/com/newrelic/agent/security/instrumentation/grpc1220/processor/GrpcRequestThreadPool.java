@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcRequestThreadPool {
-    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
 
     /**
      * Thread pool executor.
@@ -34,8 +33,6 @@ public class GrpcRequestThreadPool {
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
     private static final Object mutex = new Object();
-
-    private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     private GrpcRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
@@ -134,10 +131,6 @@ public class GrpcRequestThreadPool {
 
     public BlockingQueue<Runnable> getQueue() {
         return this.executor.getQueue();
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public ThreadPoolExecutor getExecutor() {

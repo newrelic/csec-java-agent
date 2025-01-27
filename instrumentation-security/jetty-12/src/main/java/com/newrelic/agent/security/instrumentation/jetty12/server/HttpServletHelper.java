@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -26,14 +27,12 @@ public class HttpServletHelper {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
-    public static final String QUESTION_MARK = "?";
     public static final String SERVICE_METHOD_NAME = "handle";
-    public static final String SERVICE_ASYNC_METHOD_NAME = "handleAsync";
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "JETTY_SERVLET_LOCK-";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     public static final String JETTY_12 = "JETTY-12";
 
-    public static void processHttpRequestHeader(Request request, HttpRequest securityRequest) {
+    private static void processHttpRequestHeader(Request request, HttpRequest securityRequest) {
         HttpFields headers = request.getHeaders();
         if (headers!=null){
             Set<String> headerKeys = headers.getFieldNamesCollection();
@@ -85,7 +84,7 @@ public class HttpServletHelper {
         }
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -96,51 +95,27 @@ public class HttpServletHelper {
         return data;
     }
 
-    public static boolean isServletLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
 
     public static boolean acquireServletLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isServletLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {
-        return NR_SEC_CUSTOM_ATTRIB_NAME;
+        return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 
     public static void preprocessSecurityHook(Request request) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || request == null) {
+            if (request == null) {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
+
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
@@ -177,8 +152,10 @@ public class HttpServletHelper {
 
     public static void postProcessSecurityHook(Request request, Response response, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return;
+            }
+            if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());

@@ -20,6 +20,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -66,7 +67,7 @@ public class HttpExt_Instrumentation {
     public Future<HttpResponse> singleRequestImpl(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings,
                                                   LoggingAdapter loggingAdapter) {
 
-        boolean isLockAcquired = acquireLockIfPossible();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST);
         AbstractOperation operation = null;
         // Preprocess Phase
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
@@ -128,11 +129,6 @@ public class HttpExt_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(HttpRequest httpRequest, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()) {
-                return null;
-            }
-
             // Generate required URL
             URI methodURI = null;
             String uri = null;
@@ -167,9 +163,9 @@ public class HttpExt_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible() {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
         try {
-            return GenericHelper.acquireLockIfPossible(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+            return GenericHelper.acquireLockIfPossible(httpRequest, AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
         } catch (Throwable ignored) {
         }
         return false;

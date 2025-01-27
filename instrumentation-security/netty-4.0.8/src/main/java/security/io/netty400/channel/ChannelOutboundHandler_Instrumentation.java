@@ -13,8 +13,6 @@ import com.newrelic.api.agent.weaver.Weaver;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpRequest;
 import security.io.netty400.utils.NettyUtils;
 
 @Weave(type = MatchType.Interface, originalName = "io.netty.channel.ChannelOutboundHandler")

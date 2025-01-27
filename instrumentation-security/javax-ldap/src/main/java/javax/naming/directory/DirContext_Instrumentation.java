@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -76,11 +77,7 @@ public abstract class DirContext_Instrumentation implements Context {
         return returnVal;
     }
 
-    public NamingEnumeration<SearchResult>
-    search(Name name,
-           String filter,
-           SearchControls cons)
-            throws NamingException {
+    public NamingEnumeration<SearchResult> search(Name name, String filter, SearchControls cons) throws NamingException {
 
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
@@ -102,7 +99,7 @@ public abstract class DirContext_Instrumentation implements Context {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()) {
                 return;
             }
@@ -114,8 +111,7 @@ public abstract class DirContext_Instrumentation implements Context {
 
     private AbstractOperation preprocessSecurityHook(String name, String filter) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isAnyBlank(filter)) {
+            if (StringUtils.isAnyBlank(filter)) {
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), LDAPUtils.METHOD_SEARCH);
@@ -133,18 +129,11 @@ public abstract class DirContext_Instrumentation implements Context {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.LDAP, LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
 }

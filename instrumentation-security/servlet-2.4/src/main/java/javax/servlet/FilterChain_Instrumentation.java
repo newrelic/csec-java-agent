@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -25,7 +26,8 @@ import java.util.Arrays;
 public abstract class FilterChain_Instrumentation {
 
     public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
+
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
@@ -33,7 +35,7 @@ public abstract class FilterChain_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isServletLockAcquired){
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if(isServletLockAcquired) {
@@ -43,9 +45,7 @@ public abstract class FilterChain_Instrumentation {
 
     private void preprocessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-                    || !(request instanceof HttpServletRequest)
-            ) {
+            if (!(request instanceof HttpServletRequest)) {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
@@ -93,8 +93,7 @@ public abstract class FilterChain_Instrumentation {
 
     private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
-            ) {
+            if (Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
             if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
@@ -120,18 +119,5 @@ public abstract class FilterChain_Instrumentation {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
         }
-    }
-
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {}
     }
 }

@@ -32,9 +32,6 @@ public class GrpcServerUtils {
 
     public static <ReqT, ResT> void preprocessSecurityHook(ServerStream_Instrumentation call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
 
             HttpRequest securityRequest = securityMetaData.getRequest();
@@ -95,7 +92,7 @@ public class GrpcServerUtils {
 
     public static void postProcessSecurityHook(Metadata metadata, int statusCode, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(statusCode);
@@ -133,12 +130,7 @@ public class GrpcServerUtils {
 
 
     public static void releaseLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), null);
-            }
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(getNrSecCustomAttrName());
     }
 
     private static String getNrSecCustomAttrName() {
@@ -146,22 +138,7 @@ public class GrpcServerUtils {
     }
 
     public static boolean acquireLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired(getNrSecCustomAttrName())) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
-    }
-
-    private static boolean isLockAcquired(String nrSecCustomAttrName) {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(nrSecCustomAttrName, Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttrName());
     }
 
     public static String getTraceHeader(Map<String, String> headers) {
