@@ -22,7 +22,7 @@ public class URLMappingsHelper {
 
     public static final String subResourceSegment = "/*";
 
-    private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
+    private static final Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
 
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
@@ -32,10 +32,6 @@ public class URLMappingsHelper {
         add("org.apache.catalina.servlets.DefaultServlet");
         add("org.eclipse.jetty.servlet.DefaultServlet");
         add("grails.plugin.databasemigration.DbdocController");
-        add("org.springframework.web.servlet.DispatcherServlet");
-        add("org.eclipse.jetty.ee8.jsp.JettyJspServlet");
-        add("org.eclipse.jetty.ee8.servlet.DefaultServlet");
-        add("org.eclipse.jetty.servlet.NoJspServlet");
         add("org.apache.cxf.transport.servlet.CXFServlet");
         add("javax.faces.webapp.FacesServlet");
         add("jakarta.faces.webapp.FacesServlet");
@@ -44,6 +40,16 @@ public class URLMappingsHelper {
         add("weblogic.management.rest.JerseyServlet");
         add("com.caucho.jsp.XtpServlet");
         add("com.caucho.jsp.JspServlet");
+        add("com.caucho.xtpdoc.ResinDocServlet");
+        add("com.caucho.quercus.servlet.QuercusServlet");
+        add("com.caucho.servlets.FileServlet");
+        add("com.caucho.doc.JavadocRedirectServlet");
+        add("com.caucho.xtpdoc.ReferenceServlet");
+        add("com.caucho.doc.ViewFileServlet");
+        add("org.springframework.web.servlet.DispatcherServlet");
+        add("org.eclipse.jetty.ee8.jsp.JettyJspServlet");
+        add("org.eclipse.jetty.ee8.servlet.DefaultServlet");
+        add("org.eclipse.jetty.servlet.NoJspServlet");
         add("org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet");
         add("org.codehaus.groovy.grails.web.pages.GroovyPagesServlet");
         add("org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet");
@@ -53,9 +59,9 @@ public class URLMappingsHelper {
         return mappings;
     }
 
-    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+    private static final Set<Integer> handlers = ConcurrentHashMap.newKeySet();
 
-    private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
+    private static final Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
 
     public static Set<Integer> getHandlersHash() {
         return handlers;
