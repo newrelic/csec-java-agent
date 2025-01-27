@@ -22,7 +22,7 @@ public class URLMappingsHelper {
 
     public static final String subResourceSegment = "/*";
 
-    private static Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
+    private static final Set<ApplicationURLMapping> mappings = ConcurrentHashMap.newKeySet();
 
     private static final Set<String> defaultHandlers = new HashSet<String>() {{
         add("org.eclipse.jetty.jsp.JettyJspServlet");
@@ -59,9 +59,9 @@ public class URLMappingsHelper {
         return mappings;
     }
 
-    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+    private static final Set<Integer> handlers = ConcurrentHashMap.newKeySet();
 
-    private static Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
+    private static final Set<RouteSegments> routeSegments = new TreeSet<>(new RouteComparator());
 
     public static Set<Integer> getHandlersHash() {
         return handlers;
@@ -79,6 +79,7 @@ public class URLMappingsHelper {
         if (mapping.getHandler() != null){
             handlers.add(mapping.getHandler().hashCode());
         }
+        NewRelicSecurity.getAgent().reportURLMapping();
     }
 
     private synchronized static void generateRouteSegments(String endpoint) {
