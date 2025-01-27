@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RedisOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.List;
 
@@ -20,8 +21,11 @@ public class JedisHelper {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, "JEDIS-2.7.1", e.getMessage()), e, JedisHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "JEDIS-2.7.1", e.getMessage()), e, JedisHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "JEDIS-2.7.1", e.getMessage()), e, JedisHelper.class.getName());
         }
         return null;
     }

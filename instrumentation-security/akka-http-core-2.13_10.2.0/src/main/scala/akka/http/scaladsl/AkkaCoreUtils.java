@@ -29,10 +29,6 @@ public class AkkaCoreUtils {
     public static final String AKKA_HTTP_CORE_2_13_10_2_0 = "AKKA_HTTP_CORE_2.13_10.2.0";
     private static final String QUESTION_MARK = "?";
 
-    private static String getNrSecCustomAttribName() {
-        return NR_SEC_CUSTOM_ATTRIB_NAME;
-    }
-
     public static boolean acquireServletLockIfPossible() {
         return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME);
     }

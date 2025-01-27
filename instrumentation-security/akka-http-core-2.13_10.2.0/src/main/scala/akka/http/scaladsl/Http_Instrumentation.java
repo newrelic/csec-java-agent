@@ -31,7 +31,6 @@ public class Http_Instrumentation {
 
         @WeaveAllConstructors
         public ServerBinding() {
-
             NewRelicSecurity.getAgent().setApplicationConnectionConfig(localAddress().getPort(), "http");
             try {
                 Class<?> agentBridgeClass = Class.forName("com.newrelic.agent.bridge.AgentBridge");

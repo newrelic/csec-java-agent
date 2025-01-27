@@ -219,14 +219,6 @@ public class NettyUtils {
         }
     }
 
-    public static boolean isNettyLockAcquired(String operationLock) {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(operationLock + Thread.currentThread().getId(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     public static boolean acquireNettyLockIfPossible(String operationLock) {
         return GenericHelper.acquireLockIfPossible(operationLock+ Thread.currentThread().getId());
     }

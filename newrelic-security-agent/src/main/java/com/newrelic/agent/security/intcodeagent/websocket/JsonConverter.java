@@ -38,9 +38,9 @@ public class JsonConverter {
     private static final String STR_END_CUELY_BRACKET = "}";
     private static final String STR_START_CUELY_BRACKET = "{";
 
-    private static ObjectMapper mapper;
+    private static final ObjectMapper mapper;
 
-    private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
+    private static final String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
 
     static {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -140,7 +140,7 @@ public class JsonConverter {
                             mapField.putAll(processMap((Map) value));
                             jsonString.append(mapField);
                         } else {
-                            jsonString.append(value.toString());
+                            jsonString.append(value);
                         }
                         jsonString.append(STR_COMMA);
                     }
@@ -194,22 +194,4 @@ public class JsonConverter {
     public static ObjectMapper getObjectMapper() {
         return mapper;
     }
-
-    //	public static void main(String[] args) {
-//
-//		String[] arr = new String[] {"as", "vd"};
-//
-//
-//		JavaAgentEventBean javaAgentEventBean = new JavaAgentEventBean(System.currentTimeMillis(), 15L, "source", 12121,
-//				"asdasd-1212-sdf", "12-12", VulnerabilityCaseType.SQL_DB_COMMAND);
-//		JSONArray jsonArray = new JSONArray();
-//		jsonArray.add("sadasda");
-//		jsonArray.add("sadasdaasdfasd");
-//		jsonArray.addAll(Arrays.asList(arr));
-//		javaAgentEventBean.setParameters(jsonArray);
-//
-//		javaAgentEventBean.setStacktrace(Arrays.asList(Thread.currentThread().getStackTrace()));
-//
-//		System.out.println(javaAgentEventBean.toString());
-//	}
 }

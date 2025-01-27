@@ -28,19 +28,15 @@ public class HashGenerator {
     private static final String TAR_GZ = "tar.gz";
     private static final String K2_TEMP_DIR = "NR-CSEC-";
     private static final Set<String> JAVA_APPLICATION_ALLOWED_FILE_EXT = new HashSet<>(
-            Arrays.asList(new String[]{"java", "jsp", "class", "jar", "war", "ear"}));
+            Arrays.asList("java", "jsp", "class", "jar", "war", "ear"));
     private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(
-            Arrays.asList(new String[]{"htm", "html", "js"}));
+            Arrays.asList("htm", "html", "js"));
     private static final String TWO_PIPES = "||";
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String SHA_256 = "SHA-256";
     public static final String FILE_FOR_SHA_CALC = "File for SHA calc : ";
-    public static final String UNSORTED_SHA_LIST = "Unsorted SHA list : ";
-    public static final String SORTED_SHA_LIST = "Sorted SHA list : ";
     public static final String ERROR = "Error :";
-    public static final String WEBAPP_DETECTION_SHA_INFO_S = "Webapp detection SHA info :  %s";
-    public static final String STRING_SEP = "-";
     private static final LongHashFunction xxHashFunction = LongHashFunction.xx3(3214658854114272368L);
 
     /**

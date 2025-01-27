@@ -53,10 +53,5 @@ public class JavaAgentDynamicPathBean extends AgentBasicInfo {
     @Override
     public String toString() {
         return JsonConverter.toJSON(this);
-//        try {
-//            return new ObjectMapper().writeValueAsString(this);
-//        } catch (JsonProcessingException e) {
-//            return null;
-//        }
     }
 }

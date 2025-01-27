@@ -23,7 +23,7 @@ public class EventSendPool {
     /**
      * Thread pool executor.
      */
-    private ThreadPoolExecutor executor;
+    private final ThreadPoolExecutor executor;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -53,11 +53,6 @@ public class EventSendPool {
                             }
                         }
                     }
-//                    if (t != null) {
-//                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementError();
-//                    } else {
-//                        AgentInfo.getInstance().getJaHealthCheck().getEventStats().getEventSender().incrementCompleted();
-//                    }
                 } catch (Throwable ignored){}
                 super.afterExecute(r, t);
             }

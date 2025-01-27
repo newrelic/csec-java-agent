@@ -29,12 +29,8 @@ public class GenericHelper {
     public static final String ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST = "Instrumentation library: %s , error while getting route for incoming request : %s";
 
     public static boolean skipExistsEvent() {
-        if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-            return true;
-        }
-
-        return false;
+        return !(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
+                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled());
     }
 
     private static String getNrSecCustomAttribName(String nrSecCustomAttrName, int hashCode) {
@@ -107,10 +103,7 @@ public class GenericHelper {
             default:
                 break;
         }
-        if(enabled) {
-            return false;
-        }
-        return true;
+        return !enabled;
     }
 
     public static boolean acquireLockIfPossible(VulnerabilityCaseType caseType, String nrSecCustomAttrName, int hashCode) {
@@ -156,9 +149,5 @@ public class GenericHelper {
 
     public static void releaseLock(String nrSecCustomAttrName) {
         releaseLock(nrSecCustomAttrName, 0);
-    }
-
-    public static void onTransactionFinish() {
-
     }
 }

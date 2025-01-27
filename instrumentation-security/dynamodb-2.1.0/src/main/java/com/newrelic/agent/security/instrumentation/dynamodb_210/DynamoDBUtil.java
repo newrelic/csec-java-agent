@@ -89,18 +89,11 @@ public abstract class DynamoDBUtil {
     }
 
     public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     /**

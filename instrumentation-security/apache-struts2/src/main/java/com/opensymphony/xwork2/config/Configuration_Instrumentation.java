@@ -10,7 +10,6 @@ import java.util.List;
 public abstract class Configuration_Instrumentation {
     abstract public RuntimeConfiguration getRuntimeConfiguration();
 
-    // TODO: Need extract action extension
     public List<PackageProvider> reloadContainer(List<ContainerProvider> containerProviders) throws ConfigurationException {
         List<PackageProvider> returnVal;
         try {

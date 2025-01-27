@@ -889,9 +889,6 @@ public class Agent implements SecurityAgent {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
         appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
-        if(logger != null) {
-            logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
-        }
 //        verifyConnectionAndPut(port, scheme, appServerInfo);
     }
 
@@ -1063,10 +1060,9 @@ public class Agent implements SecurityAgent {
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
         int responseCode = securityMetaData.getResponse().getResponseCode();
         String route = securityMetaData.getRequest().getUrl();
-        //TODO turn on after api endpoint route detection is merged.
-//        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
-//            route = securityMetaData.getRequest().getRoute();
-//        }
+        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
+            route = securityMetaData.getRequest().getRoute();
+        }
         LogMessageException messageException = null;
         if (exception != null) {
             messageException = new LogMessageException(exception, 0, 1, 20);

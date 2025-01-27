@@ -79,19 +79,4 @@ public class OSVariables {
         this.rootDir = rootDir;
     }
 
-    /*public String getPolicyConfigPath() {
-        return policyConfigPath;
-    }
-
-    public void setPolicyConfigPath(String policyConfigPath) {
-        this.policyConfigPath = policyConfigPath;
-    }
-
-    public String getK2RootDir() {
-        return k2RootDir;
-    }
-
-    public void setK2RootDir(String k2RootDir) {
-        this.k2RootDir = k2RootDir;
-    }*/
 }

@@ -86,12 +86,12 @@ public class HttpExt_Instrumentation {
         if (operation!=null) {
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {
-                httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
+                httpRequest = httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
             }
 
             String csecParaentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
             if(StringUtils.isNotBlank(csecParaentId)){
-                httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(GenericHelper.CSEC_PARENT_ID, csecParaentId));
+                httpRequest = httpRequest.addHeader(RawHeader.apply(GenericHelper.CSEC_PARENT_ID, csecParaentId));
             }
 
             try {
@@ -104,7 +104,7 @@ public class HttpExt_Instrumentation {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add Security distributed tracing header
-                    httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
+                    httpRequest = httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
                             SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(),
                                     NewRelicSecurity.getAgent().getAgentUUID())));
                 }
@@ -166,18 +166,11 @@ public class HttpExt_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private boolean acquireLockIfPossible(VulnerabilityCaseType httpRequest) {
-        try {
-            return GenericHelper.acquireLockIfPossible(httpRequest, AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(httpRequest, AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
 }

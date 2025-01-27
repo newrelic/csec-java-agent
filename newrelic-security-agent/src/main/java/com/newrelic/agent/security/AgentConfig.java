@@ -44,7 +44,6 @@ public class AgentConfig {
     public static final String ACCOUNT_ID_LOCATION = "account_id_location";
     public static final String ACCOUNT_ID_KEY = "account_id_key";
     public static final String ROUTE = "route";
-    public static final String MAPPING_PARAMETERS_ARE_REQUIRED_FOR_IAST_RESTRICTED_MODE = "Mapping Parameters are required for IAST Restricted Mode";
     public static final String DEFAULT_SCAN_SCHEDULE_EXPRESSION = "0 0 0 * * ?";
     public static final String INVALID_SECURITY_CONFIGURATION_FOR_MODE_IAST_RESTRICTED = "Invalid Security Configuration for mode IAST_RESTRICTED ";
     public static final String INVALID_SECURITY_CONFIGURATION = "Invalid Security Configuration ";
@@ -65,7 +64,7 @@ public class AgentConfig {
 
     private OSVariables osVariables;
 
-    private Map<String, String> noticeErrorCustomParams = new HashMap<>();
+    private final Map<String, String> noticeErrorCustomParams = new HashMap<>();
 
     private ScanControllers scanControllers = new ScanControllers();
 
@@ -377,7 +376,7 @@ public class AgentConfig {
             }
             noticeErrorCustomParams.put("CSEC_HOME_DISK_AVL_BYTES", String.valueOf(avail));
             NewRelic.noticeError("CSEC home directory creation failed, reason : Insufficient disk space available to the location " + securityHome + " is : " + FileUtils.byteCountToDisplaySize(avail), noticeErrorCustomParams, true);
-            System.err.println(String.format("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s", securityHome, FileUtils.byteCountToDisplaySize(avail)));
+            System.err.printf("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s%n", securityHome, FileUtils.byteCountToDisplaySize(avail));
             return false;
         }
         NewRelic.noticeError("CSEC home directory creation failed, reason : CSEC home directory not found :"+securityHome, noticeErrorCustomParams, true);
@@ -385,7 +384,8 @@ public class AgentConfig {
     }
 
     public void populateAgentPolicy(){
-        AgentUtils.getInstance().instantiateDefaultPolicy();
+        AgentUtils.getInstance();
+        AgentUtils.instantiateDefaultPolicy();
     }
 
     public void populateAgentPolicyParameters(){

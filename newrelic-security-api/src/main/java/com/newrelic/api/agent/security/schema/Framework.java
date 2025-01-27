@@ -21,5 +21,6 @@ public enum Framework {
     SPRAY_HTTP,
     SUN_NET_HTTPSERVER,
     VERTX,
+    JSP,
     UNKNOWN
 }

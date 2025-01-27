@@ -55,12 +55,9 @@ public class AgentUtils {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    public static final String IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S = "IP address unblocked due to timeout : %s";
     public static final String CLASSES_STR = "/classes/";
     public static final String CLASSES_STR_1 = "/classes!";
     public static final String CLASSES_STR_2 = "/classes";
-    public static final String NON_VULNERABLE_API_ALLOWED_TO_EXECUTE_S = "Non vulnerable API allowed to execute : %s";
-    public static final String VULNERABLE_API_BLOCKED = "Vulnerable API blocked from execution : %s";
     public static final String CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "currentGenericServletInstance null in detectDeployedApplicationPath";
     public static final String PROTECTION_DOMAIN = "Protection domain : ";
     public static final String VFS = "vfs";
@@ -75,10 +72,6 @@ public class AgentUtils {
     public static final String ERROR = "Error :";
     public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
     private static final String TWO_PIPES = "||";
-    public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
-    public static final String ENFORCING_POLICY = "Enforcing policy";
-    public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
-    public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
     public static final String OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S = "Over-ride policy disabled in NR config at '%s'.";
     public static final String OVERRIDDEN = "overridden";
     public static final String NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S = "NR policy over-ride in place. Updated policy : %s";
@@ -86,30 +79,30 @@ public class AgentUtils {
     public static final String ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE = "Error while sending updated policy to remote";
     public static final String ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S = "Error while sending updated policy to remote : %s : %s";
 
-    private Map<String, ClassLoader> classLoaderRecord;
+    private final Map<String, ClassLoader> classLoaderRecord;
 
-    private Map<String, EventResponse> eventResponseSet;
+    private final Map<String, EventResponse> eventResponseSet;
 
-    private Set<String> scannedAPIIds;
+    private final Set<String> scannedAPIIds;
 
-    private Set<String> rxssSentUrls;
+    private final Set<String> rxssSentUrls;
 
-    private Set<DeployedApplication> deployedApplicationUnderProcessing;
+    private final Set<DeployedApplication> deployedApplicationUnderProcessing;
 
     private static AgentUtils instance;
 
     private static final Object lock = new Object();
-    private Object mutex = new Object();
+    private final Object mutex = new Object();
 
     public Set<String> getProtectedVulnerabilties() {
         return protectedVulnerabilties;
     }
 
-    private Set<String> protectedVulnerabilties = new HashSet<String>();
+    private final Set<String> protectedVulnerabilties = new HashSet<String>();
 
-    private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
+    private final Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
-    private Pattern TRACE_PATTERN;
+    private final Pattern TRACE_PATTERN;
 
 //	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
@@ -119,7 +112,7 @@ public class AgentUtils {
 
     private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
 
-    private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
+    private final AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
     private boolean collectAppInfoFromEnv = false;
     private Map<String, String> statusLogValues = new HashMap<>();

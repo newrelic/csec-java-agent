@@ -39,23 +39,15 @@ public class PekkoCoreUtils {
     private static final String NO_MEDIA_CONTENT_TYPE = "none/none";
 
     private static boolean isServletLockAcquired() {
-        try {
-            return GenericHelper.isLockAcquired(getNrSecCustomAttribHttpReq());
-        } catch (Throwable ignored) {}
-        return false;
+        return GenericHelper.isLockAcquired(getNrSecCustomAttribHttpReq());
     }
 
     private static void releaseServletLock() {
-        try {
-            GenericHelper.releaseLock(getNrSecCustomAttribHttpReq());
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(getNrSecCustomAttribHttpReq());
     }
 
     public static boolean acquireServletLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribHttpReq());
-        } catch (Throwable ignored){}
-        return false;
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribHttpReq());
     }
 
     private static String getNrSecCustomAttribHttpReq() {

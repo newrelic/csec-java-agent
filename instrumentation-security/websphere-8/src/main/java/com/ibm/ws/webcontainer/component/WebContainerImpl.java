@@ -28,15 +28,10 @@ import com.newrelic.api.agent.weaver.Weaver;
 public class WebContainerImpl {
 
     public void start() {
-//        String instanceName = ServerName.getFullName();
-//        if (instanceName != null) {
-//            AgentBridge.publicApi.setInstanceName(instanceName);
-//        }
         Integer port = getServerPort();
         if (port != null) {
             //TODO find protocol
             NewRelicSecurity.getAgent().setApplicationConnectionConfig(port, "http");
-//            AgentBridge.publicApi.setAppServerPort(port);
         }
         Weaver.callOriginal();
     }
@@ -58,7 +53,6 @@ public class WebContainerImpl {
             }
         } catch (Exception ex) {
             NewRelicSecurity.getAgent().log(LogLevel.FINER, "Exception getting port", ex, this.getClass().getName());
-//            AgentBridge.getAgent().getLogger().log(Level.FINER, ex, "Exception getting port");
         }
         return null;
     }

@@ -30,10 +30,7 @@ public final class SecurityApiClassTransformer implements ClassFileTransformer {
             if (AGENT_CLASS.equals(className)) {
                 return SecurityInstrumentationTestRunner.agentClassResource.read();
             }
-
-//            if (loader == null && StringUtils.startsWith(className, "com/newrelic")){
-//                System.out.println();
-//            }
+            
         } catch (IOException ignored) {
             ignored.printStackTrace();
         }

@@ -37,15 +37,15 @@ public class LogWriter implements Runnable {
 
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
     private static long lastRolloverCheckTime = 0L;
-    private int logLevel;
+    private final int logLevel;
 
-    private String logLevelName;
+    private final String logLevelName;
 
-    private String logEntry;
+    private final String logEntry;
 
     private Throwable throwableLogEntry;
 
-    private String loggingClassName;
+    private final String loggingClassName;
 
     private static long maxFileSize;
 
@@ -62,10 +62,10 @@ public class LogWriter implements Runnable {
 
     private static File currentLogFile;
 
-    private String threadName;
+    private final String threadName;
 
-    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
-    private String logTime;
+    private static final OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    private final String logTime;
 
     private static boolean createLogFile() {
 
@@ -145,7 +145,7 @@ public class LogWriter implements Runnable {
             sb.append(this.logEntry);
         if (this.throwableLogEntry != null) {
 //			this.throwableLogEntry.printStackTrace();
-            sb.append(this.throwableLogEntry.toString());
+            sb.append(this.throwableLogEntry);
             sb.append(StringUtils.LF);
             sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
             sb.append(StringUtils.LF);
@@ -162,15 +162,10 @@ public class LogWriter implements Runnable {
         sb.append(StringUtils.LF);
         try {
 
-//            if (!currentLogFile.isFile()) {
-//                createLogFile();
-//            }
-//			System.out.println(sb.toString());
             writer.write(sb.toString());
             writer.flush();
             FileLoggerThreadPool.getInstance().setLoggingActive(true);
 
-//			writer.newLine();
             if(maxFileSize > 0){
                 rollover(currentLogFileName);
             }

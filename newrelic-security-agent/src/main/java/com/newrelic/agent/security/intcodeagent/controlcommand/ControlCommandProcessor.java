@@ -37,17 +37,10 @@ public class ControlCommandProcessor implements Runnable {
     private static final String COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES = "Collector is initialized with properties : %s";
     public static final JSONParser PARSER = new JSONParser();
     public static final String EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S = "Event response entry not found for this : %s";
-    public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
-    public static final String DOUBLE_COLON_SEPERATOR = " :: ";
-    public static final String FAILED_TO_CREATE_VULNERABLE_API_ENTRY = "Failed to create vulnerableAPI entry  : ";
     public static final String EVENT_RESPONSE = "Event response : ";
     public static final String UNKNOWN_CONTROL_COMMAND_S = "Unknown control command : %s";
-    public static final String SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS = "Setting new IP Blocking timeout to %s ms";
-    public static final String ATTACKED_API_BLOCKED_S = "Attacked API added to blocked list : %s";
-    public static final String ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S = "Adding IP address %s to blocking list with timeout %s";
     public static final String ERROR_IN_EVENT_RESPONSE = "Error in EVENT_RESPONSE : ";
     public static final String FUZZ_REQUEST = "Fuzz request : ";
-    public static final String POLICY_PARAMETERS_ARE_UPDATED_TO_S = "Policy parameters are updated to : %s";
     public static final String UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE = "Updated policy failed validation. Reverting to default policy for the mode";
     public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S = "Error while processing reconnection CC : %s : %s";
     public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC = "Error while processing reconnection CC :";
@@ -60,17 +53,15 @@ public class ControlCommandProcessor implements Runnable {
     public static final String CONTROL_COMMAND = "controlCommand";
     public static final String REFLECTED_METADATA = "reflectedMetaData";
     public static final String RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE = "Received WS 'reconnect' command from server. Initiating sequence.";
-    public static final String WS_RECONNECT_EVENT_SEND_POOL_DRAINED = "[WS RECONNECT] EventSend pool drained.";
-    public static final String WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED = "[WS RECONNECT] IAST request replay pool drained.";
     public static final String ID = "id";
     public static final String RECEIVED_IAST_COOLDOWN_WAITING_TILL_S = "Received IAST cooldown. Waiting for next : %s Seconds";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_COUNT_S = "Purging confirmed IAST processed records count : %s";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S = "Purging confirmed IAST processed records : %s";
 
 
-    private String controlCommandMessage;
+    private final String controlCommandMessage;
 
-    private long receiveTimestamp;
+    private final long receiveTimestamp;
 
     private static Instant iastReplayRequestMsgReceiveTime = Instant.now();
 

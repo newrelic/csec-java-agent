@@ -45,14 +45,11 @@ public class Dispatcher implements Callable {
 
     private static final String SEPARATOR_QUESTIONMARK = "?";
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-    public static final String ERROR = "Error : ";
     public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-    public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
     public static final String QUESTION_CHAR = SEPARATOR_QUESTIONMARK;
     public static final char SEPARATOR = '.';
     private static final String EVENT_ZERO_SENT = "[STEP-8] => First event sent for validation. Security agent started successfully. %s";
     private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation. Security agent started successfully ";
-    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Security Engine : %s";
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
@@ -70,9 +67,9 @@ public class Dispatcher implements Callable {
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
-    private Map<String, Object> extraInfo = new HashMap<String, Object>();
-    private boolean isNRCode = false;
-    private static AtomicBoolean firstEventSent = new AtomicBoolean(false);
+    private final Map<String, Object> extraInfo = new HashMap<String, Object>();
+    private final boolean isNRCode = false;
+    private static final AtomicBoolean firstEventSent = new AtomicBoolean(false);
     private final String SQL_STORED_PROCEDURE ="SQL_STORED_PROCEDURE";
 
     public ExitEventBean getExitEventBean() {
@@ -87,7 +84,7 @@ public class Dispatcher implements Callable {
         return securityMetaData;
     }
 
-    private static Gson GsonUtil = new Gson();
+    private static final Gson GsonUtil = new Gson();
 
     public Dispatcher(AbstractOperation operation, SecurityMetaData securityMetaData) {
         this.securityMetaData = securityMetaData;
@@ -454,9 +451,7 @@ public class Dispatcher implements Callable {
         }
         eventBean.setParameters(params);
         eventBean.setEventCategory(hashCryptoOperationalBean.getEventCategory());
-//        if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING)
-//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER)) {
-//            eventBean.setEventCategory(CIPHER);
+
 //        } else if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING)
 //                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING)
 //                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
@@ -518,8 +513,6 @@ public class Dispatcher implements Callable {
         JSONArray params = new JSONArray();
         params.add(fileIntegrityBean.getFileName());
         eventBean.setParameters(params);
-//		eventBean.setUserAPIInfo(fileIntegrityBean.getLineNumber(), fileIntegrityBean.getClassName(),
-//				fileIntegrityBean.getUserMethodName());
         return eventBean;
     }
 
@@ -583,9 +576,7 @@ public class Dispatcher implements Callable {
             params.add(extras);
             eventBean.setParameters(params);
             return eventBean;
-        } catch (Throwable e){
-            e.printStackTrace();
-        }
+        } catch (Throwable e){}
         return eventBean;
     }
 

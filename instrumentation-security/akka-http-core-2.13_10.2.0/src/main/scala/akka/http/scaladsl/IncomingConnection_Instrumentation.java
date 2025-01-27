@@ -35,14 +35,4 @@ public class IncomingConnection_Instrumentation {
 
         Weaver.callOriginal();
     }
-
-    public InetSocketAddress remoteAddress() {
-        return Weaver.callOriginal();
-    }
-
-    public InetSocketAddress localAddress() {
-        return Weaver.callOriginal();
-    }
-
-
 }

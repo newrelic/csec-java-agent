@@ -170,10 +170,6 @@ public class InstrumentingClassLoader extends WeavingClassLoader {
         reader.accept(cv, ClassReader.EXPAND_FRAMES);
 
         byte[] result = writer.toByteArray();
-
-        //printRaw(writer);
-        //printClass(className, result);
-
         return result;
     }
 
