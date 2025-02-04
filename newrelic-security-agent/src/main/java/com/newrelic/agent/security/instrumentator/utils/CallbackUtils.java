@@ -57,7 +57,7 @@ public class CallbackUtils {
     public static Set<String> checkForReflectedXSS(HttpRequest httpRequest, HttpResponse httpResponse) {
         Set<String> toReturn = new HashSet<>();
 
-        TransactionUtils.trimResponseBody(httpResponse);
+//        TransactionUtils.trimResponseBody(httpResponse);
 
         Set<String> combinedRequestData = decodeRequestData(httpRequest);
         if (combinedRequestData.isEmpty()) {

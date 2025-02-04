@@ -39,7 +39,7 @@ public class SecurityMetaData {
 
     public SecurityMetaData(SecurityMetaData securityMetaData) {
         request = new HttpRequest(securityMetaData.getRequest());
-        response = new HttpResponse(securityMetaData.getResponse());
+        response = securityMetaData.getResponse();
         metaData = new AgentMetaData(securityMetaData.getMetaData());
         tracingHeaderValue = EMPTY;
         fileLocalMap = new HashMap<>(securityMetaData.getFileLocalMap());
@@ -118,4 +118,13 @@ public class SecurityMetaData {
         customData.clear();
     }
 
+    public void clean() {
+        this.customData.clear();
+        this.response = null;
+        this.request = null;
+        this.metaData = null;
+        this.fileLocalMap.clear();
+        this.fuzzRequestIdentifier = null;
+        this.tracingHeaderValue = null;
+    }
 }
