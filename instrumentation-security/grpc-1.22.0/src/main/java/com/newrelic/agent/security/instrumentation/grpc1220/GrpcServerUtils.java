@@ -24,8 +24,8 @@ import java.util.Set;
 public class GrpcServerUtils {
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
     public static final String METHOD_NAME_START_CALL = "startCall";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
     private static Set<Descriptors.Descriptor> typeRegistries = new HashSet<>();
 
 
@@ -90,7 +90,7 @@ public class GrpcServerUtils {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(statusCode);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(statusCode);
 
 //            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
@@ -101,9 +101,9 @@ public class GrpcServerUtils {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getHeaders().put(headerKey, metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER)));
             }
             if (headerNames.contains("content-type")) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(metadata.get(Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(metadata.get(Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)));
             } else {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType("application/grpc");
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType("application/grpc");
             }
 
             if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

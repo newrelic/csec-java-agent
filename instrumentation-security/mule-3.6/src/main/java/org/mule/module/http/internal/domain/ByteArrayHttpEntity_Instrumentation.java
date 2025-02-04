@@ -37,7 +37,7 @@ public class ByteArrayHttpEntity_Instrumentation {
 
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (MuleHelper.preprocessStream(this.hashCode(), MuleHelper.RESPONSE_ENTITY_STREAM)) {
-                securityMetaData.getResponse().getResponseBody().append(body);
+                securityMetaData.getResponse().getBody().append(body);
             } else if (MuleHelper.preprocessStream(this.hashCode(), MuleHelper.REQUEST_ENTITY_STREAM)) {
                 securityMetaData.getRequest().getBody().append(body);
             }

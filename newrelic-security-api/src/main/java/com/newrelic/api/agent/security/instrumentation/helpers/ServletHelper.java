@@ -233,23 +233,5 @@ public class ServletHelper {
         return unsupportedContentType.contains(responseContentType);
     }
 
-    public static void executeBeforeExitingTransaction() {
-        Boolean exitLogicPerformed = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("EXIT_RECORDED", Boolean.class);
-        if(Boolean.TRUE.equals(exitLogicPerformed) || !NewRelicSecurity.isHookProcessingActive()){
-            return;
-        }
 
-        int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
-        if(responseCode >= 500 && !StringUtils.equals(NewRelicSecurity.getSecurityMode(), "IAST_MONITORING")){
-            Exception exception = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("ENDMOST_EXCEPTION", Exception.class);
-            NewRelicSecurity.getAgent().recordExceptions(NewRelicSecurity.getAgent().getSecurityMetaData(), exception);
-        }
-
-        SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
-        if(operations != null) {
-            NewRelicSecurity.getAgent().registerOperation(operations);
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", null);
-        }
-        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("EXIT_RECORDED", true);
-    }
 }

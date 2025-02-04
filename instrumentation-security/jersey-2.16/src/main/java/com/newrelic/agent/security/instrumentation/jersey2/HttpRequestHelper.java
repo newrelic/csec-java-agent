@@ -105,7 +105,7 @@ public class HttpRequestHelper {
         for (String key : outboundMessageContext.getStringHeaders().keySet()) {
             headers.put(key, outboundMessageContext.getHeaderString(key));
             if(StringUtils.equalsAny(StringUtils.lowerCase(key), "content-type", "contenttype")){
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(outboundMessageContext.getHeaderString(key));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(outboundMessageContext.getHeaderString(key));
             }
         }
         return headers;

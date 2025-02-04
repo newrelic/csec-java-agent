@@ -12,6 +12,7 @@ public interface IUtilConstants {
     String SCAN_TIME_DURATION = "security.scan_schedule.duration";
     String SCAN_TIME_COLLECT_SAMPLES = "security.scan_schedule.always_sample_traces";
     String SCAN_REQUEST_RATE_LIMIT = "security.scan_controllers.iast_scan_request_rate_limit";
+    String REPORT_HTTP_RESPONSE_BODY = "security.scan_controllers.report_http_response_body";
 
     String SKIP_IAST_SCAN = "security.exclude_from_iast_scan";
     String SKIP_IAST_SCAN_API = SKIP_IAST_SCAN + ".api";

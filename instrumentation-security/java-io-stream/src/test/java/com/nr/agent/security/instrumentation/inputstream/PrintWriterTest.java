@@ -69,7 +69,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(String.valueOf(DATA.charAt(5)), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(String.valueOf(DATA.charAt(5)), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -87,7 +87,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA.substring(2, 20), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA.substring(2, 20), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("true", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("true", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -141,7 +141,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(String.valueOf(DATA.charAt(9)), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(String.valueOf(DATA.charAt(9)), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -160,7 +160,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -178,7 +178,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -196,7 +196,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -214,7 +214,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2.0", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2.0", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -232,7 +232,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2.0", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2.0", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -250,7 +250,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -269,7 +269,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(ob.toString(), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(ob.toString(), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -287,7 +287,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -305,7 +305,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("true\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("true\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -323,7 +323,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(String.valueOf(DATA.charAt(9))+"\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(String.valueOf(DATA.charAt(9))+"\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -342,7 +342,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA+"\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA+"\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -360,7 +360,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -378,7 +378,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -396,7 +396,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2.0\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2.0\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -414,7 +414,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("2.0\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("2.0\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -432,7 +432,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA+"\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA+"\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -451,7 +451,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(ob+"\n", meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(ob+"\n", meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -469,7 +469,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("test "+DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("test "+DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -487,7 +487,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -505,7 +505,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("test "+DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("test "+DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -523,7 +523,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -541,7 +541,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -559,7 +559,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA.substring(2, 8), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA.substring(2, 8), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -578,7 +578,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -597,7 +597,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA.substring(2, 10), meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA.substring(2, 10), meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -615,7 +615,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(1, Integer.parseInt(meta.getResponse().getResponseBody().toString()));
+        Assert.assertEquals(1, Integer.parseInt(meta.getResponse().getBody().toString()));
     }
 
     @Test
@@ -633,7 +633,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("test "+DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("test "+DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -651,7 +651,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -669,7 +669,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals("test "+DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals("test "+DATA, meta.getResponse().getBody().toString());
     }
 
     @Test
@@ -687,7 +687,7 @@ public class PrintWriterTest {
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA, meta.getResponse().getResponseBody().toString());
+        Assert.assertEquals(DATA, meta.getResponse().getBody().toString());
     }
 
 }

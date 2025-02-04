@@ -231,7 +231,7 @@ class AkkaHttpCoreTest {
 
     Assert.assertFalse("response should not be empty", operation.getResponse.isEmpty)
     Assert.assertEquals("Invalid response content-type.", operation.getResponse.getResponseContentType, contentType)
-    Assert.assertEquals("Invalid responseBody.", operation.getResponse.getResponseBody.toString, responseBody)
+    Assert.assertEquals("Invalid responseBody.", operation.getResponse.getBody.toString, responseBody)
   }
   private def assertMetaData(metaData: SecurityMetaData): Unit = {
     Assert.assertFalse("response should not be empty", metaData.getResponse.isEmpty)
@@ -239,7 +239,7 @@ class AkkaHttpCoreTest {
     Assert.assertEquals("Invalid responseBody.", metaData.getRequest.getBody.toString, requestBody)
     Assert.assertFalse("response should not be empty", metaData.getRequest.isEmpty)
     Assert.assertEquals("Invalid response content-type.", metaData.getResponse.getResponseContentType, contentType)
-    Assert.assertEquals("Invalid responseBody.", metaData.getResponse.getResponseBody.toString, responseBody)
+    Assert.assertEquals("Invalid responseBody.", metaData.getResponse.getBody.toString, responseBody)
     Assert.assertEquals("Invalid protocol.", metaData.getRequest.getProtocol, "http")
   }
 }

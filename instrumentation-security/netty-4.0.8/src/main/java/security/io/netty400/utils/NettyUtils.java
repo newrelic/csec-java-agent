@@ -175,8 +175,8 @@ public class NettyUtils {
                 com.newrelic.api.agent.security.schema.HttpResponse securityResponse =
                         securityMetaData.getResponse();
                 processResponseHeaders((HttpResponse) msg, securityResponse);
-                securityResponse.setResponseContentType(((FullHttpResponse) msg).headers().get(HttpHeaders.Names.CONTENT_TYPE));
-                securityResponse.getResponseBody().append(((FullHttpResponse) msg).content().toString(StandardCharsets.UTF_8));
+                securityResponse.setContentType(((FullHttpResponse) msg).headers().get(HttpHeaders.Names.CONTENT_TYPE));
+                securityResponse.getBody().append(((FullHttpResponse) msg).content().toString(StandardCharsets.UTF_8));
             }
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(ERROR_PARSING_HTTP_RESPONSE_DATA, NETTY_4_0_0, e.getMessage()), e, NettyUtils.class.getName());
@@ -188,7 +188,7 @@ public class NettyUtils {
             if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse) || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(((FullHttpResponse) msg).getStatus().code());
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(((FullHttpResponse) msg).getStatus().code());
 //            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());

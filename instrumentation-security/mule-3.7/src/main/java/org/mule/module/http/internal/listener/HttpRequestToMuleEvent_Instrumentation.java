@@ -85,7 +85,9 @@ public class HttpRequestToMuleEvent_Instrumentation {
 
             securityRequest.setContentType(MuleHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, MuleHelper.MULE_37, ignored.getMessage()), ignored, HttpRequestToMuleEvent_Instrumentation.class.getName());
+        }
     }
 
     private static void postProcessSecurityHook() {
@@ -111,6 +113,8 @@ public class HttpRequestToMuleEvent_Instrumentation {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, MuleHelper.MULE_37, e.getMessage()), e, HttpRequestToMuleEvent_Instrumentation.class.getName());
         }
     }
 
