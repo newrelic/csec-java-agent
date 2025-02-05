@@ -318,6 +318,26 @@ public class HttpRequest {
         return customDataType;
     }
 
+    public void clean () {
+        this.body = new StringBuilder();
+        this.dataTruncated = false;
+        this.headers.clear();
+        this.serverPort = -1;
+        this.parameterMap.clear();
+        this.protocol = HTTP;
+        this.clientPort = StringUtils.EMPTY;
+        this.isRequestParsed = false;
+        this.isGrpc = false;
+        this.route = StringUtils.EMPTY;
+        this.requestURI = StringUtils.EMPTY;
+        this.pathParameterMap.clear();
+        this.queryParameters.clear();
+        this.requestHeaderParameters.clear();
+        this.requestBodyParameters.clear();
+        this.isRequestParametersParsed = false;
+        this.customDataType.clear();
+    }
+
 }
 
 

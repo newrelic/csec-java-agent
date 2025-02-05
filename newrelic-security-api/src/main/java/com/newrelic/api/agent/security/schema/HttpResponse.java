@@ -243,4 +243,12 @@ public class HttpResponse {
     public boolean isEmpty() {
         return StringUtils.isAnyBlank(body.sb, contentType);
     }
+
+    public void clean() {
+        headers.clear();
+        body.sb.setLength(0);
+        contentType = StringUtils.EMPTY;
+        statusCode = 0;
+        dataTruncated = false;
+    }
 }

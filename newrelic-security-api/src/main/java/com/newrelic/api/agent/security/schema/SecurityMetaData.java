@@ -120,11 +120,11 @@ public class SecurityMetaData {
 
     public void clean() {
         this.customData.clear();
-        this.response = null;
-        this.request = null;
-        this.metaData = null;
+        this.response.clean();
+        this.request.clean();
+        this.metaData.clean();
         this.fileLocalMap.clear();
-        this.fuzzRequestIdentifier = null;
+        this.fuzzRequestIdentifier = new K2RequestIdentifier();
         this.tracingHeaderValue = null;
     }
 }

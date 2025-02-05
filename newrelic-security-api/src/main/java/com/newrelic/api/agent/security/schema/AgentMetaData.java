@@ -229,4 +229,14 @@ public class AgentMetaData {
     public void setSkipScanParameters(SkipScanParameters skipScanParameters) {
         this.skipScanParameters = skipScanParameters;
     }
+
+    public void clean () {
+        this.rciMethodsCalls.clear();
+        this.userDataTranslationMap.clear();
+        this.reflectedMetaData.clear();
+        this.ips.clear();
+        this.appServerInfo = null;
+        this.framework = StringUtils.EMPTY;
+        this.skipScanParameters = null;
+    }
 }
