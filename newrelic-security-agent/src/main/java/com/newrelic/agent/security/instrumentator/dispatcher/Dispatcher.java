@@ -660,8 +660,10 @@ public class Dispatcher implements Callable {
         DeserializationInfo rootDeserializationInfo = deserialisationOperation.getRootDeserializationInfo();
         JSONArray params = new JSONArray();
         if(rootDeserializationInfo != null) {
-            eventBean.getMetaData().setDeserializationInfo(rootDeserializationInfo);
-            params.add(GsonUtil.toJson(rootDeserializationInfo.getInstance()));
+            JSONObject deserializationInfo = new JSONObject();
+            deserializationInfo.put("type", rootDeserializationInfo.getType());
+            deserializationInfo.put("value", GsonUtil.toJson(rootDeserializationInfo.getInstance()));
+            params.add(deserializationInfo);
         }
         eventBean.setParameters(params);
         return eventBean;

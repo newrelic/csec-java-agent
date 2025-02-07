@@ -49,6 +49,7 @@ public class AgentMetaData {
 
     private AppServerInfo appServerInfo;
 
+    @JsonIgnore
     private DeserializationInfo deserializationInfo = new DeserializationInfo();
 
     public AgentMetaData() {
