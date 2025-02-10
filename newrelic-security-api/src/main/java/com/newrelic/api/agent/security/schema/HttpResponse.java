@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 
 import java.util.Map;
@@ -12,7 +13,7 @@ public class HttpResponse {
 
     private Map<String, String> headers;
 
-    private StringBuilderLimit body;
+    private final StringBuilderLimit body;
 
     private String contentType;
 
@@ -42,6 +43,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(Object obj) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(obj);
             } else {
@@ -51,6 +55,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(String str) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(str);
             } else {
@@ -60,6 +67,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(StringBuffer sb) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return this.sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return this.sb.append(sb);
             } else {
@@ -69,6 +79,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(CharSequence s) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(s);
             } else {
@@ -78,6 +91,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(CharSequence s, int start, int end) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(s, start, end);
             } else {
@@ -87,6 +103,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(char[] str) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(str);
             } else {
@@ -96,6 +115,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(char[] str, int offset, int len) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(str, offset, len);
             } else {
@@ -105,6 +127,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(boolean b) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(b);
             } else {
@@ -114,6 +139,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(char c) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(c);
             } else {
@@ -123,6 +151,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(int i) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(i);
             } else {
@@ -132,6 +163,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(long lng) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(lng);
             } else {
@@ -141,6 +175,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(float f) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(f);
             } else {
@@ -150,6 +187,9 @@ public class HttpResponse {
         }
 
         public StringBuilder append(double d) {
+            if (NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+                return sb;
+            }
             if(sb.length() < MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
                 return sb.append(d);
             } else {
