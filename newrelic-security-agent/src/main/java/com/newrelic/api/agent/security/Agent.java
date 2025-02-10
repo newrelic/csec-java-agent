@@ -1140,6 +1140,8 @@ public class Agent implements SecurityAgent {
                 logger.log(LogLevel.FINEST, "Transaction cancelled with token: " + transaction.getSecurityMetaData().toString(), Agent.class.getName());
                 TransactionUtils.executeBeforeExitingTransaction();
                 TransactionUtils.reportHttpResponse();
+            }
+            if(NewRelicSecurity.getAgent().getSecurityMetaData() != null){
                 NewRelicSecurity.getAgent().getSecurityMetaData().clean();
             }
         } catch (Exception e){
@@ -1155,6 +1157,8 @@ public class Agent implements SecurityAgent {
                 logger.log(LogLevel.FINEST, "Transaction finished with token: " + NewRelic.getAgent().getTransaction().getSecurityMetaData().toString(), Agent.class.getName());
                 TransactionUtils.executeBeforeExitingTransaction();
                 TransactionUtils.reportHttpResponse();
+            }
+            if(NewRelicSecurity.getAgent().getSecurityMetaData() != null){
                 NewRelicSecurity.getAgent().getSecurityMetaData().clean();
             }
         } catch (Exception e){

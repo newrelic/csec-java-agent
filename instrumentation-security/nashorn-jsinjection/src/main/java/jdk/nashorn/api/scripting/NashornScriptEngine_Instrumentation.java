@@ -81,6 +81,7 @@ public class NashornScriptEngine_Instrumentation {
             }
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(content, this.getClass().getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
+            NewRelicSecurity.getAgent().getSecurityMetaData().removeCustomAttribute(JSEngineUtils.NASHORN_CONTENT + script.hashCode());
             return jsInjectionOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
