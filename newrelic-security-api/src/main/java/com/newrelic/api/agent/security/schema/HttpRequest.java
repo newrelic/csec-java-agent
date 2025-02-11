@@ -44,7 +44,7 @@ public class HttpRequest {
     private String route;
     private String requestURI;
 
-    private Map<String, String> customDataType;
+    private final Map<String, String> customDataType;
 
     @JsonIgnore
     private Set<String> pathParameters;
@@ -78,20 +78,25 @@ public class HttpRequest {
         this.route = StringUtils.EMPTY;
         this.requestURI = StringUtils.EMPTY;
         this.customDataType = new HashMap<>();
+        this.pathParameterMap = new HashMap<>();
+        this.queryParameters = new HashMap<>();
+        this.requestHeaderParameters = new HashMap<>();
+        this.requestBodyParameters = new HashMap<>();
+        this.pathParameters = new HashSet<>();
     }
 
     public HttpRequest(HttpRequest servletInfo) {
-        this.clientIP = new String(servletInfo.clientIP.trim());
+        this.clientIP = servletInfo.clientIP.trim();
         this.body = new StringBuilder(servletInfo.getBody());
         this.dataTruncated = servletInfo.isDataTruncated();
-        this.method = new String(servletInfo.getMethod().trim());
-        this.url = new String(servletInfo.getUrl().trim());
+        this.method = servletInfo.getMethod().trim();
+        this.url = servletInfo.getUrl().trim();
         this.headers = new ConcurrentHashMap<>(servletInfo.getHeaders());
         this.serverPort = servletInfo.serverPort;
-        this.contentType = new String(servletInfo.contentType.trim());
+        this.contentType = servletInfo.contentType.trim();
         this.parameterMap = new HashMap<>(servletInfo.parameterMap);
-        this.protocol = new String(servletInfo.protocol);
-        this.clientPort = new String(servletInfo.clientPort);
+        this.protocol = servletInfo.protocol;
+        this.clientPort = servletInfo.clientPort;
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
