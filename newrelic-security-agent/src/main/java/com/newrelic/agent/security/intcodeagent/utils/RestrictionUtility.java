@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.StringBuilderLimit;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
@@ -159,7 +160,7 @@ public class RestrictionUtility {
         request.setQueryParameters(parseQueryParameters(request.getUrl()));
         request.setRequestHeaderParameters(parseRequestHeaders(request.getHeaders()));
         try {
-            request.setRequestBodyParameters(parseRequestBody(request.getBody(), request.getContentType(), request.getRequestBodyParameters()));
+            request.setRequestBodyParameters(parseRequestBody(request.getBody().getSb(), request.getContentType(), request.getRequestBodyParameters()));
         } catch (RestrictionModeException e) {
             logger.log(LogLevel.WARNING, String.format("Request Body parsing failed reason %s", e.getMessage()), RestrictionUtility.class.getName());
         }
