@@ -461,9 +461,11 @@ public class Agent implements SecurityAgent {
                 }
                 processStackTrace(operation);
 
-                IastMonitoring.registerTraceHarvested(operation.getApiID());
-                if(IastMonitoring.eventQuotaReached(operation.getApiID())){
-                    return;
+                if (StringUtils.equals(NewRelicSecurity.getSecurityMode(), "IAST_MONITORING")) {
+                    IastMonitoring.registerTraceHarvested(operation.getApiID());
+                    if (IastMonitoring.eventQuotaReached(operation.getApiID())) {
+                        return;
+                    }
                 }
 
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
