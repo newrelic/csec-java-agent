@@ -6,7 +6,7 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpResponseEvent;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.StringBuilderLimit;
+import com.newrelic.api.agent.security.schema.StringBuilderLimit;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
@@ -48,8 +48,8 @@ public class TransactionUtils {
     }
 
     public static boolean trimResponseBody(HttpResponse response) {
-        if(response.getBody().getSb().length() > StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH) {
-            response.setBody(new StringBuilder(response.getBody().getSb().substring(0, StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH)));
+        if(response.getBody().toString().length() > StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH) {
+            response.setBody(new StringBuilder(response.getBody().toString().substring(0, StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH)));
             response.setBody(new StringBuilder(response.getBody().append("...")));
             response.getBody().setDataTruncated(true);
             return true;

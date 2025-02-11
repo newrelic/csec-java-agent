@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.newrelic.agent.security.intcodeagent.exceptions.RestrictionModeException;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.api.agent.security.StringBuilderLimit;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.RestrictionCriteria;
@@ -160,7 +159,7 @@ public class RestrictionUtility {
         request.setQueryParameters(parseQueryParameters(request.getUrl()));
         request.setRequestHeaderParameters(parseRequestHeaders(request.getHeaders()));
         try {
-            request.setRequestBodyParameters(parseRequestBody(request.getBody().getSb(), request.getContentType(), request.getRequestBodyParameters()));
+            request.setRequestBodyParameters(parseRequestBody(request.getBody().toString(), request.getContentType(), request.getRequestBodyParameters()));
         } catch (RestrictionModeException e) {
             logger.log(LogLevel.WARNING, String.format("Request Body parsing failed reason %s", e.getMessage()), RestrictionUtility.class.getName());
         }
@@ -192,8 +191,8 @@ public class RestrictionUtility {
         return requestBodyParameters;
     }
 
-    private static Map<String, Set<String>> parseRequestBody(StringBuilder body, String contentType, Map<String, Set<String>> requestBodyParameters) throws RestrictionModeException {
-        if(StringUtils.isBlank(body.toString())) {
+    private static Map<String, Set<String>> parseRequestBody(String body, String contentType, Map<String, Set<String>> requestBodyParameters) throws RestrictionModeException {
+        if(StringUtils.isBlank(body)) {
             return requestBodyParameters;
         }
 
@@ -204,14 +203,14 @@ public class RestrictionUtility {
         switch (contentType) {
             case CONTENT_TYPE_APPLICATION_JSON:
             case CONTENT_TYPE_TEXT_JSON:
-                requestBodyParameters.putAll(parseJsonRequestBody(body.toString()));
+                requestBodyParameters.putAll(parseJsonRequestBody(body));
                 break;
             case CONTENT_TYPE_APPLICATION_XML:
             case CONTENT_TYPE_TEXT_XML:
-                requestBodyParameters.putAll(parseXmlRequestBody(body.toString()));
+                requestBodyParameters.putAll(parseXmlRequestBody(body));
                 break;
             case CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED:
-                requestBodyParameters.putAll(queryParamKeyValueGenerator(body.toString(),new HashMap<>()));
+                requestBodyParameters.putAll(queryParamKeyValueGenerator(body,new HashMap<>()));
                 break;
             default:
                 break;
