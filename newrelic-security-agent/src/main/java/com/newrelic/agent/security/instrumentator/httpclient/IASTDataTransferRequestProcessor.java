@@ -121,10 +121,10 @@ public class IASTDataTransferRequestProcessor {
                 pendingRequestIds.addAll(GrpcClientRequestReplayHelper.getInstance().getPendingIds());
                 request.setPendingRequestIds(pendingRequestIds);
 //                WSClient.getInstance().send(request.toString());
-                SecurityClient.getInstance().send(request, "postAny");
+                ConnectionFactory.getInstance().getSecurityConnection().send(request, "postAny");
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), this.getClass().getName());
+            logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e, e.getCause().toString()), this.getClass().getName());
             logger.log(LogLevel.FINEST, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, request), e, this.getClass().getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, JsonConverter.toJSON(request)), e, this.getClass().getName());
         }

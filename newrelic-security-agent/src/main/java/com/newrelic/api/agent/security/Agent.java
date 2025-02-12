@@ -267,7 +267,6 @@ public class Agent implements SecurityAgent {
                 Agent.class.getName()
         );
         ConnectionFactory.getInstance().getSecurityConnection().reconnectIfRequired();
-        ConnectionFactory.getInstance().getSecurityConnection().ping();
         EventSendPool.getInstance();
         ControlCommandProcessorThreadPool.getInstance();
         logger.logInit(
@@ -276,6 +275,9 @@ public class Agent implements SecurityAgent {
                 Agent.class.getName()
         );
         logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, Agent.class.getName());
+        if (ConnectionFactory.getInstance().getSecurityConnection().isConnected()) {
+            ConnectionFactory.getInstance().getSecurityConnection().ping();
+        }
         // Start IAST data pull if policy allows
         if (config.getAgentMode().getIastScan().getEnabled()) {
             IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
