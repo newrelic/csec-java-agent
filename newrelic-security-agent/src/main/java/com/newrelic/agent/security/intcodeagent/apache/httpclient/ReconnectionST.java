@@ -29,12 +29,12 @@ public class ReconnectionST {
         instantiateScheduler();
     }
 
-    private Runnable runnable = new Runnable() {
+    private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
             try {
                 AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementWebsocketReconnector();
-                if (!SecurityClient.getInstance().isConnected()) {
+                if (!ConnectionFactory.getInstance().getSecurityConnection().isConnected()) {
                     logger.log(LogLevel.INFO, "Http is marked disconnected, reconnecting ...", ReconnectionST.class.getName());
                     ConnectionFactory.getInstance().getSecurityConnection().ping();
                 }

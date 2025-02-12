@@ -34,7 +34,7 @@ import java.util.zip.GZIPOutputStream;
 public class SecurityClient implements SecurityConnection {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-    private ApacheHttpClientWrapper httpClient;
+    private final ApacheHttpClientWrapper httpClient;
     private boolean connected = false;
     private final Map<String, String> headers = new HashMap<>();
     private final String URL = NewRelic.getAgent().getConfig().getValue("security.validator_service_url", "wss://csec.nr-data.net");
@@ -166,7 +166,7 @@ public class SecurityClient implements SecurityConnection {
     @Override
     public void ping() {
         try {
-            ReadResult result = send((JSONStreamAware) null, "ping");
+            ReadResult result = send(null, "ping");
             if(result != null && result.getStatusCode() == 200) {
                 setConnected(true);
                 setReconnecting(false);
@@ -183,6 +183,9 @@ public class SecurityClient implements SecurityConnection {
         }
     }
 
+    @Override
+    public void reconnectIfRequired() {}
+
     public String getURL() {
         return URL;
     }
@@ -198,7 +201,7 @@ public class SecurityClient implements SecurityConnection {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try (
                 OutputStream os = getOutputStream(outStream, encoding);
-                Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+                Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)
         ) {
             JSONValue.writeJSONString(params, out);
             out.flush();
