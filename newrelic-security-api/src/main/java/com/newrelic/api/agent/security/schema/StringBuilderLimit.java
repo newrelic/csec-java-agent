@@ -1,33 +1,23 @@
-package com.newrelic.api.agent.security;
+package com.newrelic.api.agent.security.schema;
 
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+import com.newrelic.api.agent.security.schema.annotations.JsonProperty;
+
+import java.io.Serializable;
 
 public class StringBuilderLimit {
 
     @JsonIgnore
     public static final int MAX_ALLOWED_BODY_LENGTH = 500000;
 
-    private StringBuilder sb;
+    StringBuilder sb;
 
+    @JsonIgnore
     private boolean dataTruncated;
 
     public StringBuilderLimit() {
         sb = new StringBuilder();
         dataTruncated = false;
-    }
-
-    public StringBuilderLimit(StringBuilderLimit sb) {
-        this.sb = new StringBuilder(sb.getSb());
-        this.dataTruncated = sb.dataTruncated;
-    }
-
-    public StringBuilder getSb() {
-        return sb;
-    }
-
-    public void setSb(StringBuilder sb) {
-        this.sb = sb;
     }
 
     public StringBuilder append(Object obj) {

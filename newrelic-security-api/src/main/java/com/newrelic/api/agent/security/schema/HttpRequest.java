@@ -41,7 +41,7 @@ public class HttpRequest {
     private String route;
     private String requestURI;
 
-    private Map<String, String> customDataType;
+    private final Map<String, String> customDataType;
 
     @JsonIgnore
     private Set<String> pathParameters;
@@ -87,10 +87,10 @@ public class HttpRequest {
         this.url = servletInfo.getUrl().trim();
         this.headers = new ConcurrentHashMap<>(servletInfo.getHeaders());
         this.serverPort = servletInfo.serverPort;
-        this.contentType = new String(servletInfo.contentType.trim());
+        this.contentType = servletInfo.contentType.trim();
         this.parameterMap = new HashMap<>(servletInfo.parameterMap);
-        this.protocol = new String(servletInfo.protocol);
-        this.clientPort = new String(servletInfo.clientPort);
+        this.protocol = servletInfo.protocol;
+        this.clientPort = servletInfo.clientPort;
         this.isRequestParsed = servletInfo.isRequestParsed;
         this.isGrpc = servletInfo.isGrpc;
         this.route = servletInfo.route;
@@ -167,7 +167,7 @@ public class HttpRequest {
     }
 
     public void setBody(StringBuilder body) {
-        this.body = body.sb;
+        this.body.sb = body;
     }
 
     public String getContentType() {

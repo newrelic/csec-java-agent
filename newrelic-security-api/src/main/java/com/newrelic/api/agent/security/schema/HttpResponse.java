@@ -1,10 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
-import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import com.newrelic.api.agent.security.StringBuilderLimit;
 
 public class HttpResponse {
 
@@ -43,7 +40,7 @@ public class HttpResponse {
     }
 
     public void setBody(StringBuilder body) {
-        this.body.setSb(body);
+        this.body.sb = body;
     }
 
     public String getResponseContentType() {
@@ -71,7 +68,7 @@ public class HttpResponse {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isAnyBlank(body.getSb(), contentType);
+        return StringUtils.isAnyBlank(body.sb, contentType);
     }
 
     public void clean() {
