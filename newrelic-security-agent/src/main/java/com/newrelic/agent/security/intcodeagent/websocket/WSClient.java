@@ -72,7 +72,7 @@ public class WSClient extends WebSocketClient implements SecurityConnection {
 
     private WebSocketImpl connection = null;
 
-    private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
+    private final Map<String, String> noticeErrorCustomParameters = new HashMap<>();
     private final ReadResult DISCONNECTED = new ReadResult(500, "Disconnected");
     private final ReadResult SUCCESS = new ReadResult(200, "Success");
 
@@ -317,7 +317,7 @@ public class WSClient extends WebSocketClient implements SecurityConnection {
         NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
-                        ex.toString(), ex.getCause()),
+                        ex, ex.getCause()),
                 WSClient.class.getName());
         logger.log(LogLevel.FINER, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
@@ -401,7 +401,7 @@ public class WSClient extends WebSocketClient implements SecurityConnection {
 
     @Override
     public boolean isConnected() {
-        return WSUtils.getInstance().isConnected();
+        return WSUtils.isConnected();
     }
 
     @Override
@@ -431,5 +431,14 @@ public class WSClient extends WebSocketClient implements SecurityConnection {
     @Override
     public void ping() {
         super.sendPing();
+    }
+
+    @Override
+    public void reconnectIfRequired() {
+        if (!isConnected()) {
+            WSReconnectionST.cancelTask(true);
+            WSReconnectionST.getInstance().submitNewTaskSchedule(0);
+            setReconnecting(true);
+        }
     }
 }

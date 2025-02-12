@@ -266,6 +266,7 @@ public class Agent implements SecurityAgent {
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
                 Agent.class.getName()
         );
+        ConnectionFactory.getInstance().getSecurityConnection().reconnectIfRequired();
         ConnectionFactory.getInstance().getSecurityConnection().ping();
         EventSendPool.getInstance();
         ControlCommandProcessorThreadPool.getInstance();
