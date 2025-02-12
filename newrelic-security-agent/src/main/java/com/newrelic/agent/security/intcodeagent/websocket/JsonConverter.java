@@ -10,9 +10,11 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.serializers.K2StackTraceSerializer;
+import com.newrelic.agent.security.intcodeagent.serializers.StringBuilderLimitSerializer;
+import com.newrelic.api.agent.security.schema.StringBuilderLimit;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
@@ -41,14 +43,15 @@ public class JsonConverter {
     private static final String STR_END_CUELY_BRACKET = "}";
     private static final String STR_START_CUELY_BRACKET = "{";
 
-    private static ObjectMapper mapper;
+    private static final ObjectMapper mapper;
 
-    private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
+    private static final String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
 
     static {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         SimpleModule module = new SimpleModule();
         module.addSerializer(StackTraceElement.class, new K2StackTraceSerializer());
+        module.addSerializer(StringBuilderLimit.class, new StringBuilderLimitSerializer());
         objectMapper = objectMapper.registerModule(module);
         objectMapper = objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
 
@@ -153,7 +156,7 @@ public class JsonConverter {
                             mapField.putAll(processMap((Map) value));
                             jsonString.append(mapField);
                         } else {
-                            jsonString.append(value.toString());
+                            jsonString.append(value);
                         }
                         jsonString.append(STR_COMMA);
                     }

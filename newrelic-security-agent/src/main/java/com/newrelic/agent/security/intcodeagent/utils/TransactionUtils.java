@@ -4,9 +4,9 @@ import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpResponseEvent;
-import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.StringBuilderLimit;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class TransactionUtils {
 
-    private static FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static void reportHttpResponse() {
         if(!NewRelicSecurity.isHookProcessingActive()) {
@@ -48,10 +48,10 @@ public class TransactionUtils {
     }
 
     public static boolean trimResponseBody(HttpResponse response) {
-        if(response.getBody().getSb().length() > HttpResponse.MAX_ALLOWED_RESPONSE_BODY_LENGTH) {
-            response.setBody(new StringBuilder(response.getBody().getSb().substring(0, HttpResponse.MAX_ALLOWED_RESPONSE_BODY_LENGTH)));
+        if(response.getBody().toString().length() > StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH) {
+            response.setBody(new StringBuilder(response.getBody().toString().substring(0, StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH)));
             response.setBody(new StringBuilder(response.getBody().append("...")));
-            response.setDataTruncated(true);
+            response.getBody().setDataTruncated(true);
             return true;
         }
         return false;

@@ -70,9 +70,9 @@ public class Dispatcher implements Callable {
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
-    private Map<String, Object> extraInfo = new HashMap<String, Object>();
-    private boolean isNRCode = false;
-    private static AtomicBoolean firstEventSent = new AtomicBoolean(false);
+    private final Map<String, Object> extraInfo = new HashMap<String, Object>();
+    private final boolean isNRCode = false;
+    private static final AtomicBoolean firstEventSent = new AtomicBoolean(false);
     private final String SQL_STORED_PROCEDURE ="SQL_STORED_PROCEDURE";
 
     public ExitEventBean getExitEventBean() {
@@ -87,7 +87,7 @@ public class Dispatcher implements Callable {
         return securityMetaData;
     }
 
-    private static Gson GsonUtil = new Gson();
+    private static final Gson GsonUtil = new Gson();
 
     public Dispatcher(AbstractOperation operation, SecurityMetaData securityMetaData) {
         this.securityMetaData = securityMetaData;
@@ -348,7 +348,7 @@ public class Dispatcher implements Callable {
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
-        if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getBody().getSb())) ||
+        if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getBody().toString())) ||
                 (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             JSONArray params = new JSONArray();

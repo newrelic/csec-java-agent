@@ -247,7 +247,7 @@ public class ApacheHttpClientWrapper {
             requestBuilder.setHeader(NR_CSEC_JAVA_HEAD_REQUEST, "true");
         }
 
-        if (httpRequest.getBody() != null && StringUtils.isNotBlank(httpRequest.getBody())) {
+        if (httpRequest.getBody() != null && StringUtils.isNotBlank(httpRequest.getBody().toString())) {
             requestBuilder.setEntity(new StringEntity(httpRequest.getBody().toString()));
         }
 
