@@ -58,11 +58,17 @@ public class TransactionUtils {
             NewRelicSecurity.getAgent().recordExceptions(NewRelicSecurity.getAgent().getSecurityMetaData(), exception);
         }
 
-        SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
-        if(operations != null) {
-            NewRelicSecurity.getAgent().registerOperation(operations);
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("SECURE_COOKIE_OPERATION", null);
+        if(!NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
+            NewRelicSecurity.getAgent().getSecurityMetaData().getUnregisteredOperations().forEach(operation -> {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            });
+            SecureCookieOperationSet operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("SECURE_COOKIE_OPERATION", SecureCookieOperationSet.class);
+            if(operations != null) {
+                NewRelicSecurity.getAgent().registerOperation(operations);
+                NewRelicSecurity.getAgent().getSecurityMetaData().removeCustomAttribute("SECURE_COOKIE_OPERATION");
+            }
         }
+
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute("EXIT_RECORDED", true);
     }
 }

@@ -372,6 +372,11 @@ public class Agent implements SecurityAgent {
             return;
         }
 
+        if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().addUnregisteredOperation(operation);
+            return;
+        }
+
         AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
@@ -587,28 +592,34 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
-        boolean isNettyReactor = false, isNRGeneratedEvent = false;
-        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
-            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
-                    "com.nr.instrumentation.TokenLinkingSubscriber",
-                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
-                    "com.nr.vertx.instrumentation.VertxUtil$1",
-                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
-                isNettyReactor = true;
-                continue;
-            }
-
-            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                j++;
-            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                isNRGeneratedEvent = true;
+        for (int i = 1; i < operation.getStackTrace().length; i++) {
+            if(StringUtils.startsWith(operation.getStackTrace()[i].getClassName(), "com.newrelic.")) {
+                return true;
             }
         }
-        if (isNettyReactor) {
-            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
-        }
-        return isNRGeneratedEvent;
+        return false;
+//        boolean isNettyReactor = false, isNRGeneratedEvent = false;
+//        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+//            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
+//                    "com.nr.instrumentation.TokenLinkingSubscriber",
+//                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
+//                    "com.nr.vertx.instrumentation.VertxUtil$1",
+//                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
+//                isNettyReactor = true;
+//                continue;
+//            }
+//
+//            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+//            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+//                j++;
+//            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+//                return true;
+//            }
+//        }
+//        if (isNettyReactor) {
+//            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
+//        }
+//        return isNRGeneratedEvent;
     }
 
     private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
