@@ -156,14 +156,13 @@ public class HttpServletHelper {
     public static void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response,
                                                String className, String methodName) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
-            ServletHelper.executeBeforeExitingTransaction();
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(response.getStatus());
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(response.getContentType());
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(JettyUtils.getHttpResponseHeaders(response));
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
