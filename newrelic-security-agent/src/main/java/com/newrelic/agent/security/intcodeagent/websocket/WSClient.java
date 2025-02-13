@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandPro
 import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.utils.ResourceUtils;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -71,7 +72,7 @@ public class WSClient extends WebSocketClient {
 
     private WebSocketImpl connection = null;
 
-    private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
+    private final Map<String, String> noticeErrorCustomParameters = new HashMap<>();
 
 
     private SSLContext createSSLContext() throws Exception {
@@ -258,6 +259,8 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
+        logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for this application is %s", NewRelicSecurity.getAgent().getApplicationConnectionConfig()), null, this.getClass().getName());
+
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
             WSUtils.getInstance().notifyAll();
@@ -314,7 +317,7 @@ public class WSClient extends WebSocketClient {
         NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
-                        ex.toString(), ex.getCause()),
+                        ex, ex.getCause()),
                 WSClient.class.getName());
         logger.log(LogLevel.FINER, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
