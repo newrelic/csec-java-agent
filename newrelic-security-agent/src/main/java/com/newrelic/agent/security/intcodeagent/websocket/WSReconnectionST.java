@@ -23,7 +23,7 @@ public class WSReconnectionST {
 
     private ScheduledFuture futureTask;
 
-    private Runnable runnable = new Runnable() {
+    private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
             try {
@@ -31,6 +31,9 @@ public class WSReconnectionST {
                 if(!WSClient.getInstance().isOpen() || !WSUtils.isConnected()) {
                     logger.log(LogLevel.INFO, "WS is marked disconnected, reconnecting ...", WSReconnectionST.class.getName());
                     ConnectionFactory.getInstance().setSecurityConnection(WSClient.reconnectWSClient());
+                    if (ConnectionFactory.getInstance().getSecurityConnection().isConnected()) {
+                        ConnectionFactory.getInstance().getSecurityConnection().setReconnecting(false);
+                    }
                 }
             } catch (Throwable e) {
                 logger.log(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
