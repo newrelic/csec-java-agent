@@ -17,34 +17,6 @@ import com.newrelic.agent.security.instrumentation.rhino.JSEngineUtils;
 public class ScriptRuntime_Instrumentation {
 
     // TODO: changes for parameterized function calls in js script
-    /**
-     * @deprecated Use {@link #doTopCall(Callable, Context_Instrumentation, Scriptable, Scriptable, Object[],
-     *     boolean)} instead
-     */
-    public static Object doTopCall(Callable callable, Context_Instrumentation cx, Scriptable scope, Scriptable thisObj, Object[] args){
-        boolean isLockAcquired = false;
-        int code = 0;
-        AbstractOperation operation = null;
-        if(cx != null) {
-            code = cx.hashCode();
-            isLockAcquired = acquireLockIfPossible(code);
-            if (isLockAcquired) {
-                operation = preprocessSecurityHook(JSEngineUtils.METHOD_EXEC, cx);
-            }
-        }
-
-        Object returnVal = null;
-        try {
-            returnVal = Weaver.callOriginal();
-        } finally {
-            if(isLockAcquired){
-                releaseLock(code);
-            }
-        }
-        registerExitOperation(isLockAcquired, operation);
-        return returnVal;
-    }
-
     public static Object doTopCall(Callable callable, Context_Instrumentation cx, Scriptable scope, Scriptable thisObj, Object[] args, boolean isTopLevelStrict) {
         boolean isLockAcquired = false;
         int code = 0;
