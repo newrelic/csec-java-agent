@@ -73,18 +73,18 @@ public class CallbackUtils {
 
         logger.log(LogLevel.FINER, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
 
-        Set<String> attackContructs = isXSS(combinedRequestData);
-
-        for (String construct : attackContructs) {
-            if (StringUtils.containsIgnoreCase(combinedResponseDataString, construct)) {
-                toReturn.add(construct);
-
-                if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-                    break;
-                }
-            }
-        }
+//        Set<String> attackContructs = isXSS(combinedRequestData);
+//
+//        for (String construct : attackContructs) {
+//            if (StringUtils.containsIgnoreCase(combinedResponseDataString, construct)) {
+//                toReturn.add(construct);
+//
+//                if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+//                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
+//                    break;
+//                }
+//            }
+//        }
         if (toReturn.isEmpty()) {
             toReturn.add(StringUtils.EMPTY);
         }
@@ -303,7 +303,7 @@ public class CallbackUtils {
         try {
 
             // Process & add header keys & values separately.
-            Map<String, String> headerCopy = new HashMap<>((Map<String, String>) httpRequest.getHeaders());
+            Map<String, String> headerCopy = new HashMap<>(httpRequest.getHeaders());
             headerCopy.remove(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID);
             for (Entry<String, String> entry : headerCopy.entrySet()) {
                 // For key
