@@ -120,8 +120,7 @@ public class SprayHttpUtils {
 
     public static void postProcessSecurityHook(HttpResponse httpResponse, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpResponse.status().intValue());
