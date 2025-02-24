@@ -49,9 +49,6 @@ public class AgentMetaData {
 
     private AppServerInfo appServerInfo;
 
-    @JsonIgnore
-    private DeserializationInfo deserializationInfo = new DeserializationInfo();
-
     public AgentMetaData() {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
@@ -82,7 +79,6 @@ public class AgentMetaData {
         this.fromJumpRequiredInStackTrace = agentMetaData.getFromJumpRequiredInStackTrace();
         this.framework = agentMetaData.framework;
         this.skipScanParameters = agentMetaData.skipScanParameters;
-        this.deserializationInfo = new DeserializationInfo(agentMetaData.deserializationInfo);
     }
 
     public boolean isTriggerViaRCI() {
@@ -234,11 +230,4 @@ public class AgentMetaData {
         this.skipScanParameters = skipScanParameters;
     }
 
-    public DeserializationInfo getDeserializationInfo() {
-        return deserializationInfo;
-    }
-
-    public void setDeserializationInfo(DeserializationInfo deserializationInfo) {
-        this.deserializationInfo = new DeserializationInfo(deserializationInfo);
-    }
 }

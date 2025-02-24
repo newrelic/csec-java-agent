@@ -764,7 +764,6 @@ public class Dispatcher implements Callable {
         eventBean.setUserAPIInfo(operation.getUserClassEntity().getUserClassElement().getLineNumber(),
                 operation.getUserClassEntity().getUserClassElement().getClassName(),
                 operation.getUserClassEntity().getUserClassElement().getMethodName());
-        eventBean.getMetaData().setDeserializationInfo(operation.getDeserializationInfo());
         eventBean.getLinkingMetadata().put(NR_APM_TRACE_ID, securityMetaData.getCustomAttribute(NR_APM_TRACE_ID, String.class));
         eventBean.getLinkingMetadata().put(NR_APM_SPAN_ID, securityMetaData.getCustomAttribute(NR_APM_SPAN_ID, String.class));
         return eventBean;
