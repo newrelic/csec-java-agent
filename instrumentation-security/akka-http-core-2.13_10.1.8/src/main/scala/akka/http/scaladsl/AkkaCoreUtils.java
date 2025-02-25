@@ -35,18 +35,16 @@ public class AkkaCoreUtils {
         return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, NR_SEC_CUSTOM_ATTRIB_NAME);
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, int responseCode, String className, String methodName, Token token) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, Map<String, String> headers, int responseCode, String className, String methodName, Token token) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
             token.linkAndExpire();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(responseBody);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(contentType);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(responseBody);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(responseCode);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(headers);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

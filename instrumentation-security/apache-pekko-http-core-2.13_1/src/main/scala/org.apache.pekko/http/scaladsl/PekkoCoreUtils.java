@@ -68,12 +68,12 @@ public class PekkoCoreUtils {
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(responseBody);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(contentType);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(responseBody);
             if (!contentType.equals(NO_MEDIA_CONTENT_TYPE)) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(responseCode);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(responseCode);
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {

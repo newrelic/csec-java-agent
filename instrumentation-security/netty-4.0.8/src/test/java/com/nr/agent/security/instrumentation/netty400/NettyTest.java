@@ -1,12 +1,9 @@
 package com.nr.agent.security.instrumentation.netty400;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
@@ -61,7 +58,7 @@ public class NettyTest {
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
         Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
         Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
-        Assert.assertEquals("Invalid response body", "write data", response.getResponseBody().toString());
+        Assert.assertEquals("Invalid response body", "write data", response.getBody().toString());
     }
     @Test
     public void testChannelRead() {
@@ -94,7 +91,7 @@ public class NettyTest {
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
         Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
         Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
-        Assert.assertEquals("Invalid response body", "write data", response.getResponseBody().toString());
+        Assert.assertEquals("Invalid response body", "write data", response.getBody().toString());
     }
 
     @Test
@@ -112,7 +109,7 @@ public class NettyTest {
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
         Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
         Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
-        Assert.assertEquals("Invalid response body", "write flush data", response.getResponseBody().toString());
+        Assert.assertEquals("Invalid response body", "write flush data", response.getBody().toString());
     }
 
     @Test
@@ -130,7 +127,7 @@ public class NettyTest {
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
         Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
         Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
-        Assert.assertEquals("Invalid response body", "write flush promise data", response.getResponseBody().toString());
+        Assert.assertEquals("Invalid response body", "write flush promise data", response.getBody().toString());
     }
 
     @Test
@@ -148,7 +145,7 @@ public class NettyTest {
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
         Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
         Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
-        Assert.assertEquals("Invalid response body", "encode data", response.getResponseBody().toString());
+        Assert.assertEquals("Invalid response body", "encode data", response.getBody().toString());
     }
 
     @Trace(dispatcher = true)

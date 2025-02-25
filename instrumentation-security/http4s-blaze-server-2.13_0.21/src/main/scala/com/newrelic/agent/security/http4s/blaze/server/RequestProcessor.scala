@@ -138,13 +138,13 @@ object RequestProcessor {
     try {
       if (NewRelicSecurity.isHookProcessingActive && isLockAcquired && !NewRelicSecurity.getAgent.getIastDetectionCategory.getRxssEnabled) {
         val securityResponse = NewRelicSecurity.getAgent.getSecurityMetaData.getResponse
-        securityResponse.setResponseCode(response.status.code)
+        securityResponse.setStatusCode(response.status.code)
         processResponseHeaders(response.headers, securityResponse)
-        securityResponse.setResponseContentType(getContentType(securityResponse.getHeaders))
+        securityResponse.setContentType(getContentType(securityResponse.getHeaders))
 
-        securityResponse.getResponseBody.append(body)
+        securityResponse.getBody.append(body)
 
-        ServletHelper.executeBeforeExitingTransaction()
+//        ServletHelper.executeBeforeExitingTransaction()
         if (!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent.getSecurityMetaData.getResponse.getResponseContentType)) {
           NewRelicSecurity.getAgent.getSecurityMetaData.getMetaData.setFromJumpRequiredInStackTrace(3)
           val rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent.getSecurityMetaData.getRequest, NewRelicSecurity.getAgent.getSecurityMetaData.getResponse, this.getClass.getName, METHOD_WITH_HTTP_APP)

@@ -60,6 +60,11 @@ public class HttpHandler_Instrumentation {
             securityRequest.setProtocol(HttpServerHelper.getProtocol(exchange));
             securityRequest.setUrl(String.valueOf(exchange.getRequestURI()));
 
+            String queryString = exchange.getRequestURI().getQuery();
+            if (queryString != null && !queryString.trim().isEmpty()) {
+                securityRequest.setUrl(securityRequest.getUrl() + HttpServerHelper.QUESTION_MARK + queryString);
+            }
+
             securityRequest.setContentType(HttpServerHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
@@ -72,11 +77,11 @@ public class HttpHandler_Instrumentation {
                 return;
             }
             HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
-            securityResponse.setResponseCode(exchange.getResponseCode());
+            securityResponse.setStatusCode(exchange.getResponseCode());
             HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);
-            securityResponse.setResponseContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
+            securityResponse.setContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
 
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

@@ -19,8 +19,8 @@ import org.mule.module.http.internal.domain.HttpEntity;
 @Weave(type = MatchType.ExactClass, originalName = "org.mule.module.http.internal.domain.response.HttpResponseBuilder")
 public class HttpResponseBuilder_Instrumentation {
 
-    private ResponseStatus responseStatus = Weaver.callOriginal();
-    private HttpEntity body = Weaver.callOriginal();
+    private final ResponseStatus responseStatus = Weaver.callOriginal();
+    private final HttpEntity body = Weaver.callOriginal();
 
     public HttpResponse build() {
         HttpResponse response = Weaver.callOriginal();
@@ -39,8 +39,8 @@ public class HttpResponseBuilder_Instrumentation {
             com.newrelic.api.agent.security.schema.HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
 
             MuleHelper.processHttpResponseHeaders(securityResponse, response);
-            securityResponse.setResponseCode(response.getStatusCode());
-            securityResponse.setResponseContentType(MuleHelper.getContentType(securityResponse.getHeaders()));
+            securityResponse.setStatusCode(response.getStatusCode());
+            securityResponse.setContentType(MuleHelper.getContentType(securityResponse.getHeaders()));
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, MuleHelper.MULE_36, e.getMessage()), e, this.getClass().getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, MuleHelper.MULE_36, e.getMessage()), e, this.getClass().getName());

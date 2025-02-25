@@ -103,9 +103,11 @@ public abstract class Servlet_Instrumentation {
             }
             if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(httpServletResponse.getContentType());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(HttpServletHelper.getHttpResponseHeaders(httpServletResponse));
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
@@ -125,4 +127,5 @@ public abstract class Servlet_Instrumentation {
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, Servlet_Instrumentation.class.getName());
         }
     }
+
 }

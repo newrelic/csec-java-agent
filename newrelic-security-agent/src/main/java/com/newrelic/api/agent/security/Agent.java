@@ -368,6 +368,15 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if(operation instanceof RXSSOperation && NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            return;
+        }
+
+        if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().addUnregisteredOperation(operation);
+            return;
+        }
+
         AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
@@ -384,7 +393,7 @@ public class Agent implements SecurityAgent {
                 if (securityMetaData != null && securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-                    securityMetaData.getResponse().setResponseBody(
+                    securityMetaData.getResponse().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
@@ -416,7 +425,7 @@ public class Agent implements SecurityAgent {
                 if (securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-                    securityMetaData.getResponse().setResponseBody(
+                    securityMetaData.getResponse().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
@@ -583,28 +592,34 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
-        boolean isNettyReactor = false, isNRGeneratedEvent = false;
-        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
-            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
-                    "com.nr.instrumentation.TokenLinkingSubscriber",
-                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
-                    "com.nr.vertx.instrumentation.VertxUtil$1",
-                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
-                isNettyReactor = true;
-                continue;
-            }
-
-            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                j++;
-            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                isNRGeneratedEvent = true;
+        for (int i = 1; i < operation.getStackTrace().length; i++) {
+            if(StringUtils.startsWith(operation.getStackTrace()[i].getClassName(), "com.newrelic.")) {
+                return true;
             }
         }
-        if (isNettyReactor) {
-            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
-        }
-        return isNRGeneratedEvent;
+        return false;
+//        boolean isNettyReactor = false, isNRGeneratedEvent = false;
+//        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+//            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
+//                    "com.nr.instrumentation.TokenLinkingSubscriber",
+//                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
+//                    "com.nr.vertx.instrumentation.VertxUtil$1",
+//                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
+//                isNettyReactor = true;
+//                continue;
+//            }
+//
+//            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+//            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+//                j++;
+//            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+//                return true;
+//            }
+//        }
+//        if (isNettyReactor) {
+//            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
+//        }
+//        return isNRGeneratedEvent;
     }
 
     private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
@@ -1061,7 +1076,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
-        int responseCode = securityMetaData.getResponse().getResponseCode();
+        int responseCode = securityMetaData.getResponse().getStatusCode();
         String route = securityMetaData.getRequest().getUrl();
         //TODO turn on after api endpoint route detection is merged.
 //        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
@@ -1079,6 +1094,45 @@ public class Agent implements SecurityAgent {
     @Override
     public void reportURLMapping() {
         SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
+    }
+
+    @Override
+    public void dispatcherTransactionStarted() {
+        try {
+            Transaction transaction = NewRelic.getAgent().getTransaction();
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                logger.log(LogLevel.FINEST, "Transaction started with token: " + transaction.getToken().toString(), Agent.class.getName());
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction started event", e, Agent.class.getName());
+        }
+    }
+
+    @Override
+    public void dispatcherTransactionCancelled() {
+        try {
+            Transaction transaction = NewRelic.getAgent().getTransaction();
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                logger.log(LogLevel.FINEST, "Transaction cancelled with token: " + transaction.getSecurityMetaData().toString(), Agent.class.getName());
+                TransactionUtils.executeBeforeExitingTransaction();
+                TransactionUtils.reportHttpResponse();
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction cancelled event", e, Agent.class.getName());
+        }
+    }
+
+    @Override
+    public void dispatcherTransactionFinished() {
+        try {
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                logger.log(LogLevel.FINEST, "Transaction finished with token: " + NewRelic.getAgent().getTransaction().getSecurityMetaData().toString(), Agent.class.getName());
+                TransactionUtils.executeBeforeExitingTransaction();
+                TransactionUtils.reportHttpResponse();
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction finished event", e, Agent.class.getName());
+        }
     }
 
 }
