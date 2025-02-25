@@ -16,6 +16,8 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.utils.logging.LogLevel
 
 import java.lang
+import java.util.{HashMap => JavaHashMap}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.runtime.AbstractFunction1
 
 class AkkaResponseHelper extends AbstractFunction1[HttpResponse, HttpResponse] {
@@ -25,7 +27,9 @@ class AkkaResponseHelper extends AbstractFunction1[HttpResponse, HttpResponse] {
       val stringResponse = new lang.StringBuilder()
       val isLockAquired = GenericHelper.acquireLockIfPossible(AkkaCoreUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
       stringResponse.append(httpResponse.entity.asInstanceOf[HttpEntity.Strict].getData().decodeString("utf-8"))
-      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
+      val headers = new JavaHashMap[String, String]()
+      httpResponse.headers.foreach(header => headers.put(header.name(), header.value()))
+      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), headers, httpResponse.status.intValue(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
     } catch {
       case t: NewRelicSecurityException =>
         NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_10_0_0, t.getMessage), t, classOf[AkkaCoreUtils].getName)

@@ -87,7 +87,7 @@ public class ApplicationRuntimeError extends AgentBasicInfo{
         return responseCode;
     }
 
-    public void setResponseCode(int responseCode) {
+    public void setStatusCode(int responseCode) {
         this.responseCode = responseCode;
     }
 

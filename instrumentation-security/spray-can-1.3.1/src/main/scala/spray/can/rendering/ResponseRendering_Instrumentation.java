@@ -22,10 +22,11 @@ public class ResponseRendering_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && response.entity().nonEmpty()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(response.entity().data().asString(StandardCharsets.UTF_8)));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(new StringBuilder(response.entity().data().asString(StandardCharsets.UTF_8)));
                 if (response.entity() instanceof HttpEntity.NonEmpty) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(((HttpEntity.NonEmpty) response.entity()).contentType().value());
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(((HttpEntity.NonEmpty) response.entity()).contentType().value());
                 }
+                SprayHttpUtils.processResponseHeaders(response.headers(), NewRelicSecurity.getAgent().getSecurityMetaData().getResponse());
                 SprayHttpUtils.postProcessSecurityHook(response, ResponseRendering_Instrumentation.class.getName(), "renderResponse$1");
             }
         } catch (Exception e){

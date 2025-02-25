@@ -3,8 +3,7 @@ package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,6 +26,8 @@ public class SecurityMetaData {
 
     private Map<String, Object> customData;
 
+    private Set<AbstractOperation> unregisteredOperations;
+
     public SecurityMetaData() {
         request = new HttpRequest();
         response = new HttpResponse();
@@ -35,6 +36,7 @@ public class SecurityMetaData {
         fileLocalMap = new HashMap<>();
         fuzzRequestIdentifier = new K2RequestIdentifier();
         customData = new ConcurrentHashMap<>();
+        unregisteredOperations = new HashSet<>();
     }
 
     public SecurityMetaData(SecurityMetaData securityMetaData) {
@@ -45,6 +47,7 @@ public class SecurityMetaData {
         fileLocalMap = new HashMap<>(securityMetaData.getFileLocalMap());
         fuzzRequestIdentifier = new K2RequestIdentifier(securityMetaData.getFuzzRequestIdentifier());
         customData = new ConcurrentHashMap<>(securityMetaData.customData);
+        unregisteredOperations = new HashSet<>(securityMetaData.unregisteredOperations);
     }
 
     public HttpRequest getRequest() {
@@ -105,6 +108,14 @@ public class SecurityMetaData {
 
     public <T> T getCustomAttribute(String key, Class<? extends T> klass) {
         return klass.cast(this.customData.get(key));
+    }
+
+    public Set<AbstractOperation> getUnregisteredOperations() {
+        return unregisteredOperations;
+    }
+
+    public void addUnregisteredOperation(AbstractOperation operation) {
+        this.unregisteredOperations.add(operation);
     }
 
     public void removeCustomAttribute(String key) {
