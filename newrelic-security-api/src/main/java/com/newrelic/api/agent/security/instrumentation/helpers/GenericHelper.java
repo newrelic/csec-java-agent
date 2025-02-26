@@ -104,6 +104,9 @@ public class GenericHelper {
             case HASH:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInsecureSettingsEnabled();
                 break;
+            case UNSAFE_DESERIALIZATION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getUnsafeDeserializationEnabled();
+                break;
             default:
                 break;
         }
