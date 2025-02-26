@@ -69,7 +69,7 @@ public class WSClient extends WebSocketClient {
     public static final String PROXY_SCHEME = "proxy_scheme";
     public static final String PROXY_USER = "proxy_user";
 
-    private final AtomicBoolean firstServerConnectionSent = new AtomicBoolean(false);
+    private static final AtomicBoolean firstServerConnectionSent = new AtomicBoolean(false);
 
     private static WSClient instance;
 
