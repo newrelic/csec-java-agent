@@ -59,4 +59,9 @@ public class ServerConnectionConfiguration {
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
+
+    @Override
+    public String toString() {
+        return String.format(" Port: %s, Protocol: %s, Endpoint: %s", port, protocol, endpoint);
+    }
 }

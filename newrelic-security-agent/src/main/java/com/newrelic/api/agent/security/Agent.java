@@ -584,7 +584,7 @@ public class Agent implements SecurityAgent {
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
         boolean isNettyReactor = false, isNRGeneratedEvent = false;
-        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+        for (int i = 0, j = -1; i < operation.getStackTrace().length; i++) {
             if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
                     "com.nr.instrumentation.TokenLinkingSubscriber",
                     "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
@@ -599,6 +599,7 @@ public class Agent implements SecurityAgent {
                 j++;
             } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
                 isNRGeneratedEvent = true;
+                break;
             }
         }
         if (isNettyReactor) {
@@ -892,7 +893,9 @@ public class Agent implements SecurityAgent {
         if(logger != null) {
             logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
         }
-//        verifyConnectionAndPut(port, scheme, appServerInfo);
+        if (logger != null && WSUtils.isConnected()) {
+            logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), null, this.getClass().getName());
+        }
     }
 
     public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
