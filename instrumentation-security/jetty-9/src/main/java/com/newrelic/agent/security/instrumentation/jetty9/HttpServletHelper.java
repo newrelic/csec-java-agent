@@ -99,7 +99,7 @@ public class HttpServletHelper {
     }
 
     public static boolean acquireServletLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
@@ -156,12 +156,10 @@ public class HttpServletHelper {
     public static void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response,
                                                String className, String methodName) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            if(!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
+
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
