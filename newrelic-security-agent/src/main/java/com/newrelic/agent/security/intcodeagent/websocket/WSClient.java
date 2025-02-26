@@ -43,6 +43,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WSClient extends WebSocketClient {
 
@@ -67,6 +68,8 @@ public class WSClient extends WebSocketClient {
     public static final String PROXY_PORT = "proxy_port";
     public static final String PROXY_SCHEME = "proxy_scheme";
     public static final String PROXY_USER = "proxy_user";
+
+    private final AtomicBoolean firstServerConnectionSent = new AtomicBoolean(false);
 
     private static WSClient instance;
 
@@ -259,8 +262,10 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
-        logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for this application is %s", NewRelicSecurity.getAgent().getApplicationConnectionConfig()), null, this.getClass().getName());
-
+        if (!firstServerConnectionSent.get()) {
+            logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for this application is %s", NewRelicSecurity.getAgent().getApplicationConnectionConfig()), null, this.getClass().getName());
+            firstServerConnectionSent.set(true);
+        }
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
             WSUtils.getInstance().notifyAll();
