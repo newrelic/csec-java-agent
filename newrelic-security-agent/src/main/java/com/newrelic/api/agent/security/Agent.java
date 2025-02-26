@@ -893,7 +893,9 @@ public class Agent implements SecurityAgent {
         if(logger != null) {
             logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
         }
-//        verifyConnectionAndPut(port, scheme, appServerInfo);
+        if (logger != null && WSUtils.isConnected()) {
+            logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), null, this.getClass().getName());
+        }
     }
 
     public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
