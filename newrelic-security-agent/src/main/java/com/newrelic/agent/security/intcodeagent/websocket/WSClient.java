@@ -263,7 +263,7 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
-        if (!firstServerConnectionSent.get()) {
+        if (!firstServerConnectionSent.get() && !NewRelicSecurity.getAgent().getApplicationConnectionConfig().isEmpty()) {
             logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for this application is %s", NewRelicSecurity.getAgent().getApplicationConnectionConfig()), null, this.getClass().getName());
             firstServerConnectionSent.set(true);
         }
