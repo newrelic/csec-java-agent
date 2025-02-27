@@ -84,6 +84,26 @@ public class SchedulerHelper {
         return future;
     }
 
+    public ScheduledFuture<?> scheduleTTLMapCleanup(Runnable command,
+                                                               long initialDelay,
+                                                               long period,
+                                                               TimeUnit unit,
+                                                                String mapId){
+        if(scheduledFutureMap.containsKey("ttl-map-cleanup-"+mapId)){
+            throw new IllegalArgumentException("TTL map cleanup already scheduled for mapId: "+mapId);
+        }
+        ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, initialDelay, period, unit);
+        scheduledFutureMap.put("ttl-map-cleanup-"+mapId, future);
+        return future;
+    }
+
+    public void cancelTTLMapCleanup(String mapId){
+        if(scheduledFutureMap.containsKey("ttl-map-cleanup-"+mapId)){
+            ScheduledFuture<?> currentFuture = scheduledFutureMap.get("ttl-map-cleanup-"+mapId);
+            currentFuture.cancel(false);
+        }
+    }
+
     public ScheduledFuture<?> scheduleDailyLogRollover(Runnable command) {
 
         if(LogFileHelper.isDailyRollover()) {
