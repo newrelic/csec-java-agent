@@ -896,6 +896,7 @@ public class Agent implements SecurityAgent {
         }
         if (logger != null && WSUtils.isConnected()) {
             logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), null, this.getClass().getName());
+            WSClient.setFirstServerConnectionSent(true);
         }
     }
 

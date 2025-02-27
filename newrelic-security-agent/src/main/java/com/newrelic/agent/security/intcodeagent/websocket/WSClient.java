@@ -400,4 +400,8 @@ public class WSClient extends WebSocketClient {
         }
     }
 
+    public static void setFirstServerConnectionSent(boolean firstServerConnectionSent1) {
+        firstServerConnectionSent.set(firstServerConnectionSent1);
+    }
+
 }
