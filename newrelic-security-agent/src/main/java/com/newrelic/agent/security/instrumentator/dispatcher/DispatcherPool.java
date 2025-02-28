@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
@@ -34,7 +35,7 @@ public class DispatcherPool {
     /**
      * Thread pool executor.
      */
-    private ThreadPoolExecutor executor;
+    private final ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     final int queueSize = 300;
@@ -44,7 +45,7 @@ public class DispatcherPool {
     final TimeUnit timeUnit = TimeUnit.SECONDS;
     final boolean allowCoreThreadTimeOut = false;
 
-    private Set<String> eid;
+    private final Set<String> eid;
 
     public ThreadPoolExecutor getExecutor() {
         return executor;
@@ -219,7 +220,9 @@ public class DispatcherPool {
         securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
         securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
 
-        IastExclusionUtils.getInstance().addEncounteredTrace(traceMetadata.getTraceId(), operation.getApiID());
+        if (!AgentConfig.getInstance().getAgentMode().getSkipScan().getApiRoutes().isEmpty()) {
+            IastExclusionUtils.getInstance().addEncounteredTrace(traceMetadata.getTraceId(), operation.getApiID());
+        }
 
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
         AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementSubmitted();

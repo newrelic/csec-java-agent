@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
@@ -46,11 +47,11 @@ public class RestRequestProcessor implements Callable<Boolean> {
     private static final String IAST_REQUEST_HAS_NO_ARGUMENTS = "IAST request has incomplete arguments : %s";
     public static final String AGENT_IS_NOT_ACTIVE = "Agent is not active";
     public static final String WS_RECONNECTING = "Websocket reconnecting failing for control command id: %s";
-    private IntCodeControlCommand controlCommand;
+    private final IntCodeControlCommand controlCommand;
 
-    private int repeatCount;
+    private final int repeatCount;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -75,7 +76,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
         }
 
         //Skip if API ID is registered under skip list
-        if(IastExclusionUtils.getInstance().skipTraceApi(controlCommand.getApiId())) {
+        if(!AgentConfig.getInstance().getAgentMode().getSkipScan().getApiRoutes().isEmpty() && IastExclusionUtils.getInstance().skipTraceApi(controlCommand.getApiId())) {
             logger.log(LogLevel.FINER, String.format("Skip the control command %s, the record already exist under Skip list.", controlCommand.getId()), RestRequestProcessor.class.getSimpleName());
             return true;
         }

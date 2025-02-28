@@ -375,7 +375,7 @@ public class Agent implements SecurityAgent {
             if(lockAcquired) {
 
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-                if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), securityMetaData.getRequest())){
+                if(!AgentConfig.getInstance().getAgentMode().getSkipScan().getApiRoutes().isEmpty() && RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), securityMetaData.getRequest())){
                     IastExclusionUtils.getInstance().registerSkippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId());
                     logger.log(LogLevel.FINER, String.format(SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST, securityMetaData.getRequest().getUrl()), Agent.class.getName());
                     return;
