@@ -5,7 +5,7 @@ on:
     branches: ['main']
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   dependency-submission:
@@ -21,4 +21,7 @@ jobs:
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v4
         with:
-          dependency-graph-exclude-projects: ':instrumentation'
+          dependency-graph-include-projects: ':newrelic-security-(agent|api)'
+          build-scan-publish: true
+          build-scan-terms-of-use-url: "https://gralde.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
