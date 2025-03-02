@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +57,11 @@ public class AgentInfo {
         String runningVM = runtimeMXBean.getName();
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 //        osVariables = OsVariablesInstance.getInstance().getOsVariables();
-        applicationUUID = UUID.randomUUID().toString();
+        if (NewRelic.getAgent().getConfig().getValue("security.debug.application_uuid") != null){
+            applicationUUID = NewRelic.getAgent().getConfig().getValue("security.debug.application_uuid");
+        } else {
+            applicationUUID = UUID.randomUUID().toString();
+        }
     }
 
     private static final class InstanceHolder {
