@@ -9,6 +9,8 @@ import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.IastExclusionUtils;
+import com.newrelic.agent.security.intcodeagent.utils.RestrictionUtility;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -185,6 +187,9 @@ public class Dispatcher implements Callable {
                     break;
                 case HTTP_REQUEST:
                     SSRFOperation ssrfOperationalBean = (SSRFOperation) operation;
+                    if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), ((SSRFOperation) operation).getArg())) {
+                        IastExclusionUtils.getInstance().registerSkippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId());
+                    }
                     eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
                     break;
                 case XPATH:

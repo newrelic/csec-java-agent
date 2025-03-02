@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("javax.servlet:javax.servlet-api:3.0.1")
+    implementation("com.caucho:resin:4.0.66")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.resin-4' }
+}
+
+verifyInstrumentation {
+    passes 'com.caucho:resin:[4.0.52,)'
+    verifyClasspath = false
+}
+
+site {
+    title 'Resin'
+    type 'Appserver'
+    versionOverride '[4.0.0,)'
+}

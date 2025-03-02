@@ -385,6 +385,7 @@ public class Agent implements SecurityAgent {
 
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), securityMetaData.getRequest())){
+                    IastExclusionUtils.getInstance().registerSkippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId());
                     logger.log(LogLevel.FINER, String.format(SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST, securityMetaData.getRequest().getUrl()), Agent.class.getName());
                     return;
                 }
@@ -907,7 +908,10 @@ public class Agent implements SecurityAgent {
         if(logger != null) {
             logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
         }
-//        verifyConnectionAndPut(port, scheme, appServerInfo);
+        if (logger != null && WSUtils.isConnected()) {
+            logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), null, this.getClass().getName());
+            WSClient.setFirstServerConnectionSent(true);
+        }
     }
 
     public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
@@ -1078,10 +1082,9 @@ public class Agent implements SecurityAgent {
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
         int responseCode = securityMetaData.getResponse().getStatusCode();
         String route = securityMetaData.getRequest().getUrl();
-        //TODO turn on after api endpoint route detection is merged.
-//        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
-//            route = securityMetaData.getRequest().getRoute();
-//        }
+        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
+            route = securityMetaData.getRequest().getRoute();
+        }
         LogMessageException messageException = null;
         if (exception != null) {
             messageException = new LogMessageException(exception, 0, 1, 20);

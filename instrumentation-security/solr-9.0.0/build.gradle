@@ -36,7 +36,7 @@ test {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.apache.solr:solr-core:[9.0.0,)'
+    passesOnly 'org.apache.solr:solr-core:[9.0.0,9.8.0)'
     exclude 'org.apache.solr:solr-core:[8.0.0,9.0.0)'
     excludeRegex 'org.apache.solr:solr-core:.*(ALPHA|BETA)+$'
 }

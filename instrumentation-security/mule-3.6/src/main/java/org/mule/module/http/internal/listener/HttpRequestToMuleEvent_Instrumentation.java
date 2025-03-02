@@ -86,7 +86,7 @@ public class HttpRequestToMuleEvent_Instrumentation {
 
     private static void postProcessSecurityHook() {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()
             ) {
                 return;
             }
@@ -116,7 +116,7 @@ public class HttpRequestToMuleEvent_Instrumentation {
     }
 
     private static boolean acquireLockIfPossible(int hashcode) {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, MuleHelper.getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(MuleHelper.getNrSecCustomAttribName());
     }
 
     private static void releaseLock(int hashcode) {

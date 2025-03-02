@@ -94,16 +94,8 @@ public class HttpServletHelper {
         return data;
     }
 
-    public static boolean isServletLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     public static boolean acquireServletLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {

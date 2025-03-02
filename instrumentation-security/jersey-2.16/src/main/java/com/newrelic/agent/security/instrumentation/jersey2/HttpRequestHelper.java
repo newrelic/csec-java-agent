@@ -73,7 +73,7 @@ public class HttpRequestHelper {
 
     public static void postProcessSecurityHook(String className, OutboundMessageContext wrappedMessageContext) {
         try {
-            if (Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
             }
@@ -179,16 +179,8 @@ public class HttpRequestHelper {
         return data;
     }
 
-    private static boolean isRequestLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     public static boolean acquireRequestLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
     }
 
     public static void releaseRequestLock() {

@@ -24,7 +24,7 @@ public class IastHttpClient {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 
-    private ApacheHttpClientWrapper httpClient;
+    private final ApacheHttpClientWrapper httpClient;
     private boolean connected = false;
 
     private IastHttpClient() {
@@ -84,7 +84,8 @@ public class IastHttpClient {
                         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(serverPort, endpoint.getKey(), endpoint.getValue(), true);
                         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
                         appServerInfo.getConnectionConfiguration().put(serverPort, serverConnectionConfiguration);
-                        logger.log(LogLevel.FINER, String.format("setting up new connection configuration for port %s : %s", serverPort, serverConnectionConfiguration.getEndpoint()), IastHttpClient.class.getName());
+                        logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Confirmed endpoint for this application is %s", serverConnectionConfiguration.getEndpoint()), null, this.getClass().getName());
+                        logger.log(LogLevel.FINER, String.format("Setting up new connection configuration for port %s : %s", serverPort, serverConnectionConfiguration.getEndpoint()), IastHttpClient.class.getName());
                         return;
                     }
                 } catch (ApacheHttpExceptionWrapper | IOException | URISyntaxException e) {

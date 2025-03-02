@@ -4,13 +4,13 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.exceptions.SecurityNoticeError;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.utils.ResourceUtils;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WSClient extends WebSocketClient {
 
@@ -67,11 +68,13 @@ public class WSClient extends WebSocketClient {
     public static final String PROXY_SCHEME = "proxy_scheme";
     public static final String PROXY_USER = "proxy_user";
 
+    private static final AtomicBoolean firstServerConnectionSent = new AtomicBoolean(false);
+
     private static WSClient instance;
 
     private WebSocketImpl connection = null;
 
-    private Map<String, String> noticeErrorCustomParameters = new HashMap<>();
+    private final Map<String, String> noticeErrorCustomParameters = new HashMap<>();
 
 
     private SSLContext createSSLContext() throws Exception {
@@ -157,7 +160,9 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-IGNORED-VUL-CATEGORIES", AgentConfig.getInstance().getAgentMode().getSkipScan().getIastDetectionCategory().getDisabledCategoriesCSV());
         this.addHeader("NR-CSEC-PROCESS-START-TIME", String.valueOf(ManagementFactory.getRuntimeMXBean().getStartTime()));
         this.addHeader("NR-CSEC-IAST-TEST-IDENTIFIER", AgentConfig.getInstance().getScanControllers().getIastTestIdentifier());
-        this.addHeader("NR-CSEC-IAST-SCAN-INSTANCE-COUNT", String.valueOf(AgentConfig.getInstance().getScanControllers().getScanInstanceCount()));
+        if (AgentConfig.getInstance().getScanControllers().getScanInstanceCount() >= 0) {
+            this.addHeader("NR-CSEC-IAST-SCAN-INSTANCE-COUNT", String.valueOf(AgentConfig.getInstance().getScanControllers().getScanInstanceCount()));
+        }
         Proxy proxy = proxyManager();
         if(proxy != null) {
             this.setProxy(proxy);
@@ -258,6 +263,10 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         cleanIASTState();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
+        if (!firstServerConnectionSent.get() && !NewRelicSecurity.getAgent().getApplicationConnectionConfig().isEmpty()) {
+            logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for this application is %s", NewRelicSecurity.getAgent().getApplicationConnectionConfig()), null, this.getClass().getName());
+            firstServerConnectionSent.set(true);
+        }
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
             WSUtils.getInstance().notifyAll();
@@ -314,7 +323,7 @@ public class WSClient extends WebSocketClient {
         NewRelic.noticeError(new SecurityNoticeError(CONNECTION_CLOSED_BY + ex.getClass().getSimpleName(), ex), noticeErrorCustomParameters, true);
         logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
-                        ex.toString(), ex.getCause()),
+                        ex, ex.getCause()),
                 WSClient.class.getName());
         logger.log(LogLevel.FINER, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
@@ -389,6 +398,10 @@ public class WSClient extends WebSocketClient {
         if (instance != null) {
             instance.close(frame, message);
         }
+    }
+
+    public static void setFirstServerConnectionSent(boolean firstServerConnectionSent1) {
+        firstServerConnectionSent.set(firstServerConnectionSent1);
     }
 
 }
