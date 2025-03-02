@@ -50,7 +50,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Request Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
         Assert.assertEquals("Wrong Response Content-type detected", "multipart/form-data", targetOperation.getResponse().getResponseContentType());
 
     }
@@ -73,7 +73,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong request Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
 
     }
 
@@ -96,7 +96,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
 
-        boolean resBody = Boolean.parseBoolean(String.valueOf(targetOperation.getResponse().getResponseBody()));
+        boolean resBody = Boolean.parseBoolean(String.valueOf(targetOperation.getResponse().getBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
     }
 
@@ -119,7 +119,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
 
-        char resBody = String.valueOf(targetOperation.getResponse().getResponseBody()).charAt(0);
+        char resBody = String.valueOf(targetOperation.getResponse().getBody()).charAt(0);
         Assert.assertEquals("Wrong response detected", expected, resBody);
 
     }
@@ -143,7 +143,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
 
-        int resBody = Integer.parseInt(String.valueOf(targetOperation.getResponse().getResponseBody()));
+        int resBody = Integer.parseInt(String.valueOf(targetOperation.getResponse().getBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
     }
 
@@ -166,7 +166,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
 
-        long resBody = Long.parseLong(String.valueOf(targetOperation.getResponse().getResponseBody()));
+        long resBody = Long.parseLong(String.valueOf(targetOperation.getResponse().getBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
     }
 
@@ -189,7 +189,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
 
-        float resBody = Float.parseFloat(String.valueOf(targetOperation.getResponse().getResponseBody()));
+        float resBody = Float.parseFloat(String.valueOf(targetOperation.getResponse().getBody()));
         Assert.assertEquals("Wrong response detected",expected, resBody, 0.0f);
     }
 
@@ -212,7 +212,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
 
-        double resBody = Double.parseDouble(String.valueOf(targetOperation.getResponse().getResponseBody()));
+        double resBody = Double.parseDouble(String.valueOf(targetOperation.getResponse().getBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody, 0.0d);
     }
 
@@ -234,7 +234,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
 
     }
 
@@ -256,7 +256,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
 
     }
 
@@ -278,7 +278,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
 
     }
 
@@ -300,7 +300,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
 
     }
 
@@ -322,7 +322,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
 
     }
 
@@ -344,7 +344,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
     }
 
     @Test
@@ -365,7 +365,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
     }
 
     @Test
@@ -386,7 +386,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         
-        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
+        Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getBody()));
     }
     @Trace(dispatcher = true)
     private String write() throws URISyntaxException, IOException {

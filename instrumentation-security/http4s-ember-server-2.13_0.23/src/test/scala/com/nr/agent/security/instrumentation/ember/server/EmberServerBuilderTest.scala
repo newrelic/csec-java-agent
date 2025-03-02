@@ -93,8 +93,8 @@ class EmberServerBuilderTest {
     Assert.assertFalse("response should not be empty", operation.getResponse.isEmpty)
     Assert.assertEquals("Invalid response content-type.", contentType, operation.getResponse.getResponseContentType)
     Assert.assertFalse("Headers should not be empty", operation.getResponse.getHeaders.isEmpty)
-    Assert.assertEquals("Invalid Response body", "Hello, bob.", operation.getResponse.getResponseBody.toString)
-    Assert.assertEquals("Invalid Response code", 200, operation.getResponse.getResponseCode)
+    Assert.assertEquals("Invalid Response body", "Hello, bob.", operation.getResponse.getBody.toString)
+    Assert.assertEquals("Invalid Response code", 200, operation.getResponse.getStatusCode)
   }
 
   private def assertMetaData(metaData: SecurityMetaData): Unit = {
@@ -107,9 +107,9 @@ class EmberServerBuilderTest {
 
     Assert.assertFalse("response should not be empty", metaData.getResponse.isEmpty)
     Assert.assertEquals("Invalid response content-type.", contentType, metaData.getResponse.getResponseContentType)
-    Assert.assertEquals("Invalid Response code", 200, metaData.getResponse.getResponseCode)
+    Assert.assertEquals("Invalid Response code", 200, metaData.getResponse.getStatusCode)
     Assert.assertFalse("Headers should not be empty", metaData.getResponse.getHeaders.isEmpty)
-    Assert.assertEquals("Invalid Response body", "Hello, bob.", metaData.getResponse.getResponseBody.toString)
+    Assert.assertEquals("Invalid Response body", "Hello, bob.", metaData.getResponse.getBody.toString)
   }
 }
 

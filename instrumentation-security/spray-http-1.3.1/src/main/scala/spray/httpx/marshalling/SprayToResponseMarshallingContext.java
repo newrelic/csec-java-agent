@@ -29,10 +29,11 @@ public class SprayToResponseMarshallingContext {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && httpResponse.entity().nonEmpty()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(httpResponse.entity().data().asString(StandardCharsets.UTF_8)));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setBody(new StringBuilder(httpResponse.entity().data().asString(StandardCharsets.UTF_8)));
                 if (httpResponse.entity() instanceof HttpEntity.NonEmpty) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(((HttpEntity.NonEmpty) httpResponse.entity()).contentType().value());
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(((HttpEntity.NonEmpty) httpResponse.entity()).contentType().value());
                 }
+                SprayHttpUtils.processResponseHeaders(httpResponse.headers(), NewRelicSecurity.getAgent().getSecurityMetaData().getResponse());
                 SprayHttpUtils.postProcessSecurityHook(httpResponse, this.getClass().getName(), "marshalTo");
             }
         } catch (Exception e){

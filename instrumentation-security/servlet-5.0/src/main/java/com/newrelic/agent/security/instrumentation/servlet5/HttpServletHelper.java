@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.instrumentation.servlet5;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -12,9 +15,11 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 public class HttpServletHelper {
@@ -139,5 +144,16 @@ public class HttpServletHelper {
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
+    }
+
+    public static Map<String, String> getHttpResponseHeaders(HttpServletResponse httpServletResponse) {
+        Map<String, String> headers = new java.util.HashMap<>();
+        Collection<String> headerNames = httpServletResponse.getHeaderNames();
+        Iterator<String> iterator = headerNames.iterator();
+        while (iterator.hasNext()) {
+            String headerName = iterator.next();
+            headers.put(headerName, httpServletResponse.getHeader(headerName));
+        }
+        return headers;
     }
 }

@@ -62,9 +62,9 @@ public class GenericHelper {
         if (caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isRequestParsed()){
             return false;
         }
-        if (!caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-            return false;
-        }
+//        if (!caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+//            return false;
+//        }
         boolean enabled = false;
         switch (caseType) {
             case SYSTEM_COMMAND:
