@@ -47,31 +47,10 @@ public class GrpcUtils {
     }
 
     public static void releaseLock(int hashcode) {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
     }
 
     public static boolean acquireLockIfPossible(int hashcode) {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode)) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, true);
-                return true;
-            }
-        } catch (Throwable ignored){
-        }
-        return false;
-    }
-
-    private static boolean isLockAcquired(String nrSecCustomAttrName) {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(nrSecCustomAttrName, Boolean.class));
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(NR_SEC_CUSTOM_ATTRIB_NAME, hashcode);
     }
 }

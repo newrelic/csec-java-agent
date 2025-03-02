@@ -7,6 +7,7 @@ import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -28,13 +29,13 @@ public class HttpServletHelper {
     public static final String QUESTION_MARK = "?";
     public static final String SERVICE_METHOD_NAME = "handle";
     public static final String SERVICE_ASYNC_METHOD_NAME = "handleAsync";
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     public static final String JETTY_9 = "JETTY-9";
     private static final String SEPARATOR = "/";
     private static final String WILDCARD = "*";
 
 
-    public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest) {
+    private static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest) {
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             boolean takeNextValue = false;
@@ -86,7 +87,7 @@ public class HttpServletHelper {
 
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -97,34 +98,12 @@ public class HttpServletHelper {
         return data;
     }
 
-    public static boolean isServletLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
     public static boolean acquireServletLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isServletLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(getNrSecCustomAttribName());
     }
 
     private static String getNrSecCustomAttribName() {
@@ -133,15 +112,12 @@ public class HttpServletHelper {
 
     public static void preprocessSecurityHook(HttpServletRequest httpServletRequest) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || httpServletRequest == null) {
+            if (httpServletRequest == null) {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
+
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
@@ -180,12 +156,10 @@ public class HttpServletHelper {
     public static void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response,
                                                String className, String methodName) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            if(!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
+
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(response.getStatus());
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter

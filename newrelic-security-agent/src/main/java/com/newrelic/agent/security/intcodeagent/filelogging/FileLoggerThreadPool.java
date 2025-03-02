@@ -157,7 +157,7 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, String logSourceClassName) {
-        postLogMessage(logLevel, event, null, logSourceClassName);
+//        postLogMessage(logLevel, event, null, logSourceClassName);
         if (!isInitLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
@@ -168,7 +168,7 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
-        postLogMessage(logLevel, event, throwableEvent, logSourceClassName);
+//        postLogMessage(logLevel, event, throwableEvent, logSourceClassName);
         if (!isInitLoggingActive || logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
@@ -179,7 +179,7 @@ public class FileLoggerThreadPool {
     }
 
     public void postLogMessageIfNecessary(LogLevel logLevel, String event, Throwable exception, String caller) {
-        if (logLevel.getLevel() > LogLevel.WARNING.getLevel()) {
+        if (logLevel.getLevel() > LogLevel.INFO.getLevel()) {
             return;
         }
         postLogMessage(logLevel, event, exception, caller);

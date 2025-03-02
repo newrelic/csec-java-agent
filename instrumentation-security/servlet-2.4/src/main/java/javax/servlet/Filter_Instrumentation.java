@@ -27,38 +27,26 @@ public abstract class Filter_Instrumentation {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
-        Exception originalCallFailledWithException = null;
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
         try {
             Weaver.callOriginal();
-        } catch (Exception e){
-            originalCallFailledWithException = e;
-            throw e;
-        }
-        finally {
+        } finally {
             if(isServletLockAcquired){
-                postProcessSecurityHook(request, response, originalCallFailledWithException);
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
+        }
+        if(isServletLockAcquired) {
+            postProcessSecurityHook(request, response);
         }
     }
 
     private void preprocessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-                    || !(request instanceof HttpServletRequest)
-            ) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
@@ -95,27 +83,19 @@ public abstract class Filter_Instrumentation {
         }
     }
 
-    private void postProcessSecurityHook(ServletRequest request, ServletResponse response, Exception originalCallFailledWithException) {
+    private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
             }
-            if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
+            if(NewRelic.getAgent().getTransaction().isWebTransaction() && response != null) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(httpServletResponse.getContentType());
             }
             ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
-
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
-                return;
-            }
-            if(originalCallFailledWithException != null){
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setException(originalCallFailledWithException);
-                return;
-            }
-
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
@@ -133,18 +113,5 @@ public abstract class Filter_Instrumentation {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, Filter_Instrumentation.class.getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, Filter_Instrumentation.class.getName());
         }
-    }
-
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {}
     }
 }

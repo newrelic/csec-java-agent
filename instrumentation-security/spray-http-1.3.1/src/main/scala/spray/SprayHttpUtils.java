@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class SprayHttpUtils {
 
-    public static final String QUESTION_MARK = "?";
+    private static final String QUESTION_MARK = "?";
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     public static final String SPRAY_HTTP_1_3_1 = "SPRAY-HTTP-1.3.1";
@@ -36,17 +36,9 @@ public class SprayHttpUtils {
 
     public static void preProcessRequestHook(HttpRequest request) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             com.newrelic.api.agent.security.schema.HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
 
-            AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(request.method().name());
             securityRequest.setProtocol(request.uri().scheme());
             securityRequest.setUrl(processURL(request.uri()));
@@ -70,7 +62,7 @@ public class SprayHttpUtils {
         }
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
+    private static String getTraceHeader(Map<String, String> headers) {
         String data = StringUtils.EMPTY;
         if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
             data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
@@ -128,8 +120,7 @@ public class SprayHttpUtils {
 
     public static void postProcessSecurityHook(HttpResponse httpResponse, String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()
-            ) {
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()) {
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpResponse.status().intValue());

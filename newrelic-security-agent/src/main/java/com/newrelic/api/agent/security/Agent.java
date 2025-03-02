@@ -154,7 +154,7 @@ public class Agent implements SecurityAgent {
             info.initialiseHC();
             config.populateAgentPolicy();
             config.populateAgentPolicyParameters();
-            config.setupSnapshotDir();
+//            config.setupSnapshotDir();
             info.initStatusLogValues();
             setInitialised(true);
             populateLinkingMetadata();
@@ -376,6 +376,7 @@ public class Agent implements SecurityAgent {
 
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), securityMetaData.getRequest())){
+                    IastExclusionUtils.getInstance().registerSkippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId());
                     logger.log(LogLevel.FINER, String.format(SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST, securityMetaData.getRequest().getUrl()), Agent.class.getName());
                     return;
                 }
@@ -584,7 +585,7 @@ public class Agent implements SecurityAgent {
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
         boolean isNettyReactor = false, isNRGeneratedEvent = false;
-        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+        for (int i = 0, j = -1; i < operation.getStackTrace().length; i++) {
             if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
                     "com.nr.instrumentation.TokenLinkingSubscriber",
                     "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
@@ -599,6 +600,7 @@ public class Agent implements SecurityAgent {
                 j++;
             } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
                 isNRGeneratedEvent = true;
+                break;
             }
         }
         if (isNettyReactor) {
@@ -889,28 +891,12 @@ public class Agent implements SecurityAgent {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
         appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
-//        verifyConnectionAndPut(port, scheme, appServerInfo);
-    }
-
-    private boolean isConnectionSuccessful(int port, String scheme) {
-        try {
-            java.net.URL endpoint = new URL(String.format("%s://localhost:%s", scheme, port));
-            HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
-
-            // Set the request method to HEAD (you won't download the whole content)
-            connection.setRequestMethod("HEAD");
-
-            int responseCode = connection.getResponseCode();
-
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                return true;
-            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (IOException e) {
-            return false;
+        if(logger != null) {
+            logger.log(LogLevel.FINER, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), this.getClass().getName());
+        }
+        if (logger != null && WSUtils.isConnected()) {
+            logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Unconfirmed connection configuration for port %d and scheme %s added.", port, scheme), null, this.getClass().getName());
+            WSClient.setFirstServerConnectionSent(true);
         }
     }
 
@@ -1082,10 +1068,9 @@ public class Agent implements SecurityAgent {
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
         int responseCode = securityMetaData.getResponse().getResponseCode();
         String route = securityMetaData.getRequest().getUrl();
-        //TODO turn on after api endpoint route detection is merged.
-//        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
-//            route = securityMetaData.getRequest().getRoute();
-//        }
+        if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
+            route = securityMetaData.getRequest().getRoute();
+        }
         LogMessageException messageException = null;
         if (exception != null) {
             messageException = new LogMessageException(exception, 0, 1, 20);

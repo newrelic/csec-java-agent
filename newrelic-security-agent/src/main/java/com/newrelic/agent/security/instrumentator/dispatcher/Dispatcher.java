@@ -7,8 +7,12 @@ import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverte
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.IastExclusionUtils;
+import com.newrelic.agent.security.intcodeagent.utils.RestrictionUtility;
 import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
@@ -23,7 +27,6 @@ import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -120,6 +123,10 @@ public class Dispatcher implements Callable {
                 return null;
             }
 
+            if(!securityMetaData.getRequest().getIsGrpc() && !isReplayEndpointConfirmed()) {
+                IastHttpClient.getInstance().tryToEstablishApplicationEndpoint(securityMetaData.getRequest());
+            }
+
             JavaAgentEventBean eventBean = prepareEvent(securityMetaData.getRequest(), securityMetaData.getMetaData(),
                     operation.getCaseType(), securityMetaData.getFuzzRequestIdentifier());
             setGenericProperties(operation, eventBean);
@@ -180,6 +187,9 @@ public class Dispatcher implements Callable {
                     break;
                 case HTTP_REQUEST:
                     SSRFOperation ssrfOperationalBean = (SSRFOperation) operation;
+                    if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), ((SSRFOperation) operation).getArg())) {
+                        IastExclusionUtils.getInstance().registerSkippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId());
+                    }
                     eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
                     break;
                 case XPATH:
@@ -257,6 +267,16 @@ public class Dispatcher implements Callable {
         return null;
     }
 
+    private boolean isReplayEndpointConfirmed() {
+        Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig = NewRelicSecurity.getAgent().getApplicationConnectionConfig();
+        for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
+            if (connectionConfig.getValue().isConfirmed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private JavaAgentEventBean prepareSolrDbRequestEvent(JavaAgentEventBean eventBean, SolrDbOperation solrDbOperation) {
         JSONArray params = new JSONArray();
         JSONObject request = new JSONObject();
@@ -313,7 +333,6 @@ public class Dispatcher implements Callable {
                 clazz == String.class;
     }
 
-    @Nullable
     private JavaAgentEventBean processFileOperationEvent(JavaAgentEventBean eventBean, FileOperation fileOperationalBean) {
         prepareFileEvent(eventBean, fileOperationalBean);
         String URL = StringUtils.substringBefore(securityMetaData.getRequest().getUrl(), QUESTION_CHAR);

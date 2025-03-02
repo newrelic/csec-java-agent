@@ -126,11 +126,6 @@ public class HttpExt_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(HttpRequest httpRequest, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()) {
-                return null;
-            }
-
             // Generate required URL
             URI methodURI = null;
             String uri = null;

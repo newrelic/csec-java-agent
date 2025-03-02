@@ -5,8 +5,6 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
@@ -14,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -57,11 +56,7 @@ public class AgentInfo {
         String runningVM = runtimeMXBean.getName();
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 //        osVariables = OsVariablesInstance.getInstance().getOsVariables();
-        if (NewRelic.getAgent().getConfig().getValue("security.debug.application_uuid") != null){
-            applicationUUID = NewRelic.getAgent().getConfig().getValue("security.debug.application_uuid");
-        } else {
-            applicationUUID = UUID.randomUUID().toString();
-        }
+        applicationUUID = UUID.randomUUID().toString();
     }
 
     private static final class InstanceHolder {
@@ -73,7 +68,7 @@ public class AgentInfo {
     }
 
     public void initialiseHC(){
-        jaHealthCheck = new JAHealthCheck(applicationUUID);
+        jaHealthCheck = new JAHealthCheck();
     }
 
     public ApplicationInfoBean getApplicationInfo() {
@@ -109,7 +104,7 @@ public class AgentInfo {
     }
 
     public boolean isAgentActive() {
-        return isAgentActive && AgentConfig.getInstance().isNRSecurityEnabled();
+        return isAgentActive;
     }
 
     public void setAgentActive(boolean agentActive) {
@@ -153,6 +148,11 @@ public class AgentInfo {
         AgentUtils.getInstance().getStatusLogValues().put("server-name", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("app-location", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("framework", NOT_AVAILABLE);
+
+        Map<String, String> statusLogValues = AgentUtils.getInstance().getStatusLogValues();
+        logger.logInit(LogLevel.INFO, String.format("CSEC HOME: %s, permissions read & write: %s", statusLogValues.get("csec-home"), statusLogValues.get("csec-home-permissions")), AgentInfo.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Agent location: %s", statusLogValues.get("agent-location")), AgentInfo.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Current working directory: %s, permissions read & write: %s", statusLogValues.get("cwd"), statusLogValues.get("cwd-permissions")), AgentInfo.class.getName());
     }
 
     public boolean agentStatTrigger(boolean clean){

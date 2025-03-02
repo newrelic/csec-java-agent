@@ -41,15 +41,8 @@ public class Filter_Instrumentation {
 
     private void preprocessSecurityHook(HttpExchange exchange) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-
             HttpRequest securityRequest = securityMetaData.getRequest();
-            if (securityRequest.isRequestParsed()) {
-                return;
-            }
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(exchange.getRequestMethod());
@@ -75,12 +68,10 @@ public class Filter_Instrumentation {
 
     private void postProcessSecurityHook(HttpExchange exchange) {
         try {
-            if(NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            if(!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
-            if (!NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
+
             HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
             securityResponse.setResponseCode(exchange.getResponseCode());
             HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);

@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -73,28 +74,17 @@ public class SendReceive_Instrumentation {
         }
         return outboundRequest.getRequest();
     }
+
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SprayUtils.getNrSecCustomAttribName());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SprayUtils.getNrSecCustomAttribName());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(SprayUtils.getNrSecCustomAttribName());
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SprayUtils.getNrSecCustomAttribName());
     }
 
     private AbstractOperation preprocessSecurityHook(HttpRequest httpRequest) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()) {
-                return null;
-            }
-
             // Generate required URL
             URI methodURI = null;
             String uri = null;
