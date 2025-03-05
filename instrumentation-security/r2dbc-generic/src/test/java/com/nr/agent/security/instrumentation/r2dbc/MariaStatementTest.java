@@ -1,8 +1,5 @@
 package com.nr.agent.security.instrumentation.r2dbc;
 
-import ch.vorburger.exec.ManagedProcessException;
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -20,9 +17,13 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,17 +33,22 @@ import java.util.Map;
 @InstrumentationTestConfig(includePrefixes = "io.r2dbc.spi")
 public class MariaStatementTest {
 
-    public static DBConfigurationBuilder builder;
-    public static DB mariaDb;
-    public static Connection connection;
-    private static final String DB_USER = "user";
-    private static final String DB_PASSWORD = "password";
+    private static String DB_USER;
+
+    private static String DB_PASSWORD;
+
+    public static MariaDBContainer<?> mariaDb;
+
+    private static Connection connection;
+
     private static final String HOST = "localhost";
+
     private static final List<String> QUERIES = new ArrayList<>();
-    private static final String DB_NAME = "test";
+
+    private static String DB_NAME;
 
     @BeforeClass
-    public static void setup() throws Exception {
+    public static void setUpDb() {
         QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
         QUERIES.add("INSERT INTO USERS VALUES(1, 'Max', 'John')");
         QUERIES.add("INSERT INTO USERS VALUES(2, :first_name, 'John')");
@@ -50,16 +56,20 @@ public class MariaStatementTest {
         QUERIES.add("SELECT * FROM USERS where first_name = :first_name AND last_name = :last_name");
         QUERIES.add("SELECT * FROM USERS where first_name = ? AND last_name = ?");
 
-        builder = DBConfigurationBuilder.newBuilder().setPort(0);
-        mariaDb = DB.newEmbeddedDB(builder.build());
-        mariaDb.start();
-        mariaDb.createDB(DB_NAME);
-        mariaDb.source("users.sql", DB_USER, DB_PASSWORD, DB_NAME);
+        int PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        mariaDb = new MariaDBContainer<>(DockerImageName.parse("mariadb:10.5.5"));
+        mariaDb.setPortBindings(Collections.singletonList(PORT + ":3808"));
 
-        String url = builder.getURL(DB_NAME)
-                .replace("mysql", "mariadb")
+        mariaDb.withCopyFileToContainer(MountableFile.forClasspathResource("users.sql"), "/var/lib/mysql/");
+        mariaDb.start();
+
+        DB_PASSWORD = mariaDb.getPassword();
+        DB_USER = mariaDb.getUsername();
+        DB_NAME = mariaDb.getDatabaseName();
+
+        String url = mariaDb.getJdbcUrl()
                 .replace("jdbc", "r2dbc")
-                .replace(HOST, "user:password@localhost");
+                .replace(HOST, String.format("%s:%s@localhost", DB_USER, DB_PASSWORD));
 
         ConnectionFactory connectionFactory = ConnectionFactories.get(url);
         connection = Mono.from(connectionFactory.create()).block();
@@ -67,9 +77,10 @@ public class MariaStatementTest {
     }
 
     @AfterClass
-    public static void teardown() throws ManagedProcessException {
-        Mono.from(connection.close()).block();
-        mariaDb.stop();
+    public static void tearDownDb() {
+        if (mariaDb != null && mariaDb.isCreated()) {
+            mariaDb.stop();
+        }
     }
 
     @Test
