@@ -138,6 +138,7 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         NewRelicSecurity.getAgent().getSecurityMetaData().clearCustomAttr();
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(Agent.OPERATIONS, new ArrayList<>());
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(Agent.EXIT_OPERATIONS, new ArrayList<>());
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(Agent.APPLICATION_RUNTIME_ERROR, new ArrayList<>());
 
         SecurityMetaData meta = NewRelicSecurity.getAgent().getSecurityMetaData();
         meta.setRequest(new HttpRequest());
@@ -157,5 +158,10 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
             throw new RuntimeException("Unable to allocate ephemeral port");
         }
         return port;
+    }
+
+    @Override
+    public List<Exception> getApplicationRuntimeError() {
+        return (List<Exception>) NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.APPLICATION_RUNTIME_ERROR, List.class);
     }
 }
