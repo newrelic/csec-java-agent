@@ -100,7 +100,6 @@ public class MariaDb130Test {
         try {
             Class.forName("org.mariadb.jdbc.Driver");
             dbConnection = DriverManager.getConnection(connectionString, DB_USER, DB_PASSWORD);
-            dbConnection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -121,7 +120,6 @@ public class MariaDb130Test {
             info.put("password", DB_PASSWORD);
             Class.forName("org.mariadb.jdbc.Driver");
             dbConnection = DriverManager.getConnection(connectionString, info);
-            dbConnection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -138,8 +136,7 @@ public class MariaDb130Test {
 
         try {
             Class.forName("org.mariadb.jdbc.Driver");
-            dbConnection = DriverManager.getConnection(connectionString);
-            dbConnection.close();
+            dbConnection = DriverManager.getConnection(String.format(connectionString + "?user=%s&password=%s", DB_USER, DB_PASSWORD));
         } catch (Exception e) {
             e.printStackTrace();
         }
