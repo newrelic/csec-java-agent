@@ -25,13 +25,11 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "org.mozilla.javascript" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-// TODO: need to verify/fix assertions after instrumentation works
-//FIXME: after instrumentation works
-@Ignore
+//FIXME: Add support of case where source in the given reader and compiled later.
 public class RhinoTest {
 
     @Trace
-    private static String callFunctionCall() {
+    private String callFunctionCall() {
         Context rhino = Context.enter();
         String script = "function greet() { return 'Hello, Rhino!'; }";
         try {
@@ -50,7 +48,7 @@ public class RhinoTest {
     }
 
     @Trace
-    private static String callExec() {
+    private String callExec() {
         Context rhino = Context.enter();
         String script = "function greet() { return 'Hello, World!'; }";
         try {
@@ -70,7 +68,7 @@ public class RhinoTest {
     }
 
     @Trace
-    private static String callExecWithReader() throws IOException {
+    private String callExecWithReader() throws IOException {
         Context rhino = Context.enter();
         String script = "var fun1 = function(name) { return 'Hi, ' + name; };";
         try {
@@ -90,7 +88,7 @@ public class RhinoTest {
     }
 
     @Trace
-    private static String callCompileFunction() throws IOException {
+    private String callCompileFunction() {
         Context rhino = Context.enter();
         String script = "function(name) { return 'Hi, ' + name; };";
         try {
@@ -105,7 +103,7 @@ public class RhinoTest {
     }
 
     @Trace
-    private static String callFunctionCallWithReader() throws IOException {
+    private String callFunctionCallWithReader() throws IOException {
         Context rhino = Context.enter();
         String script = "var fun1 = function(name) { return 'Hi, ' + name; };";
         try {
@@ -129,7 +127,7 @@ public class RhinoTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         JSInjectionOperation operation = (JSInjectionOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", script, operation.getJavaScriptCode());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.JAVASCRIPT_INJECTION, operation.getCaseType());
@@ -138,12 +136,13 @@ public class RhinoTest {
     }
 
     @Test
+    @Ignore("need to provide support for the case where source in the given reader and compiled later.")
     public void testExecWithReader() throws IOException {
         String script = callExecWithReader();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         JSInjectionOperation operation = (JSInjectionOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", script, operation.getJavaScriptCode());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.JAVASCRIPT_INJECTION, operation.getCaseType());
@@ -152,12 +151,12 @@ public class RhinoTest {
     }
 
     @Test
-    public void testCompileFunction() throws IOException {
+    public void testCompileFunction() {
         String script = callCompileFunction();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         JSInjectionOperation operation = (JSInjectionOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", script, operation.getJavaScriptCode());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.JAVASCRIPT_INJECTION, operation.getCaseType());
@@ -171,7 +170,7 @@ public class RhinoTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         JSInjectionOperation operation = (JSInjectionOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", script, operation.getJavaScriptCode());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.JAVASCRIPT_INJECTION, operation.getCaseType());
@@ -180,12 +179,13 @@ public class RhinoTest {
     }
 
     @Test
+    @Ignore("need to provide support for the case where source in the given reader and compiled later.")
     public void testFunctionCallWithReader() throws IOException {
         String script = callFunctionCallWithReader();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         JSInjectionOperation operation = (JSInjectionOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", script, operation.getJavaScriptCode());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.JAVASCRIPT_INJECTION, operation.getCaseType());

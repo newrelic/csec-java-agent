@@ -238,7 +238,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test case may fail, because this is not instrumented(AggregateExplainOperation).")
+    @Ignore("this test case is failing, as AggregateExplainOperation is not instrumented.")
     public void testExplainAggregate()  {
 
         DB database = mongoClient.getDB("test");
@@ -957,7 +957,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(RenameCollectionOperation)")
+    @Ignore("this test case is failing, as RenameCollectionOperation is not instrumented.")
     public void testRename()  {
 
         DB database = mongoClient.getDB("test");
@@ -979,7 +979,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(ParallelCollectionScanOperation)")
+    @Ignore("this test case is failing, as ParallelCollectionScanOperation is not instrumented.")
     public void testParallelScan()  {
 
         DB database = mongoClient.getDB("test");
@@ -1005,7 +1005,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(CreateIndexesOperation)")
+    @Ignore("this test case is failing, as CreateIndexesOperation is not instrumented.")
     public void testCreateIndex()  {
 
         DB database = mongoClient.getDB("test");
@@ -1028,7 +1028,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(CreateIndexesOperation)")
+    @Ignore("this test case is failing, as CreateIndexesOperation is not instrumented.")
     public void testCreateIndex1()  {
 
         DB database = mongoClient.getDB("test");
@@ -1051,7 +1051,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(CreateIndexesOperation)")
+    @Ignore("this test case is failing, as CreateIndexesOperation is not instrumented.")
     public void testCreateIndex2()  {
 
         DB database = mongoClient.getDB("test");
@@ -1074,7 +1074,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropCollectionOperation)")
+    @Ignore("this test case is failing, as DropCollectionOperation is not instrumented.")
     public void testDrop()  {
 
         DB database = mongoClient.getDB("test");
@@ -1096,7 +1096,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndex()  {
 
         DB database = mongoClient.getDB("test");
@@ -1116,8 +1116,9 @@ public class OperationExecutorDBTest {
 
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
+
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndex1()  {
 
         DB database = mongoClient.getDB("test");
@@ -1138,7 +1139,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndexes()  {
 
         DB database = mongoClient.getDB("test");
@@ -1159,7 +1160,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndexes1()  {
 
         DB database = mongoClient.getDB("test");

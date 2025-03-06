@@ -31,20 +31,17 @@ import java.util.Hashtable;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "javax.naming", "javax.naming.directory.LDAPUtils" } )
+@InstrumentationTestConfig(includePrefixes = { "javax.naming" } )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-//FIXME: after instrumentation works
-@Ignore
 public class DirContextTest {
     public static final String DOMAIN_DSN = "dc=example,dc=com";
     @ClassRule
     public static EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder.newInstance().usingDomainDsn(DOMAIN_DSN)
             .importingLdifs("users-import.ldif").build();
-    private static LDAPInterface ldapConnection;
 
     @BeforeClass
     public static void setup() throws LDAPException {
-        ldapConnection = embeddedLdapRule.ldapConnection();
+        LDAPInterface ldapConnection = embeddedLdapRule.ldapConnection();
     }
 
     @Test
@@ -57,7 +54,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -67,7 +64,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search("", query, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(DOMAIN_DSN, query, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -78,7 +75,7 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
@@ -97,7 +94,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -107,7 +104,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(""), query, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(DOMAIN_DSN), query, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -118,7 +115,7 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
@@ -136,7 +133,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -146,7 +143,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(""), new BasicAttributes());
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(DOMAIN_DSN), new BasicAttributes());
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -157,13 +154,7 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
-        LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
-        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
+        Assert.assertTrue("No operations should detected.", operations.isEmpty());
     }
 
     @Test
@@ -176,7 +167,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -186,7 +177,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search("", new BasicAttributes());
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(DOMAIN_DSN, new BasicAttributes());
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -197,13 +188,7 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
-        LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
-        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
+        Assert.assertTrue("No operations detected.", operations.isEmpty());
     }
 
     @Test
@@ -215,7 +200,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -225,7 +210,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search("", query, new Object[]{}, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(DOMAIN_DSN, query, new Object[]{}, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -236,7 +221,7 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
@@ -254,7 +239,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -264,7 +249,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(""), query, new Object[]{}, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(DOMAIN_DSN), query, new Object[]{}, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -275,7 +260,7 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
@@ -285,7 +270,6 @@ public class DirContextTest {
     }
 
     @Test
-    @Ignore("due to error: javax.naming.NotContextException: Not an instance of DirContext")
     public void testSearchWithDirContext() throws LDAPException {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
@@ -295,7 +279,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -305,7 +289,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search("", query, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(DOMAIN_DSN, query, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -316,17 +300,16 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialDirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
     @Test
-    @Ignore("due to error: javax.naming.NotContextException: Not an instance of DirContext")
     public void testSearchWithDirContext1() throws LDAPException {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "sclaus";
@@ -336,17 +319,17 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
             DirContext ctx = new InitialDirContext(env);
-
+    
             SearchControls constraints = new SearchControls();
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(""), query, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(DOMAIN_DSN), query, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -357,17 +340,16 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialDirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
     @Test
-    @Ignore("due to error: javax.naming.NotContextException: Not an instance of DirContext")
     public void testSearchWithDirContext2() throws LDAPException {
         int port = embeddedLdapRule.embeddedServerPort();
         String password = "123efg";
@@ -376,7 +358,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -386,7 +368,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(""), new BasicAttributes());
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(DOMAIN_DSN), new BasicAttributes());
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -397,17 +379,10 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
-        LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
-        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
+        Assert.assertTrue("No operations should detected.", operations.isEmpty());
     }
 
     @Test
-    @Ignore("due to error: javax.naming.NotContextException: Not an instance of DirContext")
     public void testSearchWithDirContext3() throws LDAPException {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
@@ -417,7 +392,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -427,7 +402,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search("", new BasicAttributes());
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(DOMAIN_DSN, new BasicAttributes());
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -438,17 +413,10 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
-        LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
-        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
+        Assert.assertTrue("No operations should detected.", operations.isEmpty());
     }
 
     @Test
-    @Ignore("due to error: javax.naming.NotContextException: Not an instance of DirContext")
     public void testSearchWithDirContext4() throws LDAPException {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "sclaus";
@@ -457,7 +425,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -467,7 +435,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search("", query, new Object[]{}, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(DOMAIN_DSN, query, new Object[]{}, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -478,17 +446,16 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialDirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
     @Test
-    @Ignore("due to error: javax.naming.NotContextException: Not an instance of DirContext")
     public void testSearchWithDirContext5() throws LDAPException {
         int port = embeddedLdapRule.embeddedServerPort();
         String password = "abc456";
@@ -497,7 +464,7 @@ public class DirContextTest {
         System.out.println("LDAP query: " + query);
 
         Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
+        env.put("java.naming.provider.url", "ldap://localhost:"+port);
         env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         try {
@@ -507,7 +474,7 @@ public class DirContextTest {
             constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
             constraints.setReturningAttributes(new String[0]);      //return no attrs
 
-            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(""), query, new Object[]{}, constraints);
+            NamingEnumeration<javax.naming.directory.SearchResult> results = ctx.search(new LdapName(DOMAIN_DSN), query, new Object[]{}, constraints);
 
             while (results.hasMore()) {
                 System.out.println(results.next());
@@ -518,12 +485,12 @@ public class DirContextTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        Assert.assertFalse("No operations detected.", operations.isEmpty());
         LDAPOperation operation = (LDAPOperation) operations.get(0);
         Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialDirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 }
