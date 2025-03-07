@@ -1,14 +1,5 @@
-/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
-
 package org.mariadb.jdbc;
 
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -23,11 +14,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mariadb.jdbc.internal.common.QueryException;
 import org.mariadb.jdbc.internal.mysql.MySQLProtocol;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,34 +30,40 @@ import java.util.Properties;
 @InstrumentationTestConfig(includePrefixes = {"org.mariadb.jdbc"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MariaDb117Test {
-    private static DB mariaDb;
+
     private static String connectionString;
-    private static String dbName;
-    private static final String DB_USER = "";
-    private static final String DB_PASSWORD = "";
-    private static List<String> QUERIES = new ArrayList<>();
+
+    private static String DB_USER;
+
+    private static String DB_PASSWORD;
+
+    private static int PORT;
+
+    private static MariaDBContainer<?> mariaDb;
 
     @BeforeClass
-    public static void setUpDb() throws Exception {
-        QUERIES.add("select * from testQuery");
-        DBConfigurationBuilder builder = DBConfigurationBuilder.newBuilder()
-                .setPort(0); // This will automatically find a free port
+    public static void setUpDb() {
 
-        dbName = "MariaDB" + System.currentTimeMillis();
-        mariaDb = DB.newEmbeddedDB(builder.build());
-        connectionString = builder.getURL(dbName);
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        mariaDb = new MariaDBContainer<>(DockerImageName.parse("mariadb:10.5.5"));
+        mariaDb.setPortBindings(Collections.singletonList(PORT + ":3808"));
+
+        mariaDb.withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/var/lib/mysql/");
         mariaDb.start();
 
-        mariaDb.createDB(dbName);
-        mariaDb.source("maria-db-test.sql", null, null, dbName);
-    }
-    @AfterClass
-    public static void tearDownDb() throws Exception {
-        mariaDb.stop();
+        DB_PASSWORD = mariaDb.getPassword();
+        DB_USER = mariaDb.getUsername();
+        connectionString = mariaDb.getJdbcUrl();
     }
 
+    @AfterClass
+    public static void tearDownDb() {
+        if (mariaDb != null && mariaDb.isCreated()) {
+            mariaDb.stop();
+        }
+    }
     @Test
-    public void testConnect() throws SQLException, ClassNotFoundException {
+    public void testConnect() throws SQLException {
         getConnection();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -80,7 +81,7 @@ public class MariaDb117Test {
     }
 
     @Test
-    public void testConnect2() throws SQLException, ClassNotFoundException {
+    public void testConnect2() throws SQLException {
         getConnection2();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -89,7 +90,7 @@ public class MariaDb117Test {
     }
 
     @Test
-    public void testConnect3() throws SQLException, ClassNotFoundException, QueryException {
+    public void testConnect3() throws SQLException {
         getConnection3();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -140,7 +141,7 @@ public class MariaDb117Test {
 
         try {
             Class.forName("org.mariadb.jdbc.Driver");
-            dbConnection = DriverManager.getConnection(connectionString);
+            dbConnection = DriverManager.getConnection(String.format(connectionString + "?user=%s&password=%s", DB_USER, DB_PASSWORD));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -157,7 +158,7 @@ public class MariaDb117Test {
 
         try {
             Class.forName("org.mariadb.jdbc.Driver");
-            dbConnection = MySQLConnection.newConnection(new MySQLProtocol(JDBCUrl.parse(connectionString), "", "", new Properties()));
+            dbConnection = MySQLConnection.newConnection(new MySQLProtocol(JDBCUrl.parse(connectionString), DB_USER, DB_PASSWORD, new Properties()));
         } catch (Exception e) {
             e.printStackTrace();
         }
