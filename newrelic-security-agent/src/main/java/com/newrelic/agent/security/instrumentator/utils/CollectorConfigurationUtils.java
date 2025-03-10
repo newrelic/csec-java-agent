@@ -49,8 +49,7 @@ public class CollectorConfigurationUtils {
      */
     public static CollectorConfig populateCollectorConfig() {
         CollectorConfig collectorConfig = new CollectorConfig();
-        String validatorServiceEndpointUrl = NewRelic.getAgent().getConfig()
-                .getValue("security.validator_service_url", "wss://csec.nr-data.net");
+        String validatorServiceEndpointUrl = getValidatorServiceEndpointUrl(NewRelic.getAgent().getConfig().getValue("host", "collector.newrelic.com"));
         K2ServiceInfo serviceInfo = new K2ServiceInfo();
 
         serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
@@ -74,6 +73,24 @@ public class CollectorConfigurationUtils {
 
         collectorConfig.setK2ServiceInfo(serviceInfo);
         return collectorConfig;
+    }
+
+    private static String getValidatorServiceEndpointUrl(String host) {
+        String validatorServiceEndpointUrl = NewRelic.getAgent().getConfig()
+                .getValue("security.validator_service_url");
+        if(StringUtils.isNotBlank(validatorServiceEndpointUrl)){
+            return validatorServiceEndpointUrl;
+        }
+        switch (host) {
+            case "collector.eu.newrelic.com":
+                return "wss://csec.eu01.nr-data.net";
+            case "gov-collector.newrelic.com":
+                return "wss://csec-gov.nr-data.net";
+            case "staging-collector.newrelic.com":
+                return "wss://csec-staging.nr-data.net";
+            default:
+                return "wss://csec.nr-data.net";
+        }
     }
 
     private static String parseLicenseKey(Object license_key) {
