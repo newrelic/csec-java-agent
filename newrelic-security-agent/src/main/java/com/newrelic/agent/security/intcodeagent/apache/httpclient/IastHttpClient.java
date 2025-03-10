@@ -50,6 +50,9 @@ public class IastHttpClient {
     public void replay(Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig, FuzzRequestBean httpRequest, String fuzzRequestId) {
         List<String> endpoints = getAllEndpoints(applicationConnectionConfig);
         logger.log(LogLevel.FINEST, String.format("Replaying request %s with endpoints %s", fuzzRequestId, endpoints), IastHttpClient.class.getName());
+        if(endpoints.isEmpty()) {
+            throw new IllegalArgumentException("No endpoints found for replaying request " + fuzzRequestId);
+        }
         for (String endpoint : endpoints) {
             try {
                 ReadResult result = httpClient.execute(httpRequest, endpoint, fuzzRequestId);
