@@ -80,7 +80,7 @@ public class SendReceive_Instrumentation {
     }
 
     private boolean acquireLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, SprayUtils.getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SprayUtils.getNrSecCustomAttribName());
     }
 
     private AbstractOperation preprocessSecurityHook(HttpRequest httpRequest) {
