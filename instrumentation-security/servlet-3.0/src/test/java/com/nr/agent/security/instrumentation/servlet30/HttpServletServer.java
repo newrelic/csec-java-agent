@@ -8,6 +8,7 @@ import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.rules.ExternalResource;
 
+import javax.faces.webapp.FacesServlet;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -15,7 +16,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -28,7 +31,8 @@ public class HttpServletServer extends ExternalResource {
 
     private final int port;
     private Tomcat server;
-    private File tmp;
+    private final String webappDirLocation = "./src/test/webapp/";
+    private final File tmp = new File(webappDirLocation);
     public HttpServletServer() {
         this.port = getRandomPort();
     }
@@ -53,14 +57,15 @@ public class HttpServletServer extends ExternalResource {
 
     private void startServer () throws Exception {
         TomcatURLStreamHandlerFactory.disable();
+        createFile();
 
         server = new Tomcat();
         server.setPort(port);
 
-        tmp = new File("./tmp");
-        server.setBaseDir(tmp.getAbsolutePath());
+        server.setBaseDir(webappDirLocation);
+        server.addWebapp("", tmp.getAbsolutePath());
 
-        Context context = server.addContext("", tmp.getAbsolutePath());
+        Context context = server.addContext("/tmp", tmp.getAbsolutePath());
         context.addServletContainerInitializer(new ServletContainerInitializer() {
             @Override
             public void onStartup(Set<Class<?>> c, ServletContext ctx){
@@ -69,14 +74,38 @@ public class HttpServletServer extends ExternalResource {
         }, Collections.emptySet());
 
         Tomcat.addServlet(context, "servlet", new MyServlet());
-        context.addServletMappingDecoded("/*","servlet");
-        context.addServletMappingDecoded("/test","servlet");
+        Tomcat.addServlet(context, "faces", new FacesServlet());
+        context.setAddWebinfClassesResources(true);
+        context.addServletMappingDecoded("/faces/*", "faces");
+        context.addServletMappingDecoded("*.xhtml", "faces");
+        context.addWelcomeFile("/index.jsp");
+        context.addServletMappingDecoded("/servlet/*","servlet");
 
         final Connector connector = new Connector();
         connector.setPort(port);
         server.getService().addConnector(connector);
 
         server.start();
+    }
+
+    private void createFile() {
+        File indexFile = new File(webappDirLocation + "index.jsp");
+        File indexJSFFile = new File(webappDirLocation + "index.xhtml");
+        try {
+            if (tmp.mkdir() && indexFile.createNewFile() && indexJSFFile.createNewFile()) {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(indexFile));
+                writer.append("Hello World!");
+                writer.flush();
+                writer.close();
+
+                BufferedWriter writer1 = new BufferedWriter(new FileWriter(indexJSFFile));
+                writer1.append("Hello World!");
+                writer1.flush();
+                writer1.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void stop() {

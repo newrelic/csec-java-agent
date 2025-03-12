@@ -5,6 +5,7 @@ dependencies {
     implementation('jakarta.servlet:jakarta.servlet-api:6.0.0')
 
     testImplementation('org.apache.tomcat.embed:tomcat-embed-core:10.0.27')
+    testImplementation("jakarta.faces:jakarta.faces-api:3.0.0")
 }
 
 jar {

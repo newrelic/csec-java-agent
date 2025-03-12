@@ -32,6 +32,7 @@ public class APIEndpointTest {
     public void setupEndpoints() {
         expectedMappings.put("/servlet/*", HttpServletServer.class.getName()+"$1");
         expectedMappings.put("/index.jsp", null);
+        expectedMappings.put("/index.xhtml", null);
     }
 
     @Test
@@ -40,7 +41,7 @@ public class APIEndpointTest {
 
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
         Assert.assertNotNull(mappings);
-        Assert.assertEquals(2, mappings.size());
+        Assert.assertEquals(3, mappings.size());
         for (ApplicationURLMapping mapping : mappings) {
             assertMappings(mapping);
         }

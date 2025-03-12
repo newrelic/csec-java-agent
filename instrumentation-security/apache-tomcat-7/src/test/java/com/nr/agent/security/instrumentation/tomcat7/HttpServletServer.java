@@ -7,6 +7,7 @@ import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.rules.ExternalResource;
 
+import javax.faces.webapp.FacesServlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +66,12 @@ public class HttpServletServer extends ExternalResource {
                 super.doGet(req, resp);
             }
         });
+        Tomcat.addServlet(context, "faces", new FacesServlet());
         context.setAddWebinfClassesResources(true);
+        context.addServletMapping("/faces/*", "faces");
+        context.addServletMapping("*.jsf", "faces");
+        context.addServletMapping("*.faces", "faces");
+        context.addServletMapping("*.xhtml", "faces");
         context.addWelcomeFile("/index.jsp");
         context.addServletMapping("/servlet/*","servlet");
 
@@ -76,19 +82,27 @@ public class HttpServletServer extends ExternalResource {
     public URI getEndPoint(String path) throws URISyntaxException {
         return new URI("http://localhost:" + port + "/" + path);
     }
+
     private void createFile() {
         File indexFile = new File(webappDirLocation + "index.jsp");
+        File indexJSFFile = new File(webappDirLocation + "index.xhtml");
         try {
-            if (tmp.mkdir() && indexFile.createNewFile()) {
+            if (tmp.mkdir() && indexFile.createNewFile() && indexJSFFile.createNewFile()) {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(indexFile));
                 writer.append("Hello World!");
                 writer.flush();
                 writer.close();
+
+                BufferedWriter writer1 = new BufferedWriter(new FileWriter(indexJSFFile));
+                writer1.append("Hello World!");
+                writer1.flush();
+                writer1.close();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     private void stop() {
         if (server.getServer() != null && server.getServer().getState() != LifecycleState.DESTROYED) {
             try {

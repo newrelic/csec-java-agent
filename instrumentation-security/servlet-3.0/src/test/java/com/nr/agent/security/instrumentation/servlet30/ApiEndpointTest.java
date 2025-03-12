@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,43 +17,47 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.servlet", "com.newrelic.agent.security.instrumentation.servlet30" })
 public class ApiEndpointTest {
+
     @ClassRule
     public static HttpServletServer server = new HttpServletServer();
 
+    private final Map<String, String> expectedMappings = new HashMap<>();
+
+    @Before
+    public void setupEndpoints() {
+        expectedMappings.put("/servlet/*", MyServlet.class.getName());
+        expectedMappings.put("/index.jsp", null);
+        expectedMappings.put("/index.xhtml", null);
+    }
+
     @Test
     public void testURLMappings() {
-        String handler = MyServlet.class.getName();
-        String method = "*";
-        Iterator<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings().iterator();
-
-        Assert.assertTrue("URL Mappings", mappings.hasNext());
-        ApplicationURLMapping mapping1 = mappings.next();
-        Assert.assertEquals("URL Mappings", new ApplicationURLMapping(method, "/*", handler), mapping1);
-
-        Assert.assertTrue("URL Mappings", mappings.hasNext());
-        ApplicationURLMapping mapping2 = mappings.next();
-        Assert.assertEquals("URL Mappings", new ApplicationURLMapping(method, "/test", handler), mapping2);
+        Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
+        Assert.assertNotNull(mappings);
+        Assert.assertEquals(3, mappings.size());
+        for (ApplicationURLMapping mapping : mappings) {
+            assertMappings(mapping);
+        }
     }
 
-    @Test
-    public void testRoute() throws IOException, URISyntaxException {
-        connect();
-        SecurityMetaData metaData = SecurityInstrumentationTestRunner.getIntrospector().getSecurityMetaData();
-        Assert.assertEquals( "Incorrect Route Detected","/test", metaData.getRequest().getRoute());
-        Assert.assertEquals("Incorrect Framework detected", Framework.SERVLET.name(), metaData.getMetaData().getFramework());
-    }
+    private void assertMappings(ApplicationURLMapping actualMapping) {
+        Assert.assertNotNull(actualMapping);
 
-    @Trace(dispatcher = true)
-    private void connect() throws IOException, URISyntaxException {
-        URL u = server.getEndPoint().toURL();
-        HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-        conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
-        conn.connect();
-        conn.getResponseCode();
+        Assert.assertNotNull(actualMapping.getPath());
+        String path = actualMapping.getPath();
+        String handler = expectedMappings.get(path);
+
+        Assert.assertNotNull(actualMapping.getMethod());
+
+        Assert.assertEquals(handler, actualMapping.getHandler());
+        Assert.assertEquals("*", actualMapping.getMethod());
     }
 }

@@ -32,6 +32,7 @@ public class APIEndpointTest {
     public void setupEndpoints() {
         expectedMappings.put("/servlet/*", HttpServletServer.class.getName()+"$1");
         expectedMappings.put("/index.jsp", null);
+        expectedMappings.put("/index.xhtml", null);
     }
 
     @Test
@@ -40,7 +41,7 @@ public class APIEndpointTest {
 
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
         Assert.assertNotNull(mappings);
-        Assert.assertEquals(2, mappings.size());
+        Assert.assertEquals(3, mappings.size());
         for (ApplicationURLMapping mapping : mappings) {
             assertMappings(mapping);
         }
@@ -58,9 +59,10 @@ public class APIEndpointTest {
         Assert.assertEquals(handler, actualMapping.getHandler());
         Assert.assertEquals("*", actualMapping.getMethod());
     }
+
     @Trace(dispatcher = true)
     private void service() throws IOException, URISyntaxException {
-        URL u = server.getEndPoint("").toURL();
+        URL u = server.getEndPoint("/test").toURL();
         HttpURLConnection conn = (HttpURLConnection) u.openConnection();
         conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
         conn.connect();
