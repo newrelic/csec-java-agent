@@ -4,6 +4,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("org.apache.tomcat.embed:tomcat-embed-core:10.0.0")
     implementation("org.apache.tomcat:tomcat-juli:10.0.0")
+    testImplementation("jakarta.faces:jakarta.faces-api:3.0.0")
 }
 
 jar {
