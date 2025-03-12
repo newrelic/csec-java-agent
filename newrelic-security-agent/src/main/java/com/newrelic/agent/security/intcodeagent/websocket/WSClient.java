@@ -51,7 +51,6 @@ public class WSClient extends WebSocketClient implements SecurityConnection {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String SENDING_EVENT = "sending event: ";
     public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
-    public static final String ERROR_IN_WSOCK_CONNECTION = "Error in WSock connection : ";
     public static final String CONNECTION_CLOSED_BY = "WS Connection closed by ";
     public static final String REMOTE_PEER = "remote peer.";
     public static final String LOCAL = "local.";
@@ -60,7 +59,6 @@ public class WSClient extends WebSocketClient implements SecurityConnection {
     public static final String UNABLE_TO_PROCESS_INCOMING_MESSAGE = "Unable to process incoming message : ";
     public static final String DUE_TO_ERROR = " : due to error : ";
     public static final String RECONNECTING_TO_IC = "Reconnecting to validator";
-    public static final String COLON_STRING = " : ";
     public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
     public static final String INCOMING_CONTROL_COMMAND_S = "Incoming control command : %s";
 

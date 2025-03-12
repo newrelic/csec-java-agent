@@ -30,7 +30,6 @@ public class FileHelper {
     public static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[]{"css", "html", "htm", "jsp", "js", "classtmp"});
 
     public static final List<String> SOURCE_EXENSIONS = Arrays.asList(new String[]{"class", "jsp", "jar", "java"});
-    public static final String METHOD_NAME_GET_BOOLEAN_ATTRIBUTES = "getBooleanAttributes";
     public static final String METHOD_NAME_CREATE_NEW_FILE = "createNewFile";
     public static final String NEW_FILE_CHANNEL = "newFileChannel";
     public static final String NEW_ASYNCHRONOUS_FILE_CHANNEL = "newAsynchronousFileChannel";
@@ -44,15 +43,10 @@ public class FileHelper {
     public static final String MOVE = "move";
     public static final String SET_ATTRIBUTE = "setAttribute";
 
-    public static final String METHOD_NAME_SET_PERMISSION = "setPermission";
-    public static final String METHOD_NAME_CREATE_FILE_EXCLUSIVELY = "createFileExclusively";
     public static final String METHOD_NAME_DELETE = "delete";
     public static final String METHOD_NAME_LIST = "list";
 
     public static final String METHOD_NAME_SETPOSIXFILEPERMISSIONS = "setPosixFilePermissions";
-    public static final String METHOD_NAME_CREATE_DIRECTORY = "createDirectory";
-    public static final String METHOD_NAME_RENAME = "rename";
-    public static final String METHOD_NAME_SETREADONLY = "setReadOnly";
     public static final String METHOD_NAME_DELETE_ON_EXIT = "deleteOnExit";
     public static final String METHOD_NAME_LISTFILES = "listFiles";
     public static final String METHOD_NAME_MKDIR = "mkdir";

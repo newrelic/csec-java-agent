@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.util;
 
 public interface IUtilConstants {
-    String K_2_GROUP_NAME = "K2_GROUP_NAME";
     String SECURITY_MODE = "security.mode";
     String RASP = "RASP";
 
@@ -16,7 +15,6 @@ public interface IUtilConstants {
 
     String SKIP_IAST_SCAN = "security.exclude_from_iast_scan";
     String SKIP_IAST_SCAN_API = SKIP_IAST_SCAN + ".api";
-    String SKIP_IAST_SCAN_PARAMETERS = SKIP_IAST_SCAN + ".http_request_parameters";
     String SKIP_IAST_SCAN_PARAMETERS_HEADER = SKIP_IAST_SCAN + ".http_request_parameters.header";
     String SKIP_IAST_SCAN_PARAMETERS_QUERY = SKIP_IAST_SCAN + ".http_request_parameters.query";
     String SKIP_IAST_SCAN_PARAMETERS_BODY = SKIP_IAST_SCAN + ".http_request_parameters.body";
@@ -36,9 +34,6 @@ public interface IUtilConstants {
     String MONITORING_CRITERIA_EVENT_QUOTA_PER_TRACE = "security.monitoring_criteria.event_quota_per_trace";
     String MONITORING_CRITERIA_REPEAT = "security.monitoring_criteria.repeat";
 
-    String RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE = "security.restriction_criteria.scan_time.schedule";
-    String RESTRICTION_CRITERIA_SCAN_TIME_DURATION = "security.restriction_criteria.scan_time.duration";
-    String RESTRICTION_CRITERIA = "security.restriction_criteria";
     String RESTRICTION_CRITERIA_ACCOUNT_INFO_ACCOUNT_ID = "security.restriction_criteria.account_info.account_id_value";
     String RESTRICTION_CRITERIA_MAPPING_PARAMETERS = "security.restriction_criteria.mapping_parameters";
     String RESTRICTION_CRITERIA_MAPPING_PARAMETERS_HEADER = RESTRICTION_CRITERIA_MAPPING_PARAMETERS + ".header";
@@ -52,21 +47,15 @@ public interface IUtilConstants {
     String RESTRICTION_CRITERIA_MAPPING_PARAMETERS_HEADER_LOCATION = RESTRICTION_CRITERIA_MAPPING_PARAMETERS_HEADER + ".location";
     String RESTRICTION_CRITERIA_MAPPING_PARAMETERS_QUERY_LOCATION = RESTRICTION_CRITERIA_MAPPING_PARAMETERS_QUERY + ".location";
     String RESTRICTION_CRITERIA_MAPPING_PARAMETERS_BODY_LOCATION = RESTRICTION_CRITERIA_MAPPING_PARAMETERS_BODY + ".location";
-    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS = "security.restriction_criteria.skip_scan_parameters";
-    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_HEADER = "security.restriction_criteria.skip_scan_parameters.header";
-    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_QUERY = "security.restriction_criteria.skip_scan_parameters.query";
-    String RESTRICTION_CRITERIA_SKIP_SCAN_PARAMETERS_BODY = "security.restriction_criteria.skip_scan_parameters.body";
     String RESTRICTION_CRITERIA_STRICT = "security.restriction_criteria.strict";
 
 
     String GROUP_NAME = "group-name";
     String INFO = "INFO";
     String OFF = "OFF";
-    String K_2_LOG_LEVEL = "K2_LOG_LEVEL";
     String NR_LOG_LEVEL = "log_level";
     String LOG_LEVEL = "log-level";
 
-    String PERMISSIONS_ALL = "rwxrwxrwx";
 
     String DIRECTORY_PERMISSION = "rwxrwx---";
 
@@ -81,14 +70,8 @@ public interface IUtilConstants {
     String IAST_SCAN_INSTANCE_COUNT = "security.scan_controllers.scan_instance_count";
 
     String NR_SECURITY_CA_BUNDLE_PATH = "ca_bundle_path";
-    String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";
-    String NR_CSEC_DEBUG_LOGFILE_MAX_COUNT = "NR_CSEC_DEBUG_LOGFILE_MAX_COUNT";
     String LOG_FILE_PATH = "log_file_path";
     String NR_SECURITY_HOME = "nr-security-home";
-    String PROCESSED = "PROCESSED";
-    String ERROR = "ERROR";
-    String SENT = "SENT";
-    String REJECTED = "REJECTED";
     String NR_LOG_DAILY_ROLLOVER_PERIOD = "log.rollover.period";
     String APPLICATION_DIRECTORY = "APPLICATION_DIRECTORY";
 

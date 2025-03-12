@@ -44,8 +44,6 @@ public class AgentConfig {
     public static final String ACCOUNT_ID_LOCATION = "account_id_location";
     public static final String ACCOUNT_ID_KEY = "account_id_key";
     public static final String ROUTE = "route";
-    public static final String MAPPING_PARAMETERS_ARE_REQUIRED_FOR_IAST_RESTRICTED_MODE = "Mapping Parameters are required for IAST Restricted Mode";
-    public static final String DEFAULT_SCAN_SCHEDULE_EXPRESSION = "0 0 0 * * ?";
     public static final String INVALID_SECURITY_CONFIGURATION_FOR_MODE_IAST_RESTRICTED = "Invalid Security Configuration for mode IAST_RESTRICTED ";
     public static final String INVALID_SECURITY_CONFIGURATION = "Invalid Security Configuration ";
     private static final Logger log = LoggerFactory.getLogger(AgentConfig.class);
