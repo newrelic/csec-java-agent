@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
@@ -66,6 +67,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String RECEIVED_IAST_COOLDOWN_WAITING_TILL_S = "Received IAST cooldown. Waiting for next : %s Seconds";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_COUNT_S = "Purging confirmed IAST processed records count : %s";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S = "Purging confirmed IAST processed records : %s";
+    public static final String API_ID = "apiId";
 
 
     private String controlCommandMessage;
@@ -97,6 +99,9 @@ public class ControlCommandProcessor implements Runnable {
             controlCommand.setData(object.get(DATA));
             controlCommand.setControlCommand(Integer.valueOf(object.get(CONTROL_COMMAND).toString()));
             controlCommand.setReflectedMetaData((Map<String, String>) object.get(REFLECTED_METADATA));
+            if(object.get(API_ID) != null) {
+                controlCommand.setApiId(object.get(API_ID).toString());
+            }
 
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, ERROR_IN_CONTROL_COMMAND_PROCESSOR, e,

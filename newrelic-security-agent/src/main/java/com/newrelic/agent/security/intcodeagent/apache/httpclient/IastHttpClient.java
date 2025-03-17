@@ -24,7 +24,7 @@ public class IastHttpClient {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 
-    private ApacheHttpClientWrapper httpClient;
+    private final ApacheHttpClientWrapper httpClient;
     private boolean connected = false;
 
     private IastHttpClient() {
@@ -50,6 +50,9 @@ public class IastHttpClient {
     public void replay(Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig, FuzzRequestBean httpRequest, String fuzzRequestId) {
         List<String> endpoints = getAllEndpoints(applicationConnectionConfig);
         logger.log(LogLevel.FINEST, String.format("Replaying request %s with endpoints %s", fuzzRequestId, endpoints), IastHttpClient.class.getName());
+        if(endpoints.isEmpty()) {
+            throw new IllegalArgumentException("No endpoints found for replaying request " + fuzzRequestId);
+        }
         for (String endpoint : endpoints) {
             try {
                 ReadResult result = httpClient.execute(httpRequest, endpoint, fuzzRequestId);
@@ -84,7 +87,8 @@ public class IastHttpClient {
                         ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(serverPort, endpoint.getKey(), endpoint.getValue(), true);
                         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
                         appServerInfo.getConnectionConfiguration().put(serverPort, serverConnectionConfiguration);
-                        logger.log(LogLevel.FINER, String.format("setting up new connection configuration for port %s : %s", serverPort, serverConnectionConfiguration.getEndpoint()), IastHttpClient.class.getName());
+                        logger.postLogMessageIfNecessary(LogLevel.INFO, String.format("Confirmed endpoint for this application is %s", serverConnectionConfiguration.getEndpoint()), null, this.getClass().getName());
+                        logger.log(LogLevel.FINER, String.format("Setting up new connection configuration for port %s : %s", serverPort, serverConnectionConfiguration.getEndpoint()), IastHttpClient.class.getName());
                         return;
                     }
                 } catch (ApacheHttpExceptionWrapper | IOException | URISyntaxException e) {

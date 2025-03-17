@@ -5,6 +5,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.IastExclusionUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
@@ -217,6 +218,9 @@ public class DispatcherPool {
         TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
         securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
         securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
+
+        IastExclusionUtils.getInstance().addEncounteredTrace(traceMetadata.getTraceId(), operation.getApiID());
+
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
         AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementSubmitted();
 

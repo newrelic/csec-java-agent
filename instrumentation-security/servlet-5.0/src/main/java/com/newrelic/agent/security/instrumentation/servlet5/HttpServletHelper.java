@@ -93,7 +93,7 @@ public class HttpServletHelper {
     }
 
     public static boolean acquireServletLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
