@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.schema.StringBuilderLimit;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 import java.nio.file.Paths;
 import java.util.*;
@@ -9,13 +10,9 @@ public class HttpRequest {
     public static final String HTTP = "http";
 
     @JsonIgnore
-    public static final int MAX_ALLOWED_REQUEST_BODY_LENGTH = 500000;
-    @JsonIgnore
     public static final String QUESTION_MARK = "?";
 
-    private StringBuilder body;
-
-    private boolean dataTruncated;
+    private final StringBuilderLimit body;
 
     private String method;
 
@@ -63,8 +60,7 @@ public class HttpRequest {
 
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
-        this.body = new StringBuilder();
-        this.dataTruncated = false;
+        this.body = new StringBuilderLimit();
         this.method = StringUtils.EMPTY;
         this.url = StringUtils.EMPTY;
         this.headers = new ConcurrentHashMap<>();
@@ -82,13 +78,11 @@ public class HttpRequest {
         this.queryParameters = new HashMap<>();
         this.requestHeaderParameters = new HashMap<>();
         this.requestBodyParameters = new HashMap<>();
-        this.pathParameters = new HashSet<>();
     }
 
     public HttpRequest(HttpRequest servletInfo) {
         this.clientIP = servletInfo.clientIP.trim();
-        this.body = new StringBuilder(servletInfo.getBody());
-        this.dataTruncated = servletInfo.isDataTruncated();
+        this.body = servletInfo.body;
         this.method = servletInfo.getMethod().trim();
         this.url = servletInfo.getUrl().trim();
         this.headers = new ConcurrentHashMap<>(servletInfo.getHeaders());
@@ -107,6 +101,7 @@ public class HttpRequest {
         this.requestBodyParameters = servletInfo.requestBodyParameters;
         this.isRequestParametersParsed = servletInfo.isRequestParametersParsed;
         this.customDataType = servletInfo.customDataType;
+        this.pathParameters = servletInfo.pathParameters;
     }
 
     public String getMethod() {
@@ -137,7 +132,7 @@ public class HttpRequest {
     /**
      * @return the body
      */
-    public StringBuilder getBody() {
+    public StringBuilderLimit getBody() {
         return this.body;
     }
 
@@ -158,20 +153,6 @@ public class HttpRequest {
     }
 
     /**
-     * @return the dataTruncated
-     */
-    public boolean isDataTruncated() {
-        return this.dataTruncated;
-    }
-
-    /**
-     * @param dataTruncated the dataTruncated to set
-     */
-    public void setDataTruncated(boolean dataTruncated) {
-        this.dataTruncated = dataTruncated;
-    }
-
-    /**
      * @return the clientIP
      */
     public String getClientIP() {
@@ -186,7 +167,7 @@ public class HttpRequest {
     }
 
     public void setBody(StringBuilder body) {
-        this.body = body;
+        this.body.sb = body;
     }
 
     public String getContentType() {
@@ -324,8 +305,7 @@ public class HttpRequest {
     }
 
     public void clean () {
-        this.body = new StringBuilder();
-        this.dataTruncated = false;
+        this.body.clean();
         this.headers.clear();
         this.serverPort = -1;
         this.parameterMap.clear();

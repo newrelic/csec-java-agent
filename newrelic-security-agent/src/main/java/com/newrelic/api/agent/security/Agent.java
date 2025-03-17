@@ -8,7 +8,6 @@ import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferReq
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
-import com.newrelic.agent.security.intcodeagent.apache.httpclient.SecurityClient;
 import com.newrelic.agent.security.intcodeagent.communication.ConnectionFactory;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.constants.HttpStatusCodes;
@@ -43,8 +42,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -554,8 +551,8 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean isRequestBodyDataExccedsAllowedLimit(SecurityMetaData securityMetaData) {
-        if(securityMetaData != null && StringUtils.length(securityMetaData.getRequest().getBody()) > HttpRequest.MAX_ALLOWED_REQUEST_BODY_LENGTH) {
-            securityMetaData.getRequest().setDataTruncated(true);
+        if(securityMetaData != null && StringUtils.length(securityMetaData.getRequest().getBody().toString()) > StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH) {
+            securityMetaData.getRequest().getBody().setDataTruncated(true);
             securityMetaData.getRequest().setBody(new StringBuilder());
             return true;
             //TODO send IASTScanFailure for body truncation and drop event.
@@ -563,8 +560,8 @@ public class Agent implements SecurityAgent {
         if(!securityMetaData.getRequest().getParameterMap().isEmpty()) {
             boolean parameterTruncated = false;
             for (String[] requestParam : securityMetaData.getRequest().getParameterMap().values()) {
-                if(requestParam.length > HttpRequest.MAX_ALLOWED_REQUEST_BODY_LENGTH) {
-                    securityMetaData.getRequest().setDataTruncated(true);
+                if(requestParam.length > StringBuilderLimit.MAX_ALLOWED_BODY_LENGTH) {
+                    securityMetaData.getRequest().getBody().setDataTruncated(true);
                     parameterTruncated = true;
                 }
             }
