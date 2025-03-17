@@ -89,6 +89,38 @@ test {
         executable = project.property(jdkName) + '/bin/java'
         configuration.call()
     }
+    if (project.hasProperty("test23")) {
+        configureTest("jdk23") {
+            jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util=ALL-UNNAMED',
+                    '--add-opens=java.base/java.net=ALL-UNNAMED',
+                    '--add-opens=java.base/java.io=ALL-UNNAMED',
+                    '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
+            useJUnit {
+                excludeCategories 'com.newrelic.test.marker.Java23IncompatibleTest'
+            }
+        }
+        // mockito uses a version of bytebuddy that has experimental support for Java 21
+        systemProperty("net.bytebuddy.experimental", "true")
+    }
+    if (project.hasProperty("test21")) {
+        configureTest("jdk21") {
+            jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util=ALL-UNNAMED',
+                    '--add-opens=java.base/java.net=ALL-UNNAMED',
+                    '--add-opens=java.base/java.io=ALL-UNNAMED',
+                    '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
+            useJUnit {
+                excludeCategories 'com.newrelic.test.marker.Java21IncompatibleTest'
+            }
+        }
+        // mockito uses a version of bytebuddy that has experimental support for Java 21
+        systemProperty("net.bytebuddy.experimental", "true")
+    }
     if (project.hasProperty("test19")) {
         configureTest("jdk19") {
             jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
