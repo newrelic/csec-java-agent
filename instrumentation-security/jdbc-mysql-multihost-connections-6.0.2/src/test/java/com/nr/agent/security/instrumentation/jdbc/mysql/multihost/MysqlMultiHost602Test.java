@@ -11,11 +11,6 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
-import com.wix.mysql.EmbeddedMysql;
-import com.wix.mysql.ScriptResolver;
-import com.wix.mysql.config.Charset;
-import com.wix.mysql.config.MysqldConfig;
-import com.wix.mysql.distribution.Version;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,6 +18,9 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,32 +32,37 @@ import java.util.concurrent.TimeUnit;
 @InstrumentationTestConfig(includePrefixes = {"com.mysql.cj.jdbc.ha"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MysqlMultiHost602Test {
-    private static final String DB_USER = "";
-    private static final String DB_PASSWORD = "";
+
     private static String DB_CONNECTION;
-    private static String DB_NAME = "test";
-    private static EmbeddedMysql mysqld = null;
 
+    private static String DB_USER;
+
+    private static String DB_PASSWORD;
+
+    private static MySQLContainer<?> mysql;
+
+
+    private static String DB_NAME;
     @BeforeClass
-    public static void setUpDb() throws Exception {
-        MysqldConfig config = MysqldConfig.aMysqldConfig(Version.v5_7_latest)
-                .withCharset(Charset.UTF8)
-                .withFreePort()
-                .withTimeout(2, TimeUnit.MINUTES)
-                .withUser(DB_USER, DB_PASSWORD)
-                .build();
+    public static void setUpDb() {
 
-        mysqld = EmbeddedMysql.anEmbeddedMysql(config)
-                .addSchema(DB_NAME, ScriptResolver.classPathScript("maria-db-test.sql"))
-                .start();
+        System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
+        mysql = new MySQLContainer<>(DockerImageName.parse("mysql:5.7.43"))
+                .withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/docker-entrypoint-initdb.d/");
+        mysql.start();
 
-        DB_CONNECTION = "jdbc:mysql:loadbalance://localhost:" + mysqld.getConfig().getPort() + "/" + DB_NAME + "?useSSL=false";
+        DB_NAME = mysql.getDatabaseName();
+        DB_PASSWORD = mysql.getPassword();
+        DB_USER = mysql.getUsername();
+        DB_CONNECTION = mysql.getJdbcUrl().replace("mysql", "mysql:loadbalance")+"?useSSL=false";
+
     }
 
     @AfterClass
-    public static void tearDownDb() throws Exception {
-        if (mysqld!=null) {
-            mysqld.stop();
+    public static void tearDownDb() {
+        if (mysql != null && mysql.isCreated()) {
+            mysql.close();
+            mysql.stop();
         }
     }
 
@@ -157,7 +160,7 @@ public class MysqlMultiHost602Test {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            dbConnection = ConnectionImpl.getInstance(new ConnectionString(DB_CONNECTION, new Properties()), "localhost", mysqld.getConfig().getPort(), new Properties());
+            dbConnection = ConnectionImpl.getInstance(new ConnectionString(DB_CONNECTION, new Properties()), "localhost", mysql.getFirstMappedPort(), new Properties());
         } catch (Exception ignored) {
         }
         finally {

@@ -1,17 +1,9 @@
-/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
 package com.nr.agent.security.instrumentation.jdbc.mysql604;
 
 import com.mysql.cj.api.jdbc.JdbcConnection;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
-import com.wix.mysql.EmbeddedMysql;
-import com.wix.mysql.config.MysqldConfig;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -19,56 +11,64 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static com.wix.mysql.EmbeddedMysql.anEmbeddedMysql;
-import static com.wix.mysql.ScriptResolver.classPathScript;
-import static com.wix.mysql.config.Charset.UTF8;
-import static com.wix.mysql.config.MysqldConfig.aMysqldConfig;
-import static com.wix.mysql.distribution.Version.v5_7_latest;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "com.mysql.cj" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MySql604Test {
-    private static final String DB_USER = "";
-    private static final String DB_PASSWORD = "";
-    private static final List<String> QUERIES = new ArrayList<>();
-    private static final String DB_NAME = "test";
+
     private static JdbcConnection connection;
+
+    private static final List<String> QUERIES = new ArrayList<>();
+
     private static String DB_CONNECTION;
-    private static EmbeddedMysql mysqld = null;
+
+    private static String DB_NAME;
+
+    private static String DB_USER;
+
+    private static String DB_PASSWORD;
+
+    private static int PORT;
+
+    private static MySQLContainer<?> mysql;
 
     @BeforeClass
-    public static void setUpDb() throws Exception {
+    public static void setUpDb() throws SQLException, ClassNotFoundException {
         QUERIES.add("select * from testQuery");
-        MysqldConfig config = aMysqldConfig(v5_7_latest)
-                .withCharset(UTF8)
-                .withFreePort()
-                .withTimeout(2, TimeUnit.MINUTES)
-                .withUser(DB_USER, DB_PASSWORD)
-                .build();
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
 
-        mysqld = anEmbeddedMysql(config)
-                .addSchema(DB_NAME, classPathScript("maria-db-test.sql"))
-                .start();
+        System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
+        mysql = new MySQLContainer<>(DockerImageName.parse("mysql:5.7.43"))
+//                .withCommand("--default-authentication-plugin=mysql_native_password")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/docker-entrypoint-initdb.d/");
+        mysql.setPortBindings(Collections.singletonList(PORT + ":3808"));
+        mysql.start();
 
-        DB_CONNECTION = "jdbc:mysql://localhost:" + mysqld.getConfig().getPort() + "/" + DB_NAME + "?useSSL=false";
+        DB_PASSWORD = mysql.getPassword();
+        DB_USER = mysql.getUsername();
+        DB_CONNECTION = mysql.getJdbcUrl()+"?useSSL=false";
         Class.forName("com.mysql.cj.jdbc.Driver");
         connection = (JdbcConnection) DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
     }
 
     @AfterClass
-    public static void tearDownDb() throws Exception {
-        if (mysqld != null) {
-            mysqld.stop();
+    public static void tearDownDb() {
+        if (mysql != null && mysql.isCreated()) {
+            mysql.close();
+            mysql.stop();
         }
     }
 

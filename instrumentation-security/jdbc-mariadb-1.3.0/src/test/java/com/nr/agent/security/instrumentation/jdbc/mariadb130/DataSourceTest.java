@@ -1,7 +1,5 @@
 package com.nr.agent.security.instrumentation.jdbc.mariadb130;
 
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -13,39 +11,51 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mariadb.jdbc.MariaDbDataSource;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collections;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"org.mariadb.jdbc"})
 public class DataSourceTest {
-    private static DB mariaDb;
     private static String connectionString;
+
     private static String dbName;
-    private static final String DB_USER = "";
-    private static final String DB_PASSWORD = "";
+
+    private static String DB_USER;
+
+    private static String DB_PASSWORD;
+
+    public static MariaDBContainer<?> mariaDb;
 
     private static int PORT;
-    @BeforeClass
-    public static void setUpDb() throws Exception {
-        DBConfigurationBuilder builder = DBConfigurationBuilder.newBuilder()
-                .setPort(0); // This will automatically find a free port
 
-        PORT = builder.getPort();
-        dbName = "MariaDB" + System.currentTimeMillis();
-        mariaDb = DB.newEmbeddedDB(builder.build());
-        connectionString = builder.getURL(dbName);
+    @BeforeClass
+    public static void setUpDb() {
+
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        mariaDb = new MariaDBContainer<>(DockerImageName.parse("mariadb:10.5.5"));
+        mariaDb.setPortBindings(Collections.singletonList(PORT + ":3808"));
+
+        mariaDb.withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/var/lib/mysql/");
         mariaDb.start();
 
-        mariaDb.createDB(dbName);
-        mariaDb.source("maria-db-test.sql", null, null, dbName);
-    }
-    @AfterClass
-    public static void tearDownDb() throws Exception {
-        mariaDb.stop();
+        DB_PASSWORD = mariaDb.getPassword();
+        DB_USER = mariaDb.getUsername();
+        dbName = mariaDb.getDatabaseName();
+        connectionString = mariaDb.getJdbcUrl();
     }
 
+    @AfterClass
+    public static void tearDownDb() {
+        if (mariaDb != null && mariaDb.isCreated()) {
+            mariaDb.stop();
+        }
+    }
     @Test
     public void testConnection() throws SQLException {
         getConnection( new MariaDbDataSource());
@@ -110,6 +120,7 @@ public class DataSourceTest {
         try {
             Class.forName("org.mariadb.jdbc.Driver");
             dbConnection = dataSource.getConnection();
+            dbConnection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -127,6 +138,7 @@ public class DataSourceTest {
         try {
             Class.forName("org.mariadb.jdbc.Driver");
             dbConnection = dataSource.getConnection(DB_USER, DB_PASSWORD);
+            dbConnection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
