@@ -24,7 +24,7 @@ import java.util.UUID;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"java.io", "java.nio"})
 public class FileTest {
-    private static final String FILE_NAME = "/tmp/test-" + UUID.randomUUID().toString();
+    private static final String FILE_NAME = "/tmp/test-" + UUID.randomUUID();
 
     @BeforeClass
     public static void retransformRequiredClasses() {
@@ -32,7 +32,7 @@ public class FileTest {
     }
 
     @Test
-    @Ignore
+    @Ignore ("This construct is supported in file-low-priority-instrumentation module")
     public void testGetBooleanAttributes() throws IOException {
         exists(FILE_NAME);
 
@@ -358,7 +358,7 @@ public class FileTest {
 
     @Trace(dispatcher = true)
     private void renameTo(String filePath) throws IOException {
-        String destPath = "/tmp/test-" + UUID.randomUUID().toString();
+        String destPath = "/tmp/test-" + UUID.randomUUID();
         new File(filePath).renameTo( new File(destPath));
     }
 

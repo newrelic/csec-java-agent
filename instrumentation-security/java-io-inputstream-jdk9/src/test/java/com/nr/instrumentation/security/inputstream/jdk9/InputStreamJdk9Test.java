@@ -40,7 +40,7 @@ public class InputStreamJdk9Test {
     private static String FILE_TEMP;
     private static String DIR;
     private static String DATA;
-    private static List<String> stuffToClean = new ArrayList<>();
+    private static final List<String> stuffToClean = new ArrayList<>();
 
     @BeforeClass
     public static void retransformRequiredClasses() {
@@ -114,8 +114,6 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    @Ignore
-    // FIXME: not working, need to check the issue
     public void testReadWithFiles2() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
