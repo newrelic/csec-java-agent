@@ -4,7 +4,9 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
@@ -77,6 +79,9 @@ public class IASTDataTransferRequestProcessor {
             // Sleep if under cooldown
             long cooldownSleepTime = cooldownTillTimestamp.get() - currentTimestamp;
             if(cooldownSleepTime > 0) {
+                if (Agent.isDebugEnabled()) {
+                    NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: Executing IASTDataTransferRequest thread to sleep due to %s millis due Cool down.", cooldownSleepTime), FileCleaner.class.getName());
+                }
                 Thread.sleep(cooldownSleepTime);
             }
 
@@ -98,6 +103,10 @@ public class IASTDataTransferRequestProcessor {
 
             int currentRecordBacklog = Math.max(currentRecordBacklogRest, currentRecordBacklogGrpc);
             int remainingRecordCapacity = Math.min(remainingRecordCapacityRest, remainingRecordCapacityGrpc);
+
+            if (Agent.isDebugEnabled()) {
+                NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: IAST Replay backlog for REST and gRPC are : %s and %s respectively.", currentRecordBacklogRest, currentRecordBacklogRest), FileCleaner.class.getName());
+            }
 
             int batchSize = currentFetchThreshold - currentRecordBacklog;
             if(!AgentUsageMetric.isRASPProcessingActive()){

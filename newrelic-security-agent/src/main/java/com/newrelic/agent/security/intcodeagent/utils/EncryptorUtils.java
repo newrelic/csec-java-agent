@@ -1,6 +1,9 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
+import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
+import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.codec.DecoderException;
@@ -34,6 +37,9 @@ public class EncryptorUtils {
     private static Cipher cipher = null;
 
     private static void prepareCipherInstance(String password) throws Exception {
+        if (Agent.isDebugEnabled()) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, "Debug: Preparing Cipher instance for decrypting data", EncryptorUtils.class.getName());
+        }
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF_2_WITH_HMAC_SHA_1);
         KeySpec spec = new PBEKeySpec(password.toCharArray(), generateSalt(password), ITERATION, KEY_LEN);
         SecretKey tmp = factory.generateSecret(spec);
@@ -62,6 +68,9 @@ public class EncryptorUtils {
             // Decrypt the content
             byte[] decryptedBytes = cipher.doFinal(Hex.decodeHex(encryptedData));
             decryptedData = new String(decryptedBytes, OFFSET, decryptedBytes.length - OFFSET);
+            if (Agent.isDebugEnabled()) {
+                NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: Decrypted data for encrypted data %s is : %s", encryptedData, decryptedData), EncryptorUtils.class.getName());
+            }
             NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(ENCRYPTED_DATA_S_DECRYPTED_DATA_S, encryptedData, decryptedData), EncryptorUtils.class.getName());
             return decryptedData;
         } catch (DecoderException ignored) {
@@ -82,6 +91,9 @@ public class EncryptorUtils {
         if (StringUtils.isBlank(knownDecryptedDataHash)){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format("Known-Decrypted Data Hash is empty %s", knownDecryptedDataHash), EncryptorUtils.class.getName());
             return false;
+        }
+        if (Agent.isDebugEnabled() && !StringUtils.equals(HashGenerator.getSHA256HexDigest(decryptedData), knownDecryptedDataHash)) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: The hash of the decrypted data for %s does not match.", decryptedData), EncryptorUtils.class.getName());
         }
         return StringUtils.equals(HashGenerator.getSHA256HexDigest(decryptedData), knownDecryptedDataHash);
     }

@@ -6,6 +6,7 @@ import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.utils.IastExclusionUtils;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
@@ -116,6 +117,9 @@ public class DispatcherPool {
                         AbstractOperation operation = dispatcher.getOperation();
                         SecurityMetaData securityMetaData = dispatcher.getSecurityMetaData();
                         if(t != null){
+                            if (Agent.isDebugEnabled()) {
+                                logger.log(LogLevel.FINEST, "Debug: Error occurred while sending the event.", t, DispatcherPool.class.getName());
+                            }
                             AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDispatcher().incrementError();
                             if(operation != null) {
                                 if(securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
@@ -210,6 +214,9 @@ public class DispatcherPool {
                     if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
                         RestRequestThreadPool.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
                     }
+                }
+                if (Agent.isDebugEnabled()) {
+                    logger.log(LogLevel.FINEST, String.format("Debug: Register execution id %s with parent-id as %s", operation.getExecutionId(), parentId), this.getClass().getName());
                 }
             }
         }

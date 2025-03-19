@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.instrumentator.helper;
 
+import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
+import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -127,6 +130,9 @@ public class DynamoDBRequestConverter {
                             }
                         }
                     } catch (IllegalAccessException ignored) {
+                        if (Agent.isDebugEnabled()) {
+                            NewRelicSecurity.getAgent().log(LogLevel.FINEST, "Debug: Error occurred while sending the event.", ignored, CallbackUtils.class.getName());
+                        }
                     }
                 }
             }
