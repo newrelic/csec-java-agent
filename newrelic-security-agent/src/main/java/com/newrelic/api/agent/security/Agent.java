@@ -777,6 +777,28 @@ public class Agent implements SecurityAgent {
                     }
                 }
             }
+            if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(operation.getCaseType())) {
+                boolean deserialisationCheck = true;
+                if (VulnerabilityCaseType.FILE_OPERATION.equals(operation.getCaseType()) && ((FileOperation) operation).isGetBooleanAttributesCall()) {
+                    deserialisationCheck = false;
+                }
+                VulnerabilityCaseType vulnerabilityCaseType = operation.getCaseType();
+                String klassName = operation.getStackTrace()[i].getClassName();
+                // TODO : check this sequence. Why this is being set from inside Deserialisation check.
+                if (VulnerabilityCaseType.SYSTEM_COMMAND.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.SQL_DB_COMMAND.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
+
+                    xxeTriggerCheck(i, operation, klassName);
+                    if (deserialisationCheck) {
+                        deserializationTriggerCheck(i, operation, klassName);
+                    }
+                }
+            }
 
             if (!markedForRemoval) {
                 newTraceForIdCalc.add(stackTrace[i].hashCode());
@@ -786,6 +808,25 @@ public class Agent implements SecurityAgent {
         operation.setStackTrace(stackTrace);
         operation.setSourceMethod(operation.getStackTrace()[0].toString());
         setAPIId(operation, newTraceForIdCalc, operation.getCaseType());
+    }
+
+    private void xxeTriggerCheck(int i, AbstractOperation operation, String klassName) {
+        if ((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL)
+                && StringUtils.equals(operation.getStackTrace()[i].getMethodName(), SCAN_DOCUMENT))
+                || (StringUtils.contains(klassName, XML_ENTITY_MANAGER)
+                && StringUtils.equals(operation.getStackTrace()[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
+            getSecurityMetaData().getMetaData().setTriggerViaXXE(true);
+        }
+    }
+
+    private void deserializationTriggerCheck(int index, AbstractOperation operation, String klassName) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DESERIALIZATION_ENABLED, true)) {
+            return;
+        }
+        if (ObjectInputStream.class.getName().equals(klassName)
+                && StringUtils.equals(operation.getStackTrace()[index].getMethodName(), READ_OBJECT)) {
+            getSecurityMetaData().getMetaData().setTriggerViaDeserialisation(true);
+        }
     }
 
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
