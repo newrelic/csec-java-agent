@@ -2,6 +2,7 @@ package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.http.ReadResult;
@@ -90,7 +91,9 @@ public class ApacheHttpClientWrapper {
                     .loadTrustMaterial(null, acceptingTrustStrategy)
                     .build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException exception){
-
+            if (Agent.isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Debug: Error while building SSL Context for Apache HTTP Client", exception, this.getClass().getName());
+            }
         }
         this.connectionManager = createHttpClientConnectionManager(sslContext);
         this.httpClient = HttpClientBuilder.create()

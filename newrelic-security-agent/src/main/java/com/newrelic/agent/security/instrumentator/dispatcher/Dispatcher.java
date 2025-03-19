@@ -589,7 +589,9 @@ public class Dispatcher implements Callable {
             eventBean.setParameters(params);
             return eventBean;
         } catch (Throwable e){
-            e.printStackTrace();
+            if (Agent.isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Error while preparing SYSTEM_COMMAND event: " + JsonConverter.toJSON(operation), e, Agent.class.getName());
+            }
         }
         return eventBean;
     }

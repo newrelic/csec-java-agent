@@ -5,17 +5,18 @@ import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
-import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ShutDownEvent;
+import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.io.FileUtils;
-import org.java_websocket.framing.CloseFrame;
 import org.apache.commons.lang3.StringUtils;
+import org.java_websocket.framing.CloseFrame;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +71,9 @@ public class InstrumentationUtils {
         } catch (Throwable e) {
         }
         try {
+            if (Agent.isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Debug: Shutting down IAST Services..", InstrumentationUtils.class.getName());
+            }
             HealthCheckScheduleThread.getInstance().cancelTask(true);
             DispatcherPool.shutDownPool();
             ControlCommandProcessorThreadPool.shutDownPool();
@@ -78,6 +82,9 @@ public class InstrumentationUtils {
             WSClient.shutDownWSClient(true, CloseFrame.NORMAL, "IAST agent shutting down");
             FileCleaner.cancelTask();
             if(StringUtils.isNotBlank(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory())) {
+                if (Agent.isDebugEnabled()) {
+                    logger.log(LogLevel.FINEST, "Debug: IAST Shutdown : Cleaning Tmp directory created during IAST analysis", InstrumentationUtils.class.getName());
+                }
                 FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
             }
 
