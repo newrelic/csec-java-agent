@@ -15,9 +15,9 @@ jobs:
   verify-instrumentation:
     name: Instrumentation verifier trigger
     uses: ./.github/workflows/X-Reusable-VerifyInstrumentation.yml
-    with:
-      page: 1/1
-      ref: ${{ github.ref || 'main' }}
+#    with:
+#      page: 1/1
+#      ref: ${{ github.ref || 'main' }}
     secrets: inherit
 
   notify-failure:
