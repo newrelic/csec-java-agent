@@ -26,6 +26,16 @@ on:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
         required: true
         default: ''
+      csec-run-scala-unittest:
+        description: 'Whether to run CSEC scala instrumentation unit tests'
+        required: true
+        default: false
+        type: boolean
+      unit-test-java-version:
+        description: 'Run Unit test on java version, default java versions are [ 8, 11, 17, 21, 23 ] '
+        required: false
+        default: '[ 8, 11, 17, 21, 23 ]'
+        type: string
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -40,6 +50,8 @@ jobs:
       apm-source-ref: ${{ inputs.apm-source-ref }}
       run-unit-test: ${{ inputs.csec-run-unittest }}
       is-release: false
+      unit-test-java-version: ${{ inputs.unit-test-java-version }}
+      csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest }}
     secrets: inherit
 
   verify-instrumentation:
