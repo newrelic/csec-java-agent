@@ -103,7 +103,7 @@ jobs:
 
       - name: Run CSEC unit tests
         if: ${{ inputs.run-unit-test == 'true' }}
-        uses: ./.github/workflows/GHA-Unit-Tests.yml
+        uses: ./.github/workflows/X-Reusable-VerifyInstrumentation.yml
         with:
           unit-test-java-version: ${{ inputs.unit-test-java-version }}
           csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest }}
