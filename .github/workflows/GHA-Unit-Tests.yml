@@ -41,6 +41,9 @@ jobs:
         java-version: ${{ fromJson(inputs.unit-test-java-version)) }}
 
     steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
       - name: Checkout CSEC Repo
         uses: actions/checkout@v3
         with:
