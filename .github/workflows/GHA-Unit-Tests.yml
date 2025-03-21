@@ -15,7 +15,7 @@ on:
       unit-test-java-version:
         description: 'Run Unit test on java version, default java versions are [ 8, 11, 17, 21, 23 ] '
         required: false
-        default: [ 8, 11, 17, 21, 23 ]
+        default: '[ 8, 11, 17, 21, 23 ]'
 
   workflow_call:
     inputs:
