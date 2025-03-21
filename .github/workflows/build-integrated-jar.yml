@@ -14,14 +14,17 @@ on:
         description: 'Whether to run CSEC instrumentation unit tests'
         required: true
         default: true
+        type: boolean
       csec-run-instrumentation-verify:
         description: 'Whether to run CSEC instrumentation verifier'
         required: true
         default: true
+        type: boolean
       slack-notify:
         description: 'Whether to notify build status on slack'
         required: true
         default: true
+        type: boolean
       description:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
         required: true
