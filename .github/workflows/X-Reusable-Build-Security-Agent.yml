@@ -84,4 +84,6 @@ jobs:
 
       - name: Run CSEC unit tests
         if: ${{ inputs.run-unit-test == 'true' }}
-        uses: ./.github/workflows/dependency-submission.yml
+        uses: ./.github/actions/unit-test
+        with:
+          java-version: ${{ matrix.java-version }}

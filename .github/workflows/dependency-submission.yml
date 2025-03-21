@@ -1,55 +1,27 @@
-# Workflow: Run Unit tests
-#
-# Trigger: This workflow runs on every merge to the main branch and on pull request.
-
-name: Unit Tests
+name: Dependency Submission
 
 on:
-  workflow_dispatch:
-    inputs:
-      csec-run-scala-unittest:
-        description: 'Whether to run CSEC scala instrumentation unit tests'
-        required: true
-        default: false
-        type: boolean
-      unit-test-java-version:
-        description: 'Run Unit test on java version, default java versions are [ 8, 11, 17, 21, 23 ] '
-        required: false
-        default: [ 8, 11, 17, 21, 23 ]
+  push:
+    branches: ['main']
 
-  workflow_call:
-    inputs:
-      csec-run-scala-unittest:
-        description: 'Whether to run CSEC scala instrumentation unit tests'
-        required: true
-        default: false
-        type: boolean
-      unit-test-java-version:
-        description: 'Run Unit test on java version, default java versions are [ 8, 11, 17, 21, 23 ] '
-        required: false
-        default: '[ 8, 11, 17, 21, 23 ]'
-        type: string
-
-  pull_request:
-    branches: [ main ]
+permissions:
+  contents: write
 
 jobs:
-  unit-test:
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        java-version: ${{ fromJson(inputs.unit-test-java-version)) }}
-
+  dependency-submission:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Setup environment
-        uses: ./.github/actions/setup-environment
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          apm-aws-access-key-id: ${{ secrets.APM_AWS_ACCESS_KEY_ID }}
-          apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
-          apm-aws-region: us-east-2
-
-      - name: Run CSEC unit tests on Java ${{ matrix.java-version }}
-        uses: ./.github/actions/unit-test
+          distribution: 'temurin'
+          java-version: 8
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v4
         with:
-          java-version: ${{ matrix.java-version }}
-          csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest }}
+          dependency-graph-include-projects: ':newrelic-security-(agent|api)'
+          build-scan-publish: true
+          build-scan-terms-of-use-url: "https://gralde.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"

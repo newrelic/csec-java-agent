@@ -5,22 +5,11 @@ inputs:
     description: 'The JVM Version to use'
     required: true
     default: '8'
-  csec-run-scala-unittest:
-    description: 'Whether to run CSEC scala instrumentation unit tests'
-    required: true
-    default: 'false'
 
 runs:
   using: composite
 
   steps:
-    - name: Run scala instrumentation unit tests
-      id: run_scala_unit_tests
-      shell: bash
-      if: (inputs.csec-run-scala-unittest == 'true' && inputs.java-version == '8')
-      run: |
-        ./gradlew $GRADLE_OPTIONS --info test -PincludeScala --continue
-
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 1
       id: run_tests_1
       shell: bash
