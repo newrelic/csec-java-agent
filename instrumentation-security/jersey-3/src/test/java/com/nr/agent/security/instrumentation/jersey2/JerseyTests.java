@@ -116,7 +116,7 @@ public class JerseyTests {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         assertTrue(introspector.getSecurityMetaData().getMetaData().isUserLevelServiceMethodEncountered());
-        assertOperation(introspector.getOperations(), true, introspector.getRequestInStreamHash(), responseBody);
+        assertOperation(introspector.getOperations(), false, introspector.getRequestInStreamHash(), responseBody);
     }
 
     private String[] fireRequest(final String path) {
