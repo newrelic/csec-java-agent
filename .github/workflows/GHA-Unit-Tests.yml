@@ -105,7 +105,7 @@ jobs:
         uses: ./.github/actions/publish-csec-local
 
       - name: Run CSEC unit tests
-        if: ${{ inputs.run-unit-test == 'true' }}
+#        if: ${{ inputs.run-unit-test == 'true' }}
         uses: ./.github/actions/unit-test
         with:
           csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest }}
