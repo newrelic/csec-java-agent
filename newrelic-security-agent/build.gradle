@@ -200,7 +200,7 @@ tasks.register('generate-sbom') {
     req.getResponseCode()
     def parsedJson = new JsonSlurper().parseText(req.getInputStream().getText())
 
-    def sbomFile = new File("$buildDir", "reports/SBOM.json", )
+    def sbomFile = new File("$buildDir", "reports/SBOM.json")
     if ((sbomFile.exists() && sbomFile.delete() && sbomFile.createNewFile()) || sbomFile.createNewFile()) {
         sbomFile.write(new JsonBuilder(parsedJson).toPrettyString())
     }
