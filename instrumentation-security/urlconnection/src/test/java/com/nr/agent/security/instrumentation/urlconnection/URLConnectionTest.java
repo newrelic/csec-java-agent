@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.util.List;
@@ -40,7 +41,6 @@ public class URLConnectionTest {
     }
 
     @Test
-    @Ignore
     public void testConnect() throws IOException {
         String headerValue = String.valueOf(UUID.randomUUID());
 
@@ -49,7 +49,7 @@ public class URLConnectionTest {
         callConnect(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
@@ -61,26 +61,6 @@ public class URLConnectionTest {
     }
 
     @Test
-    @Ignore
-    public void testConnect1() throws IOException {
-        String headerValue = String.valueOf(UUID.randomUUID());
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        setCSECHeaders(headerValue, introspector);
-        callConnect1(endpoint);
-
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-        SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Map<String, String> headers = server.getHeaders();
-        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
-        verifyHeaders(headerValue, headers);
-    }
-
-    @Test
     public void testGetInputStream() throws IOException {
         String headerValue = String.valueOf(UUID.randomUUID());
 
@@ -89,7 +69,7 @@ public class URLConnectionTest {
         callGetInputStream(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
@@ -108,7 +88,7 @@ public class URLConnectionTest {
         callGetInputStreamByGetContent(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
@@ -127,7 +107,7 @@ public class URLConnectionTest {
         callGetInputStreamByGetContent1(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
@@ -146,7 +126,7 @@ public class URLConnectionTest {
         callGetInputStreamByOpenStream(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
@@ -165,7 +145,7 @@ public class URLConnectionTest {
         callGetInputStreamByConGetContent(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
@@ -184,7 +164,7 @@ public class URLConnectionTest {
         callGetInputStreamByConGetContent1(endpoint);
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         SSRFOperation operation = (SSRFOperation) operations.get(0);
         Map<String, String> headers = server.getHeaders();
 
@@ -196,7 +176,6 @@ public class URLConnectionTest {
     }
 
     @Test
-    @Ignore
     public void testGetOutputStream() throws IOException {
         String headerValue = String.valueOf(UUID.randomUUID());
 
@@ -221,16 +200,15 @@ public class URLConnectionTest {
         URL u = new URL(endpoint);
         HttpURLConnection conn = (HttpURLConnection) u.openConnection();
         conn.connect();
-    }
-
-    @Trace(dispatcher = true)
-    private void callConnect1(String endpoint) throws IOException {
-        new URL(endpoint).openConnection().connect();
+        conn.getResponseCode();
     }
 
     @Trace(dispatcher = true)
     private void callGetInputStreamByConGetContent(String endpoint) throws IOException {
-        new URL(endpoint).openConnection().getContent();
+        URL u = new URL(endpoint);
+        HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+        conn.getContent();
+        conn.getResponseCode();
     }
 
     @Trace(dispatcher = true)
@@ -255,18 +233,21 @@ public class URLConnectionTest {
 
     @Trace(dispatcher = true)
     private void callGetInputStreamByOpenStream(String endpoint) throws IOException {
-        new URL(endpoint).openStream();
+        InputStream stream = new URL(endpoint).openStream();
+        stream.read();
+        stream.close();
     }
 
     @Trace(dispatcher = true)
     private void callGetOutputStream(String endpoint) throws IOException {
         URL u = new URL(endpoint);
-        URLConnection conn = u.openConnection();
+        HttpURLConnection conn = (HttpURLConnection)u.openConnection();
         conn.setDoOutput(true);
 
         try (OutputStream output = conn.getOutputStream()) {
             output.write(1);
         }
+        conn.getResponseCode();
     }
 
     private void setCSECHeaders(String headerValue, SecurityIntrospector introspector) {
