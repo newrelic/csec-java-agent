@@ -23,5 +23,12 @@ site {
 }
 
 test {
+    onlyIf {
+        // test is incompatible with version of java greater than 1.8
+        !project.hasProperty("test21")
+    }
+}
+
+test {
     jvmArgs(["-Djava.library.path=src/test/resources/libs/"])
 }

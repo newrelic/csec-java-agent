@@ -7,12 +7,19 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import javax.naming.JNDIUtils;
+
+import com.newrelic.security.test.marker.Java11IncompatibleTest;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.security.test.marker.Java21IncompatibleTest;
+import com.newrelic.security.test.marker.Java23IncompatibleTest;
+import com.newrelic.security.test.marker.Java9IncompatibleTest;
 import com.unboundid.ldap.sdk.LDAPException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
@@ -30,6 +37,7 @@ import java.util.Properties;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.naming", "com.newrelic.agent.security.instrumentation.javax.jndi" } )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class ContextTest {
     public static final String DOMAIN_DSN = "dc=example,dc=com";
     @ClassRule

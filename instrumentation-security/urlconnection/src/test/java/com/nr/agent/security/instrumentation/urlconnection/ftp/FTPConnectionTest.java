@@ -8,7 +8,9 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.security.test.marker.*;
 import org.junit.*;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import sun.net.www.protocol.ftp.FtpURLConnection;
@@ -22,6 +24,7 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.urlconnection"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category({ Java11IncompatibleTest.class, Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class FTPConnectionTest {
     private static final String FTP_USER = "user";
     private static final String FTP_PASSWORD = "password";
