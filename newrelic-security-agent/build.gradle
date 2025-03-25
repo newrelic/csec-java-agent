@@ -7,6 +7,8 @@ import com.nr.builder.publish.PublishConfig
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.Clock
 
 plugins {
@@ -200,9 +202,18 @@ tasks.register('generate-sbom') {
     req.getResponseCode()
     def parsedJson = new JsonSlurper().parseText(req.getInputStream().getText())
 
-    def sbomFile = new File("$buildDir", "reports/SBOM.json")
-    if ((sbomFile.exists() && sbomFile.delete() && sbomFile.createNewFile()) || sbomFile.createNewFile()) {
-        sbomFile.write(new JsonBuilder(parsedJson).toPrettyString())
+    try {
+        def reportsDir = Paths.get("$buildDir", "reports")
+        def sbomFile = new File("$buildDir/reports", "SBOM.json")
+        if (Files.exists(reportsDir) || Files.createDirectory(reportsDir)) {
+            sbomFile.exists() && sbomFile.delete();
+            if (sbomFile.createNewFile()) {
+                sbomFile.write(new JsonBuilder(parsedJson).toPrettyString())
+            }
+        }
+    } catch (e) {
+        printf("Error while creating SBOM file: %s", e.getMessage())
+        e.printStackTrace()
     }
 }
 
