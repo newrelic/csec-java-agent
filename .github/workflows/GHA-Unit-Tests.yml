@@ -80,6 +80,9 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  JAVA_VERSIONS: ${{ github.event.inputs.unit-test-java-version || '[ 8, 11, 17, 21, 23 ]' }}
+  RUN_SCALA_UNIT_TEST: ${{ github.event.inputs.csec-run-scala-unittest || true }}
 jobs:
   # this job reads the directories in csec-java-agent/instrumentation-security and creates a JSON with the list of the modules
   # this list is paginated and will be used in the verify-module job.
@@ -87,7 +90,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java-version: ${{ fromJson(inputs.unit-test-java-version) || fromJson('[ 8, 11, 17, 21, 23 ]') }}
+        java-version: ${{ fromJson(env.JAVA_VERSIONS) }}
 
     steps:
       - name: Checkout CSEC Repo
@@ -111,5 +114,5 @@ jobs:
         if: ${{ inputs.run-unit-test == 'true' }}
         uses: ./.github/actions/unit-test
         with:
-          csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest || 'true' }}
+          csec-run-scala-unittest: ${{ env.RUN_SCALA_UNIT_TEST }}
           java-version: ${{ matrix.java-version }}
