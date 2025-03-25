@@ -58,7 +58,7 @@ runs:
 
     - name: Setup Gradle options
       shell: bash
-      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64 -Prelease=${{ inputs.is-release }} -Prelease-suffix=${{ inputs.version-suffix }} " >> $GITHUB_ENV
+      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_21_X64,JAVA_HOME_23_X64 -Prelease=${{ inputs.is-release }} -Prelease-suffix=${{ inputs.version-suffix }} " >> $GITHUB_ENV
 
     # Restore the maven cache
     - name: Cache local Maven repository
