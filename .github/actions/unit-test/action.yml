@@ -5,17 +5,31 @@ inputs:
     description: 'The JVM Version to use'
     required: true
     default: '8'
+  csec-run-scala-unittest:
+    description: 'Whether to run CSEC scala instrumentation unit tests'
+    required: true
+    default: 'false'
 
 runs:
   using: composite
 
   steps:
+    #    Run Scala unit tests if java version is 8 and csec-run-scala-unittest is enabled.
+    - name: Run scala instrumentation unit tests
+      id: run_scala_unit_tests
+      shell: bash
+      continue-on-error: true
+      if: (inputs.csec-run-scala-unittest == 'true' && inputs.java-version == '8')
+      run: |
+        ./gradlew $GRADLE_OPTIONS --info test -PincludeScala --continue
+
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 1
       id: run_tests_1
       shell: bash
       continue-on-error: true
+      if: ( steps.run_scala_unit_tests.outcome == 'skipped' || steps.run_scala_unit_tests.outcome == 'failure' )
       run: |
-        echo "Running attempt 1"
+        echo "Running attempt 1 with ${{ inputs.java-version }}"
         ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 2
@@ -24,7 +38,7 @@ runs:
       continue-on-error: true
       if: steps.run_tests_1.outcome == 'failure'
       run: |
-        echo "Running attempt 2"
+        echo "Running attempt 2 with ${{ inputs.java-version }}"
         ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 3
@@ -33,7 +47,7 @@ runs:
       continue-on-error: true
       if: steps.run_tests_2.outcome == 'failure'
       run: |
-        echo "Running attempt 3"
+        echo "Running attempt 3 with ${{ inputs.java-version }}"
         ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 4
@@ -41,5 +55,5 @@ runs:
       shell: bash
       if: steps.run_tests_3.outcome == 'failure'
       run: |
-        echo "Running attempt 4"
+        echo "Running attempt 4 with ${{ inputs.java-version }}"
         ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue

@@ -1,4 +1,7 @@
-name: X - Reusable Build Security Agent
+# Workflow: Run Unit tests
+#
+# Trigger: This workflow runs on every merge to the main branch and on pull request.
+name: Unit Tests
 on:
   workflow_call:
     inputs:
@@ -26,6 +29,16 @@ on:
         description: 'version suffix to be added, if any'
         default: ''
         type: string
+      csec-run-scala-unittest:
+        description: 'Whether to run CSEC scala instrumentation unit tests'
+        required: false
+        default: false
+        type: boolean
+      unit-test-java-version:
+        description: 'Run Unit test on java version, default java versions are [ 8 ] '
+        required: false
+        default: '[ 8 ]'
+        type: string
 
   workflow_dispatch:
     inputs:
@@ -42,8 +55,8 @@ on:
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
       is-release:
         description: 'Is this a release run'
         required: true
@@ -53,6 +66,19 @@ on:
         description: 'version suffix to be added, if any'
         default: ''
         type: string
+      csec-run-scala-unittest:
+        description: 'Run scala instrumentation unit tests ?'
+        required: true
+        type: boolean
+        default: true
+      unit-test-java-version:
+        description: 'Run Unit test on java version, default java versions are [ 8, 11, 17, 21, 23 ] '
+        required: true
+        default: '[ 8, 11, 17, 21, 23 ]'
+        type: string
+
+  pull_request:
+    branches: [ main ]
 
 jobs:
   # this job reads the directories in csec-java-agent/instrumentation-security and creates a JSON with the list of the modules
@@ -61,8 +87,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java-version: [ 8 ]
-#        java-version: [ 8, 11, 17 ]
+        java-version: ${{ fromJson(inputs.unit-test-java-version) || fromJson('[ 8, 11, 17, 21, 23 ]') }}
 
     steps:
       - name: Checkout CSEC Repo
@@ -86,4 +111,5 @@ jobs:
         if: ${{ inputs.run-unit-test == 'true' }}
         uses: ./.github/actions/unit-test
         with:
+          csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest || 'true' }}
           java-version: ${{ matrix.java-version }}
