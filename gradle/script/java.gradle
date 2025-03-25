@@ -9,6 +9,23 @@ dependencies {
 }
 
 jar {
+    // To keep test times reasonable we only test against supported LTS Java releases as well as the latest non-LTS release of Java.
+    // This method determines if we should run tests with the Java version configured by the -PtestN gradle property.
+    ext.configuredWithValidTestJDK = {
+        if (project.hasProperty("test9") || project.hasProperty("test10") || project.hasProperty("test12") || project.hasProperty("test13") ||
+                project.hasProperty("test14") || project.hasProperty("test15") || project.hasProperty("test16") || project.hasProperty("test18") ||
+                project.hasProperty("test19") || project.hasProperty("test20") || project.hasProperty("test22")) {
+            logger.lifecycle("The csec-java-agent project does not support testing with the Java version configured by the -PtestN gradle property.")
+            return false
+        }
+        // The -PtestN gradle property was configured with a valid test JDK or not provided at all.
+        return true
+    }
+
+    onlyIf {
+        configuredWithValidTestJDK()
+    }
+
     // Allow any java projects to bundle third party libraries into the jar
     from {
         configurations.includeInJar.collect {
@@ -99,7 +116,7 @@ test {
                     '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
                     '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
             useJUnit {
-                excludeCategories 'com.newrelic.test.marker.Java23IncompatibleTest'
+                excludeCategories 'com.newrelic.security.test.marker.Java23IncompatibleTest'
             }
         }
         // mockito uses a version of bytebuddy that has experimental support for Java 21
@@ -115,7 +132,7 @@ test {
                     '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
                     '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
             useJUnit {
-                excludeCategories 'com.newrelic.test.marker.Java21IncompatibleTest'
+                excludeCategories 'com.newrelic.security.test.marker.Java21IncompatibleTest'
             }
         }
         // mockito uses a version of bytebuddy that has experimental support for Java 21
