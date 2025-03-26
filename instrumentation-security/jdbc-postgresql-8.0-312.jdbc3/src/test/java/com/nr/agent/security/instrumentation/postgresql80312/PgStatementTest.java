@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Category({ Java12IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

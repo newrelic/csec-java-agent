@@ -17,7 +17,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.PostgreSQLContainer;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -29,9 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
-@Category({ Java12IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
