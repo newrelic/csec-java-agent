@@ -18,48 +18,41 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.PostgreSQLContainer;
 import reactor.core.publisher.Mono;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = "io.r2dbc.spi")
 public class PostgresStatementTest {
 
-    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
-    public static Connection connection;
-    private static final String DB_USER = "user";
-    private static final String DB_PASSWORD = "password";
-    private static final String DB_NAME = "test";
-    private static final String HOST = "localhost";
+    private static PostgreSQLContainer<?> postgres;
+    private static Connection connection;
     private static final List<String> QUERIES = new ArrayList<>();
-    private static final int PORT = getRandomPort();
+    private static String DB_CONNECTION;
 
     @BeforeClass
-    public static void setup() throws Exception {
+    public static void setup() {
         QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
         QUERIES.add("INSERT INTO USERS VALUES(1, 'Max', 'John')");
         QUERIES.add("SELECT * FROM USERS where first_name = $1");
         QUERIES.add("SELECT * FROM USERS where first_name = $1 AND last_name = $2");
 
-        postgres.start(HOST, PORT, DB_NAME, DB_USER, DB_PASSWORD);
+        postgres = new PostgreSQLContainer<>("postgres:9.6");
+        postgres.setPortBindings(Collections.singletonList(SecurityInstrumentationTestRunner.getIntrospector().getRandomPort() + ":5432"));
+        postgres.start();
 
-        String DB_CONNECTION = "";
-        if (postgres.getConnectionUrl().isPresent()){
-            DB_CONNECTION = postgres.getConnectionUrl().get()
-                    .replace("jdbc", "r2dbc")
-                    .replace(HOST, "user:password@localhost")
-                    .replace("?user=user&password=password", "");
-        }
+        DB_CONNECTION = postgres.getJdbcUrl()
+                .replace("jdbc", "r2dbc")
+                .replace("localhost", String.format("%s:%s@localhost", postgres.getUsername(), postgres.getPassword()));
 
         ConnectionFactory connectionFactory = ConnectionFactories.get(DB_CONNECTION);
         connection = Mono.from(connectionFactory.create()).block();

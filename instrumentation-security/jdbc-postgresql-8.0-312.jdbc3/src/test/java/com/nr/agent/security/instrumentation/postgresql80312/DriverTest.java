@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.PostgreSQLContainer;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,22 +36,25 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DriverTest {
-    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
+
+    public static PostgreSQLContainer<?> postgres;
     public static Connection connection;
-    private static final String DB_USER = "user";
-    private static final String DB_PASSWORD = "password";
-    private static final String DB_NAME = "test";
+    private static String DB_USER = "user";
+    private static String DB_PASSWORD = "password";
+    private static String DB_NAME = "test";
     private static final String HOST = "localhost";
-    private static final List<String> QUERIES = new ArrayList<>();
     private static final int PORT = getRandomPort();
 
     @BeforeClass
-    public static void setup() throws Exception {
-        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
-        QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'Max', 'Power')");
-        QUERIES.add("SELECT * FROM USERS");
+    public static void setup() {
 
-        postgres.start(HOST, PORT, DB_NAME, DB_USER, DB_PASSWORD);
+        postgres = new PostgreSQLContainer<>("postgres:9.6");
+        postgres.setPortBindings(Collections.singletonList(PORT + ":5432"));
+        postgres.start();
+        DB_NAME = postgres.getDatabaseName();
+        DB_USER = postgres.getUsername();
+        DB_PASSWORD = postgres.getPassword();
+
     }
 
     @After
