@@ -88,5 +88,5 @@ ext {
     // SynchronizedAnnotationNode, SynchronizedClassNode, SynchronizedFieldNode, SynchronizedInnerClassNode, SynchronizedInnerClassNode, SynchronizedMethodNode,
     // SynchronizedModuleExportNode, SynchronizedModuleNode, SynchronizedModuleOpenNode, SynchronizedModuleProvideNode, SynchronizedModuleRequireNode,
     // SynchronizedTypeAnnotationNode
-    asmVersion=9.2
+    asmVersion=9.7
 }
