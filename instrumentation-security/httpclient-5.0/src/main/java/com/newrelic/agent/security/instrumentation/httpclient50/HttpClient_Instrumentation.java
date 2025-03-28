@@ -7,8 +7,11 @@
 
 package com.newrelic.agent.security.instrumentation.httpclient50;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -71,7 +74,12 @@ public class HttpClient_Instrumentation {
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_5_0, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = SecurityHelper.preprocessSecurityHook(request, actualURI, this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
         }
         ClassicHttpResponse returnObj = null;
@@ -92,7 +100,12 @@ public class HttpClient_Instrumentation {
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_5_0, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = SecurityHelper.preprocessSecurityHook(request, actualURI, this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
         }
         HttpResponse returnObj = null;
@@ -156,7 +169,12 @@ public class HttpClient_Instrumentation {
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_5_0, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = SecurityHelper.preprocessSecurityHook(request, actualURI, this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
         }
         T returnObj = null;
@@ -178,7 +196,12 @@ public class HttpClient_Instrumentation {
         AbstractOperation operation = null;
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_5_0, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = SecurityHelper.preprocessSecurityHook(request, actualURI, this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
         }
         T returnObj = null;
@@ -201,18 +224,11 @@ public class HttpClient_Instrumentation {
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
 }

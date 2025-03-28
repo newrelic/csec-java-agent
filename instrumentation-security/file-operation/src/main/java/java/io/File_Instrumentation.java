@@ -2,9 +2,12 @@ package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -16,7 +19,7 @@ import java.util.List;
 public abstract class File_Instrumentation {
 
     public boolean createNewFile() throws IOException {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_NEW_FILE, false, this);
@@ -34,7 +37,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean delete() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE, false, this);
@@ -52,7 +55,7 @@ public abstract class File_Instrumentation {
     }
 
     public void deleteOnExit() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE_ON_EXIT, false, this);
@@ -68,7 +71,7 @@ public abstract class File_Instrumentation {
     }
 
     public String[] list() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, false, this);
@@ -86,7 +89,7 @@ public abstract class File_Instrumentation {
     }
 
     public String[] list(FilenameFilter filter) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, false, this);
@@ -104,7 +107,7 @@ public abstract class File_Instrumentation {
     }
 
     public File[] listFiles() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, false, this);
@@ -122,7 +125,7 @@ public abstract class File_Instrumentation {
     }
 
     public File[] listFiles(FilenameFilter filter) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, false, this);
@@ -140,7 +143,7 @@ public abstract class File_Instrumentation {
     }
 
     public File[] listFiles(FileFilter filter) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, false, this);
@@ -158,7 +161,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean mkdir() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_MKDIR, false, this);
@@ -176,7 +179,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean mkdirs() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_MKDIRS, false, this);
@@ -194,7 +197,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean renameTo(File_Instrumentation dest) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_RENAME_TO, false, this, dest);
@@ -212,7 +215,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setReadOnly() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READ_ONLY, false, this);
@@ -230,7 +233,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setWritable(boolean writable, boolean ownerOnly) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_WRITABLE, false, this);
@@ -248,7 +251,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setWritable(boolean writable) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_WRITABLE, false, this);
@@ -266,7 +269,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setReadable(boolean readable, boolean ownerOnly) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READABLE, false, this);
@@ -284,7 +287,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setReadable(boolean readable) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READABLE, false, this);
@@ -302,7 +305,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setExecutable(boolean executable, boolean ownerOnly) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_EXECUTABLE, false, this);
@@ -320,7 +323,7 @@ public abstract class File_Instrumentation {
     }
 
     public boolean setExecutable(boolean executable) {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        boolean isFileLockAcquired = acquireFileLockIfPossible(VulnerabilityCaseType.FILE_OPERATION);
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_EXECUTABLE, false, this);
@@ -343,19 +346,12 @@ public abstract class File_Instrumentation {
 
     public abstract String getAbsolutePath();
 
-    private static boolean acquireFileLockIfPossible() {
-        try {
-            return FileHelper.acquireFileLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
+    private static boolean acquireFileLockIfPossible(VulnerabilityCaseType fileOperation) {
+        return GenericHelper.acquireLockIfPossible(fileOperation, FileHelper.getNrSecCustomAttribName());
     }
 
     private static void releaseFileLock() {
-        try {
-            FileHelper.releaseFileLock();
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(FileHelper.getNrSecCustomAttribName());
     }
 
 
@@ -369,15 +365,14 @@ public abstract class File_Instrumentation {
             FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, FileHelper.FILE_OPERATION, ignored.getMessage()), ignored, File_Instrumentation.class.getName());
         }
     }
 
     private static AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, boolean isLowSeverityHook,
             File_Instrumentation... files) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || files == null || files.length == 0
+            if (files == null || files.length == 0
             ) {
                 return null;
             }
@@ -396,9 +391,11 @@ public abstract class File_Instrumentation {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, FileHelper.FILE_OPERATION, e.getMessage()), e, File_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, FileHelper.FILE_OPERATION, e.getMessage()), e, File_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, FileHelper.FILE_OPERATION, e.getMessage()), e, File_Instrumentation.class.getName());
         }
         return null;
     }

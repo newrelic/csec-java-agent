@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.security.test.marker.Java11IncompatibleTest;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import com.newrelic.security.test.marker.Java8IncompatibleTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Category({ Java8IncompatibleTest.class, Java11IncompatibleTest.class })
+@Category({ Java8IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.javaio.io","com.newrelic.agent.security.instrumentation.javaio"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -39,7 +40,7 @@ public class InputStreamJdk9Test {
     private static String FILE_TEMP;
     private static String DIR;
     private static String DATA;
-    private static List<String> stuffToClean = new ArrayList<>();
+    private static final List<String> stuffToClean = new ArrayList<>();
 
     @BeforeClass
     public static void retransformRequiredClasses() {
@@ -113,8 +114,6 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    @Ignore
-    // FIXME: not working, need to check the issue
     public void testReadWithFiles2() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];

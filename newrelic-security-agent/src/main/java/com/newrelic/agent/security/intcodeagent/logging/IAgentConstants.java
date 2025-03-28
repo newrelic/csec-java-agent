@@ -510,19 +510,19 @@ public interface IAgentConstants {
     String WINDOWS = "windows";
     String MAC = "mac";
 
-    String APPLICATION_INFO_SENT_ON_WS_CONNECT = "[STEP-3][COMPLETE][APP_INFO] Application info sent to Prevent-Web service : %s";
-    String SENDING_APPLICATION_INFO_ON_WS_CONNECT = "[APP_INFO] Sending application info to Prevent-Web service : %s";
+    String APPLICATION_INFO_SENT_ON_WS_CONNECT = "[STEP-3][COMPLETE][APP_INFO] Application info sent to Security Engine : %s";
+    String SENDING_APPLICATION_INFO_ON_WS_CONNECT = "[APP_INFO] Sending application info to Security Engine : %s";
     String WS_CONNECTION_SUCCESSFUL = "[STEP-4][COMPLETE][WS] Connected to Security Engine at %s.";
-    String WS_CONNECTION_UNSUCCESSFUL = "[WS] Error connecting to Prevent-Web service at %s :";
-    String WS_CONNECTION_UNSUCCESSFUL_INFO = "[WS] Error connecting to Prevent-Web service at %s : %s : %s";
+    String WS_CONNECTION_UNSUCCESSFUL = "[WS] Error connecting to Security Engine at %s :";
+    String WS_CONNECTION_UNSUCCESSFUL_INFO = "[WS] Error connecting to Security Engine at %s : %s : %s";
 
     String INIT_WS_CONNECTION = "[STEP-4] =>Web socket connection to SaaS validator established successfully at %s.";
 
 
-    String RECEIVED_AGENT_POLICY = "[STEP-7][POLICY] Received policy data from Prevent-Web service : %s";
-    String UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while parsing policy data from Prevent-Web service : %s : %s";
-    String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while validating policy data from Prevent-Web service : %s : ";
-    String UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR = "[POLICY] Error while validating policy parameters data from Prevent-Web service : %s : ";
+    String RECEIVED_AGENT_POLICY = "[STEP-7][POLICY] Received policy data from Security Engine : %s";
+    String UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while parsing policy data from Security Engine : %s : %s";
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while validating policy data from Security Engine : %s : ";
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR = "[POLICY] Error while validating policy parameters data from Security Engine : %s : ";
 
     String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE = "[POLICY] Error while validating policy data from local policy file change. Falling back to current : %s : ";
     String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while applying policy : %s :";
@@ -571,4 +571,5 @@ public interface IAgentConstants {
 
     String NR_APM_TRACE_ID = "trace.id";
     String NR_APM_SPAN_ID = "span.id";
+
 }

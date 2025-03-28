@@ -104,7 +104,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -113,8 +113,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
@@ -130,7 +129,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -139,8 +138,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
@@ -157,7 +155,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -166,8 +164,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
@@ -185,7 +182,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -194,8 +191,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
@@ -205,23 +201,20 @@ public class OperationExecutorMongoDatabaseTest {
 
         MongoCollection mcollection=database.getCollection("test");
         Bson query = eq("name", "MongoDB");
-        Bson update=eq("name","db");
-        mcollection.findOneAndUpdate(query,update);
+        Document updateQuery = new Document("$set", new Document("type","db"));
+        mcollection.findOneAndUpdate(query, updateQuery);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
-        List<Object> queryData = new ArrayList<>();
-        queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"db\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
-        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
+        String expected = "[{ \"name\" : \"MongoDB\" }, { \"$set\" : { \"type\" : \"db\" } }]";
+        Assert.assertEquals("No data Found", expected,operation.getPayload().toString());
     }
 
     @Test
@@ -231,25 +224,25 @@ public class OperationExecutorMongoDatabaseTest {
 
         MongoCollection mcollection=database.getCollection("test");
         Bson query = eq("name", "MongoDB");
-        Bson update=eq("name","db");
+
+        Document updateQuery = new Document("$set", new Document("type","db"));
+
         FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
         options.sort(Sorts.descending("count"));
-        mcollection.findOneAndUpdate(query,update,options);
+
+        mcollection.findOneAndUpdate(query, updateQuery,options);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
-        List<Object> queryData = new ArrayList<>();
-        queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"db\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
-        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
+        String expected = "[{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"$set\" : { \"type\" : \"db\" } }]";
+        Assert.assertEquals("No data Found", expected,operation.getPayload().toString());
     }
     @Test
     public void testUpdateOne()  {
@@ -264,7 +257,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -273,8 +266,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
@@ -290,7 +282,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -299,12 +291,11 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test-case may fail because operation is not stored.")
+    @Ignore("this test-case is failing because operation is not stored.")
     public void testListCollection()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -317,7 +308,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -331,7 +322,7 @@ public class OperationExecutorMongoDatabaseTest {
     }
 
     @Test
-    @Ignore("this test-case may fail because operation is not stored.")
+    @Ignore("this test-case is failing because operation is not stored.")
     public void testListCollection1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -344,7 +335,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -358,7 +349,7 @@ public class OperationExecutorMongoDatabaseTest {
     }
 
     @Test
-    @Ignore("this test-case may fail because operation is not stored.")
+    @Ignore("this test-case is failing because operation is not stored.")
     public void testListCollection2()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -371,7 +362,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -397,7 +388,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -406,8 +397,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
@@ -424,7 +414,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -433,8 +423,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
@@ -450,7 +439,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -459,8 +448,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 }, \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
@@ -479,7 +467,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -488,13 +476,12 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"name\" : \"Ram\", \"age\" : 26, \"city\" : \"Hyderabad\", \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
     @Test
-    @Ignore("this test case may fail.")
+    @Ignore("this test case is failing.")
     public void testMapReduceWithInlineResults()  {
 
         MongoDatabase database = mongoClient.getDatabase("test");
@@ -514,15 +501,14 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected", "mapReduce", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"function(){emit(this.name, this.type)};\" : \"function(item,prev){prev.cnt+=1;}\" }");
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
     @Test
@@ -535,15 +521,14 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"type\" : \"Database\" }");
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
 
@@ -557,15 +542,14 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
         Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"type\" : \"Database\" }");
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
     @Test
@@ -581,7 +565,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -590,8 +574,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
@@ -607,7 +590,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -616,12 +599,11 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test-case may fail because this is not instrumented(RenameCollectionOperation).")
+    @Ignore("this testcase is failing, as RenameCollectionOperation is not instrumented")
     public void testRenameCollection()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -632,7 +614,7 @@ public class OperationExecutorMongoDatabaseTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -641,12 +623,11 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test-case may fail because this is not instrumented(RenameCollectionOperation).")
+    @Ignore("this testcase is failing, as RenameCollectionOperation is not instrumented")
     public void testRenameCollection1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -656,7 +637,7 @@ public class OperationExecutorMongoDatabaseTest {
         mcollection.renameCollection(new MongoNamespace("test","test"),renameOptions);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -665,12 +646,11 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test case may fail, because this is not instrumented(ListIndexesOperation).")
+    @Ignore("this testcase is failing, as ListIndexesOperation is not instrumented")
     public void testListIndexes()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -685,7 +665,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -694,12 +674,11 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test case may fail, because this is not instrumented(ListIndexesOperation).")
+    @Ignore("this testcase is failing, as ListIndexesOperation is not instrumented")
     public void testListIndexes1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -712,7 +691,7 @@ public class OperationExecutorMongoDatabaseTest {
         }
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -721,8 +700,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
 
@@ -744,7 +722,7 @@ public class OperationExecutorMongoDatabaseTest {
         String id = book1.get("_id").toString();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -753,8 +731,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"title\" : \"The Great Gatsby\", \"author\" : \"F. Scott Fitzgerald\", \"year\" : 1925, \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
@@ -776,7 +753,7 @@ public class OperationExecutorMongoDatabaseTest {
         String id = book1.get("_id").toString();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
@@ -785,8 +762,7 @@ public class OperationExecutorMongoDatabaseTest {
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"title\" : \"The Great Gatsby\", \"author\" : \"F. Scott Fitzgerald\", \"year\" : 1925, \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
-        List<Object> expected = new ArrayList<>();
-        expected.add(queryData);
+        
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 

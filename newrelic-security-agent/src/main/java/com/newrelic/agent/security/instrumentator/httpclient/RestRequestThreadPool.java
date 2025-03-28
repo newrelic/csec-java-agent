@@ -1,9 +1,10 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashSet;
@@ -27,8 +28,6 @@ public class RestRequestThreadPool {
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
-
-    private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
 
@@ -125,10 +124,6 @@ public class RestRequestThreadPool {
 
     public BlockingQueue<Runnable> getQueue() {
         return this.executor.getQueue();
-    }
-
-    public AtomicBoolean isWaiting() {
-        return isWaiting;
     }
 
     public ThreadPoolExecutor getExecutor() {

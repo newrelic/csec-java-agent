@@ -1,24 +1,32 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
+import com.google.gson.Gson;
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.intcodeagent.apache.httpclient.IastHttpClient;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.utils.IastExclusionUtils;
+import com.newrelic.agent.security.intcodeagent.utils.RestrictionUtility;
+import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.SystemCommandUtils;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -46,17 +54,28 @@ public class Dispatcher implements Callable {
     public static final char SEPARATOR = '.';
     private static final String EVENT_ZERO_SENT = "[STEP-8] => First event sent for validation. Security agent started successfully. %s";
     private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation. Security agent started successfully ";
-    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Prevent-Web service : %s";
+    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Security Engine : %s";
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
+    public static final String REDIS_MODE = "mode";
+    public static final String REDIS_ARGUMENTS = "arguments";
+    public static final String REDIS_TYPE = "type";
+    public static final String SYSCOMMAND_ENVIRONMENT = "environment";
+    public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
     public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
+    public static final String COOKIE_NAME = "name";
+    public static final String COOKIE_VALUE = "value";
+    public static final String COOKIE_IS_SECURE = "isSecure";
+    public static final String COOKIE_IS_HTTP_ONLY = "isHttpOnly";
+    public static final String COOKIE_IS_SAME_SITE_STRICT = "isSameSiteStrict";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
     private Map<String, Object> extraInfo = new HashMap<String, Object>();
     private boolean isNRCode = false;
     private static AtomicBoolean firstEventSent = new AtomicBoolean(false);
+    private final String SQL_STORED_PROCEDURE ="SQL_STORED_PROCEDURE";
 
     public ExitEventBean getExitEventBean() {
         return exitEventBean;
@@ -69,6 +88,8 @@ public class Dispatcher implements Callable {
     public SecurityMetaData getSecurityMetaData() {
         return securityMetaData;
     }
+
+    private static Gson GsonUtil = new Gson();
 
     public Dispatcher(AbstractOperation operation, SecurityMetaData securityMetaData) {
         this.securityMetaData = securityMetaData;
@@ -100,6 +121,10 @@ public class Dispatcher implements Callable {
             if (operation == null) {
                 // Invalid Event. Just drop.
                 return null;
+            }
+
+            if(!securityMetaData.getRequest().getIsGrpc() && !isReplayEndpointConfirmed()) {
+                IastHttpClient.getInstance().tryToEstablishApplicationEndpoint(securityMetaData.getRequest());
             }
 
             JavaAgentEventBean eventBean = prepareEvent(securityMetaData.getRequest(), securityMetaData.getMetaData(),
@@ -136,22 +161,14 @@ public class Dispatcher implements Callable {
                         eventBean = prepareSQLDbCommandEvent((BatchSQLOperation) operation, eventBean);
                         break;
                     } else if (operation instanceof NoSQLOperation) {
-                        try {
-                            eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
-                        } catch (Throwable e) {
-                            return null;
-                        }
+                        eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
                         break;
                     }
 
                 case DYNAMO_DB_COMMAND:
                     DynamoDBOperation dynamoDBOperation = (DynamoDBOperation) operation;
-                    try {
-                        eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
-                        if (eventBean == null) {
-                            return null;
-                        }
-                    } catch (Throwable e) {
+                    eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
+                    if (eventBean == null) {
                         return null;
                     }
                     break;
@@ -170,6 +187,9 @@ public class Dispatcher implements Callable {
                     break;
                 case HTTP_REQUEST:
                     SSRFOperation ssrfOperationalBean = (SSRFOperation) operation;
+                    if(RestrictionUtility.skippedApiDetected(AgentConfig.getInstance().getAgentMode().getSkipScan(), ((SSRFOperation) operation).getArg())) {
+                        IastExclusionUtils.getInstance().registerSkippedTrace(NewRelic.getAgent().getTraceMetadata().getTraceId());
+                    }
                     eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
                     break;
                 case XPATH:
@@ -177,7 +197,7 @@ public class Dispatcher implements Callable {
                     eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
                     break;
                 case SECURE_COOKIE:
-                    SecureCookieOperation secureCookieOperationalBean = (SecureCookieOperation) operation;
+                    SecureCookieOperationSet secureCookieOperationalBean = (SecureCookieOperationSet) operation;
                     eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
                     break;
                 case TRUSTBOUNDARY:
@@ -199,6 +219,22 @@ public class Dispatcher implements Callable {
                 case XQUERY_INJECTION:
                     XQueryOperation xQueryOperationalBean = (XQueryOperation) operation;
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
+                    break;
+                case CACHING_DATA_STORE:
+                    if(operation instanceof RedisOperation) {
+                        RedisOperation redisOperation = (RedisOperation) operation;
+                        eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
+                    } else if (operation instanceof JCacheOperation) {
+                        JCacheOperation jCacheOperation = (JCacheOperation) operation;
+                        eventBean = prepareJCacheCachingDataStoreEvent(eventBean, jCacheOperation);
+                    } else if (operation instanceof MemcachedOperation) {
+                        MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
+                        eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
+                    }
+                    break;
+                case SOLR_DB_REQUEST:
+                    SolrDbOperation solrDbOperation = (SolrDbOperation) operation;
+                    eventBean = prepareSolrDbRequestEvent(eventBean, solrDbOperation);
                     break;
                 default:
 
@@ -225,11 +261,78 @@ public class Dispatcher implements Callable {
         } catch (Throwable e) {
             logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
                     this.getClass().getName());
+            Agent.getInstance().reportIncident(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
+                    this.getClass().getName());
         }
         return null;
     }
 
-    @Nullable
+    private boolean isReplayEndpointConfirmed() {
+        Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig = NewRelicSecurity.getAgent().getApplicationConnectionConfig();
+        for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
+            if (connectionConfig.getValue().isConfirmed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private JavaAgentEventBean prepareSolrDbRequestEvent(JavaAgentEventBean eventBean, SolrDbOperation solrDbOperation) {
+        JSONArray params = new JSONArray();
+        JSONObject request = new JSONObject();
+        request.put("collection", solrDbOperation.getCollection());
+        request.put("method", solrDbOperation.getMethod());
+        request.put("connectionURL", solrDbOperation.getConnectionURL());
+        request.put("path", solrDbOperation.getPath());
+        request.put("params", solrDbOperation.getParams());
+        request.put("documents", solrDbOperation.getDocuments());
+        params.add(request);
+        eventBean.setParameters(params);
+        return eventBean;
+    }
+
+    private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : redisOperation.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_MODE, redisOperation.getMode());
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, redisOperation.getType());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        return eventBean;
+    }
+
+    private JavaAgentEventBean prepareJCacheCachingDataStoreEvent(JavaAgentEventBean eventBean, JCacheOperation jCacheOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : jCacheOperation.getArguments()) {
+            if (isPrimitiveType(data.getClass())) {
+                params.add(data);
+            } else {
+                params.add(GsonUtil.toJson(data));
+            }
+        }
+
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, jCacheOperation.getType());
+
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(jCacheOperation.getCategory());
+        return eventBean;
+    }
+
+    public boolean isPrimitiveType(Class<?> clazz) {
+        return (clazz.isPrimitive() && clazz != void.class) || clazz == Double.class || clazz == Float.class || clazz == Long.class ||
+                clazz == Integer.class || clazz == Short.class || clazz == Character.class || clazz == Byte.class || clazz == Boolean.class ||
+                clazz == String.class;
+    }
+
     private JavaAgentEventBean processFileOperationEvent(JavaAgentEventBean eventBean, FileOperation fileOperationalBean) {
         prepareFileEvent(eventBean, fileOperationalBean);
         String URL = StringUtils.substringBefore(securityMetaData.getRequest().getUrl(), QUESTION_CHAR);
@@ -247,6 +350,7 @@ public class Dispatcher implements Callable {
      */
     private void processReflectedXSSEvent(JavaAgentEventBean eventBean) {
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RXSS_ENABLED, true)) {
+            AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementRxssDetectionDeactivated();
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
@@ -257,6 +361,7 @@ public class Dispatcher implements Callable {
             params.addAll(xssConstructs);
             params.add(securityMetaData.getResponse().getResponseBody());
             eventBean.setParameters(params);
+            eventBean.setHttpResponse(securityMetaData.getResponse());
             eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             eventBean.setPid(AgentInfo.getInstance().getVMPID());
             eventBean.setId(operation.getExecutionId());
@@ -373,7 +478,7 @@ public class Dispatcher implements Callable {
             TrustBoundaryOperation trustBoundaryOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(trustBoundaryOperationalBean.getKey());
-        params.add(trustBoundaryOperationalBean.getValue());
+        params.add(JsonConverter.toJSON(trustBoundaryOperationalBean.getValue()));
         eventBean.setParameters(params);
         return eventBean;
     }
@@ -388,9 +493,17 @@ public class Dispatcher implements Callable {
     }
 
     private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
-            SecureCookieOperation secureCookieOperationalBean) {
+            SecureCookieOperationSet secureCookieOperationalBean) {
         JSONArray params = new JSONArray();
-        params.add(secureCookieOperationalBean.getValue());
+        for (SecureCookieOperationSet.SecureCookieOperation secureCookieOperation : secureCookieOperationalBean.getOperations()) {
+            JSONObject cookie = new JSONObject();
+            cookie.put(COOKIE_NAME, secureCookieOperation.getName());
+            cookie.put(COOKIE_VALUE, secureCookieOperation.getValue());
+            cookie.put(COOKIE_IS_SECURE, secureCookieOperation.isSecure());
+            cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperation.isHttpOnly());
+            cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperation.isSameSiteStrict());
+            params.add(cookie);
+        }
         eventBean.setParameters(params);
         return eventBean;
     }
@@ -439,20 +552,45 @@ public class Dispatcher implements Callable {
         if(operation.getParams() != null) {
             query.put(PARAMETERS, new JSONObject(operation.getParams()));
         }
+        if(operation.getObjectParams() != null && !operation.getObjectParams().isEmpty()){
+            JSONObject jsonObject = (JSONObject) query.get(PARAMETERS);
+            if(jsonObject == null){
+                query.put(PARAMETERS, jsonObject);
+            }
+            for (Map.Entry<String, Object> objParameter : operation.getObjectParams().entrySet()) {
+                jsonObject.put(objParameter.getKey(), JsonConverter.toJSON(objParameter.getValue()));
+            }
+        }
         params.add(query);
         eventBean.setParameters(params);
-        eventBean.setEventCategory(operation.getDbName());
+        if (operation.isStoredProcedureCall()) {
+            eventBean.setEventCategory(SQL_STORED_PROCEDURE);
+        } else {
+            eventBean.setEventCategory(operation.getDbName());
+        }
+
         return eventBean;
     }
 
     private JavaAgentEventBean prepareSystemCommandEvent(JavaAgentEventBean eventBean,
             ForkExecOperation operationalBean) {
-        JSONArray params = new JSONArray();
-        params.add(operationalBean.getCommand());
-        if (operationalBean.getEnvironment() != null) {
-            params.add(new JSONObject(operationalBean.getEnvironment()));
+        try {
+            List<String> shellScripts = SystemCommandUtils.isShellScriptExecution(operationalBean.getCommand());
+            List<String> absolutePaths = SystemCommandUtils.getAbsoluteShellScripts(shellScripts);
+            SystemCommandUtils.scriptContent(absolutePaths, operationalBean);
+            JSONArray params = new JSONArray();
+            params.add(operationalBean.getCommand());
+            JSONObject extras = new JSONObject();
+            if (operationalBean.getEnvironment() != null) {
+                extras.put(SYSCOMMAND_ENVIRONMENT, new JSONObject(operationalBean.getEnvironment()));
+            }
+            extras.put(SYSCOMMAND_SCRIPT_CONTENT, operationalBean.getScriptContent());
+            params.add(extras);
+            eventBean.setParameters(params);
+            return eventBean;
+        } catch (Throwable e){
+            e.printStackTrace();
         }
-        eventBean.setParameters(params);
         return eventBean;
     }
 
@@ -482,18 +620,30 @@ public class Dispatcher implements Callable {
         return eventBean;
     }
 
-    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) throws ParseException {
+    private static JavaAgentEventBean prepareMemcachedEvent(JavaAgentEventBean eventBean, MemcachedOperation memcachedOperationalBean) {
+        JSONArray params = new JSONArray();
+        for (Object data : memcachedOperationalBean.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, memcachedOperationalBean.getType());
+        command.put(REDIS_MODE, memcachedOperationalBean.getCommand());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(memcachedOperationalBean.getCategory());
+        return eventBean;
+    }
+
+    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(dynamoDBOperation.getCategory().toString());
         List<DynamoDBRequest> originalPayloads = dynamoDBOperation.getPayload();
-        try {
-            for (DynamoDBRequest data : originalPayloads) {
-                params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
-            }
-            eventBean.setParameters(params);
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        for (DynamoDBRequest data : originalPayloads) {
+            params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
         }
+        eventBean.setParameters(params);
         return eventBean;
     }
 
@@ -610,9 +760,11 @@ public class Dispatcher implements Callable {
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
             VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
+        metaData.setSkipScanParameters(AgentConfig.getInstance().getAgentMode().getSkipScan().getParameters());
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);
+        eventBean.getMetaData().setAppServerInfo(AppServerInfoHelper.getAppServerInfo());
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());

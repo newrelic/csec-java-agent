@@ -11,19 +11,19 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("com.typesafe.akka:akka-http-core_2.11:10.0.11")
-    implementation("com.typesafe.akka:akka-stream_2.11:2.5.11")
+    implementation("com.typesafe.akka:akka-stream_2.11:2.5.23")
 }
 
 verifyInstrumentation {
     fails('com.typesafe.akka:akka-http-core-experimental_2.11:[1.0,10.0.11)')
     fails('com.typesafe.akka:akka-http-core-experimental_2.10:[1.0,10.0.11)')
-    passesOnly('com.typesafe.akka:akka-http-core_2.13:[10.1.8,10.2.0-RC1)') {
+    fails('com.typesafe.akka:akka-http-core_2.13:[10.1.8,10.2.0-RC1)') {
         implementation("com.typesafe.akka:akka-stream_2.13:2.5.23")
     }
-    passesOnly('com.typesafe.akka:akka-http-core_2.11:[10.0.11,10.2.0-M1)') {
+    passesOnly('com.typesafe.akka:akka-http-core_2.11:[10.0.11,)') {
         implementation("com.typesafe.akka:akka-stream_2.11:2.5.11")
     }
-    passesOnly('com.typesafe.akka:akka-http-core_2.12:[10.0.11,10.2.0-M1)') {
+    passesOnly('com.typesafe.akka:akka-http-core_2.12:[10.0.11,10.2.0-RC1)') {
         implementation("com.typesafe.akka:akka-stream_2.12:2.5.11")
     }
 }

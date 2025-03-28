@@ -4,4 +4,5 @@ public class XPATHUtils {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "XPATH_OPERATION_LOCK_JAXEN-";
     public static final String METHOD_SELECT_NODES = "selectNodes";
+    public static final String JAXEN_XPATH_1_1 = "JAXEN-XPATH-1.1";
 }

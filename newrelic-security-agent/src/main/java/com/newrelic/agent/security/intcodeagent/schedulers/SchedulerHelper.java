@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
-import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.util.IUtilConstants;
@@ -11,8 +10,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SchedulerHelper {
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+    public static final String IAST_TRIGGER = "IastTrigger";
     private final ScheduledExecutorService commonExecutor;
 
     private SchedulerHelper() {
@@ -38,6 +37,16 @@ public class SchedulerHelper {
     }
 
     private final Map<String, ScheduledFuture<?>> scheduledFutureMap = new ConcurrentHashMap<>();
+
+    public ScheduledFuture<?> scheduleIastTrigger(Runnable runnable, long initialDelay, TimeUnit unit) {
+        if(scheduledFutureMap.containsKey(IAST_TRIGGER)){
+            ScheduledFuture<?> currentFuture = scheduledFutureMap.get(IAST_TRIGGER);
+            currentFuture.cancel(false);
+        }
+        ScheduledFuture<?> future = commonExecutor.schedule(runnable, initialDelay, unit);
+        scheduledFutureMap.put(IAST_TRIGGER, future);
+        return future;
+    }
 
     public ScheduledFuture<?> scheduleHealthCheck(Runnable command,
                                                long initialDelay,
@@ -66,6 +75,35 @@ public class SchedulerHelper {
         return future;
     }
 
+    public ScheduledFuture<?> scheduleApplicationRuntimeErrorPosting(Runnable command,
+                                                               long initialDelay,
+                                                               long period,
+                                                               TimeUnit unit){
+        ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, initialDelay, period, unit);
+        scheduledFutureMap.put("application-runtime-error-posting", future);
+        return future;
+    }
+
+    public ScheduledFuture<?> scheduleTTLMapCleanup(Runnable command,
+                                                               long initialDelay,
+                                                               long period,
+                                                               TimeUnit unit,
+                                                                String mapId){
+        if(scheduledFutureMap.containsKey("ttl-map-cleanup-"+mapId)){
+            throw new IllegalArgumentException("TTL map cleanup already scheduled for mapId: "+mapId);
+        }
+        ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, initialDelay, period, unit);
+        scheduledFutureMap.put("ttl-map-cleanup-"+mapId, future);
+        return future;
+    }
+
+    public void cancelTTLMapCleanup(String mapId){
+        if(scheduledFutureMap.containsKey("ttl-map-cleanup-"+mapId)){
+            ScheduledFuture<?> currentFuture = scheduledFutureMap.get("ttl-map-cleanup-"+mapId);
+            currentFuture.cancel(false);
+        }
+    }
+
     public ScheduledFuture<?> scheduleDailyLogRollover(Runnable command) {
 
         if(LogFileHelper.isDailyRollover()) {
@@ -77,4 +115,12 @@ public class SchedulerHelper {
         return null;
     }
 
+    public void scheduleURLMappingPosting(Runnable runnable) {
+        if(scheduledFutureMap.containsKey(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING)){
+            ScheduledFuture<?> future = scheduledFutureMap.get(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING);
+            future.cancel(false);
+        }
+        ScheduledFuture<?> future = commonExecutor.schedule(runnable, 60, TimeUnit.SECONDS);
+        scheduledFutureMap.put(IAgentConstants.JSON_SEC_APPLICATION_URL_MAPPING, future);
+    }
 }

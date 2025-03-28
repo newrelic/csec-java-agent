@@ -4,6 +4,8 @@ import com.mongodb.ReadPreference;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -20,7 +22,8 @@ public abstract class OperationExecutor_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, MongoUtil.MONGODB_3_0, e.getMessage()), e, OperationExecutor_Instrumentation.class.getName());
         }
     }
 
@@ -31,9 +34,9 @@ public abstract class OperationExecutor_Instrumentation {
         }
     }
 
-    private boolean acquireLockIfPossible(int hashCode) {
+    private boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
         try {
-            return GenericHelper.acquireLockIfPossible(MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+            return GenericHelper.acquireLockIfPossible(nosqlDbCommand, MongoUtil.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
         } catch (Throwable ignored) {
         }
         return false;
@@ -42,14 +45,13 @@ public abstract class OperationExecutor_Instrumentation {
     public <T> T execute(ReadOperation<T> operation, ReadPreference readPreference) {
 
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.hashCode());
         if (isLockAcquired) {
             noSQLOperation = MongoUtil.getReadAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         T returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(operation.hashCode());
@@ -61,20 +63,14 @@ public abstract class OperationExecutor_Instrumentation {
 
     public <T> T execute(WriteOperation<T> operation) {
         AbstractOperation noSQLOperation = null;
-        boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
-        try {
-            if (isLockAcquired) {
-                noSQLOperation = MongoUtil.getWriteAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
-            }
-//            System.out.println("operation x instance : " + this.getClass().getName() + " " + operation.getClass());
-        } catch (Exception e) {
-            e.printStackTrace();
+        boolean isLockAcquired = acquireLockIfPossible(VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.hashCode());
+        if (isLockAcquired) {
+            noSQLOperation = MongoUtil.getWriteAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
 
         T returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(operation.hashCode());

@@ -1,9 +1,12 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -11,6 +14,7 @@ import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -25,6 +29,8 @@ public class LogWriter implements Runnable {
     private static final String STR_HYPHEN = " - ";
 
     private static final String STR_COLON = " : ";
+
+    public static final String LOGS = "logs";
 
     public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
     public static final String CAUSED_BY = "Caused by: ";
@@ -62,16 +68,17 @@ public class LogWriter implements Runnable {
     private String logTime;
 
     private static boolean createLogFile() {
-        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
 
         try {
+            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), IUtilConstants.DIRECTORY_PERMISSION);
+            System.out.println("New Relic Security Agent: Writing to log file:"+currentLogFile);
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
             maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
             if (!osVariables.getWindows()) {
-                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
             }
 
         } catch (Throwable e) {
@@ -79,7 +86,7 @@ public class LogWriter implements Runnable {
                 FileLoggerThreadPool.getInstance().setLoggingActive(false);
             }
             String tmpDir = System.getProperty("java.io.tmpdir");
-            System.err.println("[NR-CSEC-JA] Unable to create log file!!! Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+            System.err.println("[NR-CSEC-JA] CSEC Log : "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
             try {
                 e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
             } catch (FileNotFoundException ex) {
@@ -164,7 +171,9 @@ public class LogWriter implements Runnable {
             FileLoggerThreadPool.getInstance().setLoggingActive(true);
 
 //			writer.newLine();
-            rollover(currentLogFileName);
+            if(maxFileSize > 0){
+                rollover(currentLogFileName);
+            }
         } catch (IOException e) {
             if (FileLoggerThreadPool.getInstance().isLoggingActive()) {
                 //TODO report to cloud
@@ -185,7 +194,7 @@ public class LogWriter implements Runnable {
             if (Files.size(currentFile.toPath()) > maxFileSize) {
                 try (FileLock lock = FileChannel.open(currentFile.toPath(), StandardOpenOption.WRITE).lock()) {
                     if (lock.isValid() && currentFile.exists() && Files.size(currentFile.toPath()) > maxFileSize) {
-                        File rolloverFile = new File(fileName + STRING_DOT + Instant.now().toEpochMilli());
+                        File rolloverFile = new File(fileName + STRING_DOT + Instant.now().toEpochMilli() + STRING_DOT + "rolled-over.log");
                         FileUtils.moveFile(currentFile, rolloverFile);
                     }
                     lock.release();
@@ -199,7 +208,7 @@ public class LogWriter implements Runnable {
             currentFile.setReadable(true, false);
             currentFile.setWritable(true, false);
             if (!osVariables.getWindows()) {
-                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
             }
         }
 

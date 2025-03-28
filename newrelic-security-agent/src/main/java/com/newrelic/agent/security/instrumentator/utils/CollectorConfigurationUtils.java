@@ -2,7 +2,7 @@ package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CustomerInfo;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.K2ServiceInfo;
@@ -15,14 +15,6 @@ import java.util.Collections;
  * Utility class for K2 policy and configuration handling
  */
 public class CollectorConfigurationUtils {
-    public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S = "Error while reading NLC Collector config: %s : %s";
-    public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG = "Error while reading NLC Collector config:";
-    public static final String ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S = "Error while reading ALC Collector config: %s : %s";
-    public static final String ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG = "Error while reading ALC Collector config:";
-    public static final String NODE_LEVEL_CONFIGURATION_LOADED = "Node Level Configuration loaded ";
-    public static final String NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Node Level Configuration was not provided.";
-    public static final String APPLICATION_LEVEL_CONFIGURATION_LOADED = "Application Level Configuration loaded ";
-    public static final String APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Application Level Configuration was not provided.";
     public static final String VALIDATOR_URL = "validator-url";
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 

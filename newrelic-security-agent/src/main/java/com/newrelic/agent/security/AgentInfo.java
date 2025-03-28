@@ -5,13 +5,14 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -47,7 +48,7 @@ public class AgentInfo {
 
     private BuildInfo buildInfo = new BuildInfo();
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static FileLoggerThreadPool logger;
     private boolean processProtected = false;
 
     private AgentInfo() {
@@ -67,7 +68,7 @@ public class AgentInfo {
     }
 
     public void initialiseHC(){
-        jaHealthCheck = new JAHealthCheck(applicationUUID);
+        jaHealthCheck = new JAHealthCheck();
     }
 
     public ApplicationInfoBean getApplicationInfo() {
@@ -103,7 +104,7 @@ public class AgentInfo {
     }
 
     public boolean isAgentActive() {
-        return isAgentActive && AgentConfig.getInstance().isNRSecurityEnabled();
+        return isAgentActive;
     }
 
     public void setAgentActive(boolean agentActive) {
@@ -116,6 +117,10 @@ public class AgentInfo {
 
     public void setBuildInfo(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
+    }
+
+    public static void initialiseLogger() {
+        logger = FileLoggerThreadPool.getInstance();
     }
 
     public ApplicationInfoBean generateAppInfo(CollectorConfig config) {
@@ -143,9 +148,14 @@ public class AgentInfo {
         AgentUtils.getInstance().getStatusLogValues().put("server-name", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("app-location", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("framework", NOT_AVAILABLE);
+
+        Map<String, String> statusLogValues = AgentUtils.getInstance().getStatusLogValues();
+        logger.logInit(LogLevel.INFO, String.format("CSEC HOME: %s, permissions read & write: %s", statusLogValues.get("csec-home"), statusLogValues.get("csec-home-permissions")), AgentInfo.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Agent location: %s", statusLogValues.get("agent-location")), AgentInfo.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Current working directory: %s, permissions read & write: %s", statusLogValues.get("cwd"), statusLogValues.get("cwd-permissions")), AgentInfo.class.getName());
     }
 
-    public boolean agentStatTrigger(){
+    public boolean agentStatTrigger(boolean clean){
         boolean state = true;
         if(StringUtils.isBlank(getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY))){
             logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since entity.guid is not known.", AgentInfo.class.getName());
@@ -159,13 +169,14 @@ public class AgentInfo {
             logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
             state = false;
         } else if (!WSUtils.isConnected()) {
-            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! Can't connect with Security Engine.", AgentInfo.class.getName());
             state = false;
         }
         if(state) {
             logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
-        } else {
+        } else if(clean) {
             RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
         }
 
         if(state && !processProtected){

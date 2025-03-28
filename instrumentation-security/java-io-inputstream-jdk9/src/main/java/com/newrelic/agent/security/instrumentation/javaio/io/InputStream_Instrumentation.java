@@ -8,7 +8,9 @@
 package com.newrelic.agent.security.instrumentation.javaio.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.InputStreamHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.*;
 import java.io.IOException;
 
@@ -16,18 +18,14 @@ import java.io.IOException;
 public abstract class InputStream_Instrumentation {
 
     private boolean acquireLockIfPossible(int hashCode) {
-        try {
-            if(InputStreamHelper.processRequestInputStreamHookData(hashCode)) {
-                return GenericHelper.acquireLockIfPossible(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-            }
-        } catch (Throwable ignored) {}
+        if(InputStreamHelper.processRequestInputStreamHookData(hashCode)) {
+            return GenericHelper.acquireLockIfPossible(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+        }
         return false;
     }
 
     private void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
-        } catch (Throwable ignored) {}
+        GenericHelper.releaseLock(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
     }
 
     public int read(byte[] b) throws IOException {
@@ -152,9 +150,8 @@ public abstract class InputStream_Instrumentation {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(data);
 
             }
-//                System.out.println("Done out IS2 "+ this.hashCode());
-        } catch (Throwable ignored) {
-//                ignored.printStackTrace();
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(IOStreamHelper.ERROR_WHILE_READING_STREAM, "JAVA-IO-INPUTSTREAM-JDK9", e.getMessage()), e, this.getClass().getName());
         }
     }
 

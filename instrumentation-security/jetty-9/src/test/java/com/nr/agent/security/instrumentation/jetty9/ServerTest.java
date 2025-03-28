@@ -5,8 +5,10 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.agent.security.instrumentation.jetty9.HttpServletHelper;
@@ -31,6 +33,7 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -184,21 +187,30 @@ public class ServerTest {
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getRequest().getContentType());
     }
 
+    @Test
+    public void testAPIEndpoint () throws Exception {
+        start();
+
+        Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
+        Assert.assertEquals(1, mappings.size());
+
+        for (ApplicationURLMapping mapping : mappings) {
+            Assert.assertNotNull(mapping);
+            Assert.assertNotNull(mapping.getHandler());
+            Assert.assertNotNull(mapping.getPath());
+            Assert.assertNotNull(mapping.getMethod());
+            Assert.assertEquals(MyServlet.class.getName(), mapping.getHandler());
+            Assert.assertEquals("/servlet/*", mapping.getPath());
+            Assert.assertEquals("*", mapping.getMethod());
+        }
+    }
     private void start() throws Exception {
         server = new Server(PORT);
-        ServletHolder holder = new ServletHolder(
-            new HttpServlet() {
-                @Override
-                protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-                    resp.setContentType("text/plain;charset=utf-8");
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                }
-            }
-        );
+        ServletHolder holder = new ServletHolder(new MyServlet());
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         handler.setContextPath("/");
         server.setHandler(handler);
-        handler.addServlet(holder, "/*");
+        handler.addServlet(holder, "/servlet/*");
         server.start();
     }
 
@@ -250,5 +262,13 @@ public class ServerTest {
         } catch (IOException e) {
             throw new RuntimeException("Unable to allocate ephemeral port ");
         }
+    }
+}
+
+class MyServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("text/plain;charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

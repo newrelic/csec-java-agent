@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -30,6 +31,8 @@ public class IntCodeControlCommand {
     private int controlCommand;
     private Object data;
     private List<String> arguments;
+    private Map<String, String> reflectedMetaData;
+    private String apiId;
 
     public IntCodeControlCommand() {
     }
@@ -90,5 +93,21 @@ public class IntCodeControlCommand {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Map<String, String> getReflectedMetaData() {
+        return reflectedMetaData;
+    }
+
+    public String getApiId() {
+        return apiId;
+    }
+
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
+
+    public void setReflectedMetaData(Map<String, String> reflectedMetaData) {
+        this.reflectedMetaData = reflectedMetaData;
     }
 }

@@ -2,7 +2,13 @@ dependencies {
     implementation(project(":newrelic-security-api"))
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
-    implementation('org.glassfish.jersey.core:jersey-server:2.28')
+    implementation('org.glassfish.jersey.core:jersey-server:2.0')
+
+    testImplementation("org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.0")
+    testImplementation("org.glassfish.jersey.containers:jersey-container-servlet:2.0")
+    testImplementation('org.glassfish.hk2:hk2-api:2.1.88')
+    testImplementation("org.glassfish.jersey.test-framework:jersey-test-framework-core:2.0")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.0")
 }
 
 

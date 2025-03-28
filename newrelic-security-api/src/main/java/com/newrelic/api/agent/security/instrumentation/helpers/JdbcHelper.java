@@ -34,6 +34,8 @@ public class JdbcHelper {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_SQL_NAME = "SQL-QUERY-";
     public static final String NR_SEC_CUSTOM_ATTRIB_BATCH_SQL_NAME = "NR-BATCH-SQL-QUERY-";
+    public static final String JDBC_GENERIC = "JDBC-GENERIC";
+    public static final String JDBC_JTDS_GENERIC = "JDBC-JTDS-GENERIC";
 
     public static void putSql(Statement statement, String sql) {
         try {
@@ -65,8 +67,7 @@ public class JdbcHelper {
 
     public static boolean isLockAcquired() {
         try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
+            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
         } catch (Throwable ignored) {}
         return false;
     }
@@ -83,14 +84,10 @@ public class JdbcHelper {
     }
 
     public static void releaseLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
+        GenericHelper.releaseLock(JdbcHelper.getNrSecCustomAttribName());
     }
 
-    private static String getNrSecCustomAttribName() {
+    public static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 

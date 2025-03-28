@@ -7,10 +7,13 @@
 
 package com.newrelic.agent.security.instrumentation.jetty9;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpChannel;
+import org.eclipse.jetty.server.NetworkConnector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,10 +21,36 @@ import javax.servlet.http.HttpServletResponse;
 @Weave(type = MatchType.BaseClass, originalName = "org.eclipse.jetty.server.Server")
 public abstract class Server_Instrumentation {
 
+    public abstract Connector[] getConnectors();
+
+    protected void doStart() throws Exception
+    {
+        setApplicationConfig(getConnectors());
+        Weaver.callOriginal();
+    }
+
+    private void setApplicationConfig(Connector[] connectors) {
+        try {
+            if (connectors == null || connectors.length == 0){
+                return;
+            }
+            for(Connector connector: connectors){
+                if(connector instanceof NetworkConnector){
+                    String protocol = JettyUtils.getProtocol(connector.getProtocols());
+                    if(protocol != null) {
+                        NewRelicSecurity.getAgent().setApplicationConnectionConfig(((NetworkConnector) connector).getPort(), protocol);
+                    }
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public void handle(HttpChannel connection) {
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -29,7 +58,7 @@ public abstract class Server_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
@@ -41,7 +70,7 @@ public abstract class Server_Instrumentation {
     public void handleAsync(HttpChannel connection) {
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -49,7 +78,7 @@ public abstract class Server_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
@@ -58,18 +87,4 @@ public abstract class Server_Instrumentation {
         }
     }
 
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {
-        }
-    }
 }

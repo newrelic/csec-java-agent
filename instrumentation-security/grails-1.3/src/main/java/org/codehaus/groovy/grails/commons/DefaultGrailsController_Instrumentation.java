@@ -4,7 +4,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.grails13.GrailsHelper;
+import com.newrelic.agent.security.instrumentation.grails13.GrailsHelper;
 
 import java.util.Map;
 
@@ -18,5 +18,13 @@ public abstract class DefaultGrailsController_Instrumentation {
     @WeaveAllConstructors
     public DefaultGrailsController_Instrumentation() {
         GrailsHelper.gatherUrlMappings(uri2viewMap, getClazz().getName());
+    }
+
+    public String getViewByURI(String uri) {
+        String view = Weaver.callOriginal();
+        if (view != null) {
+            GrailsHelper.setRoute(uri);
+        }
+        return view;
     }
 }

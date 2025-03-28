@@ -1,12 +1,19 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class FileHelper {
 
@@ -41,6 +48,8 @@ public class FileHelper {
     public static final String METHOD_NAME_CREATE_FILE_EXCLUSIVELY = "createFileExclusively";
     public static final String METHOD_NAME_DELETE = "delete";
     public static final String METHOD_NAME_LIST = "list";
+
+    public static final String METHOD_NAME_SETPOSIXFILEPERMISSIONS = "setPosixFilePermissions";
     public static final String METHOD_NAME_CREATE_DIRECTORY = "createDirectory";
     public static final String METHOD_NAME_RENAME = "rename";
     public static final String METHOD_NAME_SETREADONLY = "setReadOnly";
@@ -54,15 +63,24 @@ public class FileHelper {
     public static final String METHOD_NAME_SET_READABLE = "setReadable";
     public static final String METHOD_NAME_SET_EXECUTABLE = "setExecutable";
     public static final String METHOD_NAME_EXISTS = "exists";
-
+    public static final String FILE_OPERATION = "FILE_OPERATION";
 
     public static boolean skipExistsEvent(String filename) {
-        String extension = getFileExtension(filename);
-        if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) &&
-                extension != null && !extension.trim().isEmpty() &&
-                (SOURCE_EXENSIONS.contains(extension) || ALLOWED_EXTENSIONS.contains(extension))) {
-            return true;
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                String extension = getFileExtension(filename);
+                if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
+                        NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) &&
+                        extension != null && !extension.trim().isEmpty() &&
+                        (SOURCE_EXENSIONS.contains(extension) || ALLOWED_EXTENSIONS.contains(extension))) {
+                    return true;
+                }
+            }
+        } finally {
+            if(lockAcquired){
+                ThreadLocalLockHelper.releaseLock();
+            }
         }
 
         return false;
@@ -81,59 +99,68 @@ public class FileHelper {
     }
 
     public static FileIntegrityOperation createEntryOfFileIntegrity(String fileName, String className, String methodName) {
-        File file = Paths.get(fileName).toFile();
-        String extension = getFileExtension(file);
-        if (SOURCE_EXENSIONS.contains(extension) &&
-                !NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
-            FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
-                    methodName);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().put(fileName,
-                    fbean);
-            return fbean;
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                File file = Paths.get(fileName).toFile();
+                String extension = getFileExtension(file);
+                if (SOURCE_EXENSIONS.contains(extension) &&
+                        !NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
+                    long lastModified = file.exists() ? file.lastModified() : -1;
+                    String permissions = StringUtils.EMPTY;
+                    try {
+                        if (file.exists()) {
+                            PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                            Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                            permissions = permissionSet.toString();
+                        }
+                    } catch (IOException | InvalidPathException e) {
+                    }
+                    long fileLength = file.length();
+                    FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
+                            methodName, lastModified, permissions, fileLength);
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().put(fileName,
+                            fbean);
+                    return fbean;
+                }
+            }
+        } catch (InvalidPathException ignored){}
+        finally {
+            if(lockAcquired){
+                ThreadLocalLockHelper.releaseLock();
+            }
         }
         return null;
+
     }
 
     public static void checkEntryOfFileIntegrity(List<String> fileNames) {
-        for (String fileName : fileNames) {
-            File file = Paths.get(fileName).toFile();
-            if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
-                FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
-                if(!fbean.getExists().equals(file.exists())){
-                    NewRelicSecurity.getAgent().registerOperation(fbean);
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                for (String fileName : fileNames) {
+                    try {
+                        File file = Paths.get(fileName).toFile();
+                        if (NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
+                            FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
+                            if (fbean.isIntegrityBreached(file)) {
+                                //Lock release is required here, as this register operation inside lock is intentional
+                                ThreadLocalLockHelper.releaseLock();
+                                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
+                                NewRelicSecurity.getAgent().registerOperation(fbean);
+                            }
+                        }
+                    } catch (InvalidPathException ignored) {}
                 }
+            }
+        } finally {
+            if(lockAcquired) {
+                ThreadLocalLockHelper.releaseLock();
             }
         }
     }
 
-    public static boolean isFileLockAcquired() {
-        try {
-            return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    public static boolean acquireFileLockIfPossible() {
-        try {
-            if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isFileLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
-    }
-
-    public static void releaseFileLock() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
-            }
-        } catch (Throwable ignored){}
-    }
-
-    private static String getNrSecCustomAttribName() {
+    public static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 }

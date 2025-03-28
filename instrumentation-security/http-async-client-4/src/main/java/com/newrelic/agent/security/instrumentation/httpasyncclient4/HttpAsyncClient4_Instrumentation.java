@@ -13,9 +13,11 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -32,6 +34,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.Future;
 
+import static com.newrelic.agent.security.instrumentation.httpasyncclient4.SecurityHelper.HTTP_ASYNC_CLIENT_4;
 
 @Weave(type = MatchType.Interface, originalName = "org.apache.http.nio.client.HttpAsyncClient")
 public class HttpAsyncClient4_Instrumentation {
@@ -94,7 +97,12 @@ public class HttpAsyncClient4_Instrumentation {
 
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
         }
 
@@ -117,7 +125,12 @@ public class HttpAsyncClient4_Instrumentation {
 
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
         }
 
@@ -190,16 +203,13 @@ public class HttpAsyncClient4_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, ignored.getMessage()), ignored, HttpAsyncClient4_Instrumentation.class.getName());
         }
     }
 
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
 
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
@@ -226,25 +236,20 @@ public class HttpAsyncClient4_Instrumentation {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTP_ASYNC_CLIENT_4, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 }

@@ -8,9 +8,11 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -30,6 +32,7 @@ final class HttpClientImpl_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, ignored.getMessage()), ignored, HttpClientImpl_Instrumentation.class.getName());
         }
     }
 
@@ -60,39 +63,28 @@ final class HttpClientImpl_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-            ) {
-                return null;
-            }
-
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
         }
         return null;
     }
 
 
     private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.HTTP_REQUEST, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
     }
 
     private static HttpRequest addSecurityHeader(AbstractOperation operation, HttpRequest req) {
@@ -117,7 +109,9 @@ final class HttpClientImpl_Instrumentation {
                                 operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())).build();
                 return updatedRequest;
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while adding outbound header : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, HttpClientImpl_Instrumentation.class.getName());
         }
         return req.newBuilder(req.uri()).build();
     }

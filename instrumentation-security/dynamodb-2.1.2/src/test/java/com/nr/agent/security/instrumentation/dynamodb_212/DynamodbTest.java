@@ -187,16 +187,13 @@ public class DynamodbTest {
 
             Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
             Assert.assertNotNull("No such payload detected", query.get("artist"));
-            Assert.assertNotNull("No such payload detected", query.get("year"));
             if (i==0) {
                 Assert.assertEquals("Invalid payload value.", "Monu",query.get("artist").s());
-                Assert.assertEquals("Invalid payload value.", "1998",query.get("year").n());
             }
             else if (i==1) {
                 Assert.assertEquals("Invalid payload value.", "Red",query.get("artist").s());
-                Assert.assertEquals("Invalid payload value.", "1999",query.get("year").n());
             }
-            Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
+            Assert.assertEquals("Invalid payload value.", "artist,Genre",request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
             i++;
         }
@@ -854,14 +851,12 @@ public class DynamodbTest {
 
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("artist", AttributeValue.builder().s("Monu").build());
-        key.put("year", AttributeValue.builder().n("1998").build());
         Map<String, AttributeValue> key2 = new HashMap<>();
         key2.put("artist", AttributeValue.builder().s("Red").build());
-        key2.put("year", AttributeValue.builder().n("1999").build());
 
         TransactGetItemsRequest queryRequest = TransactGetItemsRequest.builder().transactItems(
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist").build()).build(),
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist").build()).build()).build();
+                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist,Genre").build()).build(),
+                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist,Genre").build()).build()).build();
 
         client.transactGetItems(queryRequest);
     }

@@ -1,0 +1,26 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.wildfly:wildfly-undertow:26.1.1.Final") {
+        exclude(group: "org.jacorb", module: "jacorb")
+    }
+    implementation("org.jboss.xnio:xnio-api:3.8.7.Final")
+    implementation("org.jboss.logging:jboss-logging:3.5.0.Final")
+    implementation("org.jboss.msc:jboss-msc:1.4.13.Final")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.wildfly-8' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.wildfly:wildfly-undertow:[8.0.0.Final,)'
+    excludeRegex '.*(Alpha|Beta|CR).*'
+}
+
+site {
+    title 'Wildfly'
+    type 'Appserver'
+    versionOverride '[8.0.0.Final,)'
+}

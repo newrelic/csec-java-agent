@@ -17,6 +17,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -24,16 +25,14 @@ import java.util.List;
 import java.util.Map;
 
 public class CassandraUtils {
-    public static final String METHOD_EXECUTE = "execute";
+    private static final String METHOD_EXECUTE = "execute";
     public static final String NR_SEC_CUSTOM_ATTRIB_CQL_STMT = "NR-CQL-STMT";
     public static final String EVENT_CATEGORY = "CQL";
-    public static final String NR_SEC_CASSANDRA_LOCK = "CASSANDRA_OPERATION_LOCK";
-    public static boolean acquireLockIfPossible(int hashCode) {
-        try {
-            return GenericHelper.acquireLockIfPossible(NR_SEC_CASSANDRA_LOCK, hashCode);
-        } catch (Exception ignored){
-        }
-        return false;
+    private static final String NR_SEC_CASSANDRA_LOCK = "CASSANDRA_OPERATION_LOCK";
+    public static final String CASSANDRA_DATASTAX_4 = "CASSANDRA-DATASTAX-4";
+
+    public static boolean acquireLockIfPossible(VulnerabilityCaseType nosqlDbCommand, int hashCode) {
+        return GenericHelper.acquireLockIfPossible(nosqlDbCommand, NR_SEC_CASSANDRA_LOCK, hashCode);
     }
 
     public static <RequestT extends Request> AbstractOperation preProcessSecurityHook(String klass, RequestT request) {
@@ -74,11 +73,13 @@ public class CassandraUtils {
                 return cqlOperation;
             }
         } catch (Exception ignored) {
+            String message = "Instrumentation library: %s , error while extracting statement/query : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return null;
     }
 
-    public static Map<String, String> setParams(BoundStatement statement) {
+    private static Map<String, String> setParams(BoundStatement statement) {
         Map<String, String> params = new HashMap<>();
         ColumnDefinitions variables = statement.getPreparedStatement().getVariableDefinitions();
         try{
@@ -92,6 +93,8 @@ public class CassandraUtils {
                 }
             }
         } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return params;
     }
@@ -114,15 +117,14 @@ public class CassandraUtils {
                 }
             }
         } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return params;
     }
 
     public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(NR_SEC_CASSANDRA_LOCK, hashCode);
-        } catch (Throwable ignored) {
-        }
+        GenericHelper.releaseLock(NR_SEC_CASSANDRA_LOCK, hashCode);
     }
 
     public static void registerExitOperation(boolean isLockAcquired, AbstractOperation operation) {
@@ -133,6 +135,7 @@ public class CassandraUtils {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Exception ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
     }
 }
