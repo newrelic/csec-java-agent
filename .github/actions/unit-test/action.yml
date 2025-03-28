@@ -21,7 +21,7 @@ runs:
       continue-on-error: true
       if: (inputs.csec-run-scala-unittest == 'true' && inputs.java-version == '8')
       run: |
-        ./gradlew $GRADLE_OPTIONS --info test -PincludeScala --continue
+        ./gradlew $GRADLE_OPTIONS test -PincludeScala --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 1
       id: run_tests_1
@@ -30,7 +30,7 @@ runs:
       if: ( steps.run_scala_unit_tests.outcome == 'skipped' || steps.run_scala_unit_tests.outcome == 'failure' )
       run: |
         echo "Running attempt 1 with ${{ inputs.java-version }}"
-        ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
+        ./gradlew ${GRADLE_OPTIONS} test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 2
       id: run_tests_2
@@ -39,7 +39,7 @@ runs:
       if: steps.run_tests_1.outcome == 'failure'
       run: |
         echo "Running attempt 2 with ${{ inputs.java-version }}"
-        ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
+        ./gradlew ${GRADLE_OPTIONS} test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 3
       id: run_tests_3
@@ -48,7 +48,7 @@ runs:
       if: steps.run_tests_2.outcome == 'failure'
       run: |
         echo "Running attempt 3 with ${{ inputs.java-version }}"
-        ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
+        ./gradlew ${GRADLE_OPTIONS} test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 4
       id: run_tests_4
