@@ -32,6 +32,8 @@ public class HttpServletTest {
         AgentMetaData metaData = introspector.getSecurityMetaData().getMetaData();
         Assert.assertTrue(metaData.isUserLevelServiceMethodEncountered());
         Assert.assertNotNull(metaData.getServiceTrace());
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
+
     }
     @Test
     public void testDelete() throws Exception {
@@ -41,6 +43,8 @@ public class HttpServletTest {
         AgentMetaData metaData = introspector.getSecurityMetaData().getMetaData();
         Assert.assertTrue(metaData.isUserLevelServiceMethodEncountered());
         Assert.assertNotNull(metaData.getServiceTrace());
+
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
     @Test
     public void testPUT() throws Exception {
@@ -50,6 +54,8 @@ public class HttpServletTest {
         AgentMetaData metaData = introspector.getSecurityMetaData().getMetaData();
         Assert.assertTrue(metaData.isUserLevelServiceMethodEncountered());
         Assert.assertNotNull(metaData.getServiceTrace());
+
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Test
@@ -60,6 +66,8 @@ public class HttpServletTest {
         AgentMetaData metaData = introspector.getSecurityMetaData().getMetaData();
         Assert.assertTrue(metaData.isUserLevelServiceMethodEncountered());
         Assert.assertNotNull(metaData.getServiceTrace());
+
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
     @Test
     public void testGET() throws Exception {
@@ -69,6 +77,8 @@ public class HttpServletTest {
         AgentMetaData metaData = introspector.getSecurityMetaData().getMetaData();
         Assert.assertTrue(metaData.isUserLevelServiceMethodEncountered());
         Assert.assertNotNull(metaData.getServiceTrace());
+
+        Assert.assertEquals("Incorrect route detected", "/*", introspector.getSecurityMetaData().getRequest().getRoute());
     }
 
     @Trace(dispatcher = true)
