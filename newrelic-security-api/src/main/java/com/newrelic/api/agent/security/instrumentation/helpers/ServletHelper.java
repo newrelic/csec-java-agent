@@ -36,7 +36,7 @@ public class ServletHelper {
     public static final String NR_SEC_HTTP_SESSION_ATTRIB_NAME = "NR-CSEC-HTTP-SESSION-";
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
 
-    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
+    private static final Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
     private static final Set<String> unsupportedContentType = new HashSet<String>() {{
         add("application/zip");
         add("application/epub+zip");
@@ -240,7 +240,7 @@ public class ServletHelper {
         }
 
         int responseCode = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseCode();
-        if(responseCode >= 500){
+        if(responseCode >= 500 || responseCode == 2 || responseCode == 12 || responseCode == 13 || responseCode == 15){
             Exception exception = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("ENDMOST_EXCEPTION", Exception.class);
             NewRelicSecurity.getAgent().recordExceptions(NewRelicSecurity.getAgent().getSecurityMetaData(), exception);
         }
