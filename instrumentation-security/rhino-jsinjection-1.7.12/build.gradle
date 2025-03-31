@@ -1,0 +1,21 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.mozilla:rhino:1.7.12")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.rhino-jsinjection-1.7.12' }
+}
+
+verifyInstrumentation {
+    passes ('cat.inspiracio:rhino-js-engine:[1.7.12,1.7.14)')
+    passes ('org.mozilla:rhino:[1.7.12,1.7.14)')
+    excludeRegex ('.*[R|RC][0-9]')
+}
+
+site {
+    title 'JSInjection'
+    type 'Messaging'
+}
