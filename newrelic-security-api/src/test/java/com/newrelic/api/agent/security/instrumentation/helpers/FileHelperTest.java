@@ -1,19 +1,19 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.verification.VerificationMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
-
-import static com.newrelic.api.agent.security.instrumentation.helpers.FileHelper.NR_SEC_CUSTOM_ATTRIB_NAME;
 
 public class FileHelperTest {
     private final String CLASS_NAME = "className", METHOD_NAME = "methodName";
@@ -30,78 +30,76 @@ public class FileHelperTest {
     }
     @Test
     public void createEntryOfFileIntegrityTest(){
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
+        MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS);
+        try {
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(false);
             assertion(file.exists(), file.getAbsolutePath(), FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), CLASS_NAME, METHOD_NAME));
+        } finally {
+            GrpcHelperTest.clearMockitoInvocation(nrMock);
         }
     }
     @Test
     public void createEntryOfFileIntegrityTest1(){
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
+        MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS);
+        try {
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(true);
             Assertions.assertNull(FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), CLASS_NAME, METHOD_NAME));
+        } finally {
+            GrpcHelperTest.clearMockitoInvocation(nrMock);
         }
     }
     @Test
     public void createEntryOfFileIntegrityTest2() throws IOException {
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
+        MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS);
+        try {
             file.createNewFile();
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(false);
             assertion(file.exists(), file.getAbsolutePath(), FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), CLASS_NAME, METHOD_NAME));
             file.delete();
+        } finally {
+            GrpcHelperTest.clearMockitoInvocation(nrMock);
         }
     }
+
     @Test
     public void createEntryOfFileIntegrityTest3() throws IOException {
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
+        MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS);
+        try {
             file.createNewFile();
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(true);
             Assertions.assertNull(FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), CLASS_NAME, METHOD_NAME));
             file.delete();
+        } finally {
+            GrpcHelperTest.clearMockitoInvocation(nrMock);
         }
     }
 
     @Test
-    public void isFileLockAcquiredTest(){
-        Assertions.assertFalse(FileHelper.isFileLockAcquired());
-    }
-    @Test
-    public void isFileLockAcquiredTest1() {
-        String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
-            nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(customAttribute, Boolean.class)).thenReturn(true);
-            Assertions.assertTrue(FileHelper.isFileLockAcquired());
-            nrMock.clearInvocations();
-            nrMock.reset();
+    public void skipExistsEventTest() {
+        MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS);
+        try {
+            nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(true);
+            nrMock.when(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan()::getEnabled).thenReturn(true);
+            nrMock.when(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan()::getEnabled).thenReturn(true);
+
+            Assertions.assertFalse(FileHelper.skipExistsEvent(file.getAbsolutePath()));
+
+        } finally {
+            GrpcHelperTest.clearMockitoInvocation(nrMock);
         }
     }
 
     @Test
-    public void acquireLockIfPossibleTest(){
-        Assertions.assertFalse(FileHelper.acquireFileLockIfPossible());
-    }
-    @Test
-    public void acquireLockIfPossibleTest1() {
-        String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
-            SecurityMetaData metaData = new SecurityMetaData();
-            metaData.addCustomAttribute(customAttribute, true);
-            nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(metaData);
-            Assertions.assertFalse(FileHelper.acquireFileLockIfPossible());
-            nrMock.clearInvocations();
-            nrMock.reset();
-        }
-    }
-    @Test
-    public void acquireLockIfPossibleTest2() {
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
-            nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
-            Assertions.assertTrue(FileHelper.acquireFileLockIfPossible());
-            nrMock.clearInvocations();
-            nrMock.reset();
+    public void skipExistsEvent1Test() {
+        MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS);
+        try {
+            nrMock.when(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan()::getEnabled).thenReturn(false);
+            nrMock.when(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan()::getEnabled).thenReturn(false);
+
+            Assertions.assertTrue(FileHelper.skipExistsEvent(file.getAbsolutePath()));
+
+        } finally {
+            GrpcHelperTest.clearMockitoInvocation(nrMock);
         }
     }
 

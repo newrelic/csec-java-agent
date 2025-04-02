@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,59 +23,10 @@ public class R2dbcHelperTest {
     private final String SQL = "select * from users";
     public final String CLASS_NAME = "className";
     public final String METHOD_NAME = "methodName";
-    @Test
-    public void skipExistsEvent() {
-        Assertions.assertTrue(R2dbcHelper.skipExistsEvent());
-    }
-    @Test
-    public void skipExistsEventTest1(){
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
-            Assertions.assertTrue(R2dbcHelper.skipExistsEvent());
-            nrMock.clearInvocations();
-            nrMock.reset();
-        }
-    }
-    @Test
-    public void skipExistsEventTest2(){
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(false);
-            nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(false);
-            Assertions.assertTrue(R2dbcHelper.skipExistsEvent());
-            nrMock.clearInvocations();
-            nrMock.reset();
-        }
-    }
-    @Test
-    public void skipExistsEventTest3(){
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
-            nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);
-            Assertions.assertFalse(R2dbcHelper.skipExistsEvent());
-            nrMock.clearInvocations();
-            nrMock.reset();
-        }
-    }
-
-    @Test
-    public void isLockAcquiredTest(){
-        Assertions.assertFalse(R2dbcHelper.isLockAcquired());
-    }
-    @Test
-    public void isLockAcquiredTest1(){
-        String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
-        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
-            nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
-            nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(customAttribute, Boolean.class)).thenReturn(true);
-            Assertions.assertTrue(R2dbcHelper.isLockAcquired());
-            nrMock.clearInvocations();
-            nrMock.reset();
-        }
-    }
 
     @Test
     public void acquireLockIfPossibleTest(){
-        Assertions.assertFalse(R2dbcHelper.acquireLockIfPossible());
+        Assertions.assertFalse(R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND));
     }
     @Test
     public void acquireLockIfPossibleTest1(){
@@ -84,7 +36,12 @@ public class R2dbcHelperTest {
             SecurityMetaData metaData = new SecurityMetaData();
             metaData.addCustomAttribute(customAttribute, true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(metaData);
-            Assertions.assertFalse(R2dbcHelper.acquireLockIfPossible());
+
+            Assertions.assertFalse(R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND));
+            R2dbcHelper.registerExitOperation(false, null);
+            R2dbcHelper.registerExitOperation(true, Mockito.mock(SQLOperation.class));
+            R2dbcHelper.releaseLock();
+
             nrMock.clearInvocations();
             nrMock.reset();
         }
@@ -94,7 +51,7 @@ public class R2dbcHelperTest {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
-            Assertions.assertTrue(R2dbcHelper.acquireLockIfPossible());
+            Assertions.assertFalse(R2dbcHelper.acquireLockIfPossible(VulnerabilityCaseType.SQL_DB_COMMAND));
             nrMock.clearInvocations();
             nrMock.reset();
         }

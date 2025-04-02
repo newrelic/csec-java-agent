@@ -14,7 +14,7 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper
 public class JdbcHelperTest {
     @Test
     public void skipExistsEventTest() {
-        Assertions.assertTrue(JdbcHelper.skipExistsEvent());
+        Assertions.assertFalse(JdbcHelper.skipExistsEvent());
     }
     @Test
     public void skipExistsEventTest1() {

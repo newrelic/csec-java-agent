@@ -9,6 +9,9 @@ plugins {
     id("maven-publish")
     id("signing")
 }
+
+apply from: '../gradle/script/jacoco.gradle'
+
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 configurations {
