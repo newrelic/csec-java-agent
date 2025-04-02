@@ -1,0 +1,69 @@
+apply plugin: 'java'
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+test {
+    jacoco {
+        enabled = true
+        destinationFile = layout.buildDirectory.file('jacoco/test.exec').get().asFile
+        classDumpDir = layout.buildDirectory.dir('jacoco/classpathdumps').get().asFile
+        destinationFile = layout.buildDirectory.file("jacoco/${name}.exec").get().asFile
+
+    }
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/*NoOp*.class',
+                              '**/SecurityAgent.class',
+                              '**/*Exception.class',
+                              '**/*Error.class',
+                              '**/Dummy*.class',
+                              '**/*Constant*.class',
+                              '**/*Type.class',
+                              '**/*Type$*.class',
+                              '**/*Parameters.class',
+                              '**/*Parameters$*.class',
+                              'com/newrelic/agent/security/intcodeagent/utils/TTLMap.class',
+                              'com/newrelic/agent/security/intcodeagent/models/**',
+                              'com/newrelic/agent/security/intcodeagent/util/*.class',
+                              'com/newrelic/agent/security/intcodeagent/properties/*.class',
+                              'com/newrelic/agent/security/intcodeagent/logging/*.class',
+                              'com/newrelic/agent/security/intcodeagent/executor/*.class',
+                              'com/newrelic/agent/security/intcodeagent/constants/*.class',
+                              'com/newrelic/agent/security/instrumentator/utils/EnvLogUtils.class',
+                              'com/newrelic/agent/security/instrumentator/utils/INRSettingsKey.class',
+                              'com/newrelic/agent/security/instrumentator/utils/NameFileFilter.class',
+                              'com/newrelic/agent/security/instrumentator/os/OsVariablesInstance.class',
+                              'com/newrelic/agent/security/instrumentator/os/OsVariables.class',
+                              'com/newrelic/agent/security/instrumentator/httpclient/[^RestRequest]*.class',
+                              'com/newrelic/agent/security/instrumentator/Hooks.class',
+                              'com/newrelic/agent/security/instrumentator/IASTHooks.class',
+                              'com/newrelic/agent/security/intcodeagent/serializers/K2StackTraceSerializer.class',
+                              'com/newrelic/agent/security/intcodeagent/websocket/WSUtils.class',
+                              'com/newrelic/agent/security/intcodeagent/websocket/CustomTrustStoreManagerUtils.class',
+                              'com/newrelic/agent/security/intcodeagent/apache/httpclient/ApacheSSLManager.class',
+                              'com/newrelic/api/agent/security/schema/*',
+                              'com/newrelic/api/agent/security/NewRelicSecurity.class',
+                              'com/newrelic/api/agent/security/instrumentation/helpers/VertxApiEndpointUtils*',
+                              'com/newrelic/api/agent/security/utils/UserDataTranslationHelper.class',
+                              'com/newrelic/api/agent/security/utils/logging/LogLevel.class',
+                              'com/newrelic/api/agent/security/instrumentation/helpers/GrpcClientRequestReplayHelper*',
+                              'com/newrelic/api/agent/security/instrumentation/helpers/AppServerInfoHelper.class',
+                    ])
+        }))
+    }
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+    }
+
+}
