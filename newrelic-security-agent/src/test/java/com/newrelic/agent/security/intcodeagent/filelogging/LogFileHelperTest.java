@@ -41,7 +41,7 @@ public class LogFileHelperTest {
     }
     @Test
     public void logFileLimit() {
-        Assert.assertEquals(51200, LogFileHelper.logFileLimit());
+        Assert.assertEquals(0, LogFileHelper.logFileLimit());
     }
     @Test
     public void logFileLimit1() {

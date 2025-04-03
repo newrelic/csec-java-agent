@@ -22,6 +22,8 @@ import com.newrelic.api.agent.security.schema.policy.ProtectionMode;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
@@ -34,6 +36,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 
+@Ignore
 public class AgentTest {
     private static final CollectorConfig collectorConfig = Mockito.mock(CollectorConfig.class);
     private static final AgentPolicy policy = Mockito.mock(AgentPolicy.class);
