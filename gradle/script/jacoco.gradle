@@ -53,6 +53,8 @@ jacocoTestReport {
                               'com/newrelic/agent/security/intcodeagent/websocket/WSUtils.class',
                               'com/newrelic/agent/security/intcodeagent/websocket/CustomTrustStoreManagerUtils.class',
                               'com/newrelic/agent/security/intcodeagent/apache/httpclient/*',
+                              'com/newrelic/api/agent/security/*.class',
+                              'com/newrelic/agent/security/*.class',
                               'com/newrelic/api/agent/security/schema/*',
                               'com/newrelic/api/agent/security/NewRelicSecurity.class',
                               'com/newrelic/api/agent/security/instrumentation/helpers/VertxApiEndpointUtils*',
