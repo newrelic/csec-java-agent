@@ -1,12 +1,14 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CustomerInfo;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.K2ServiceInfo;
 import com.newrelic.api.agent.NewRelic;
 import org.junit.Assert;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
@@ -18,13 +20,18 @@ public class CollectorConfigurationUtilsTest {
     private final CustomerInfo customerInfo = new CustomerInfo();
     private final K2ServiceInfo k2ServiceInfo = new K2ServiceInfo();
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        FileLoggerThreadPool.getInstance().initialiseLogger();
+    }
+
     @Test
     public void testConfig() {
-//        customerInfo.setApiAccessorToken("unknown_license_key");
-//        k2ServiceInfo.setValidatorServiceEndpointURL("wss://csec.nr-data.net");
-//
-//        CollectorConfig collectorConfig = CollectorConfigurationUtils.populateCollectorConfig();
-//        assertCollectorConfig(EMPTY, EMPTY, k2ServiceInfo, customerInfo, collectorConfig);
+        customerInfo.setApiAccessorToken("unknown_license_key");
+        k2ServiceInfo.setValidatorServiceEndpointURL("wss://csec.nr-data.net");
+
+        CollectorConfig collectorConfig = CollectorConfigurationUtils.populateCollectorConfig();
+        assertCollectorConfig(EMPTY, EMPTY, k2ServiceInfo, customerInfo, collectorConfig);
     }
 
     @Test
