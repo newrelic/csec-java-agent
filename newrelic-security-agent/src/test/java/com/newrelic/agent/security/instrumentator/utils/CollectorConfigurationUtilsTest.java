@@ -27,6 +27,7 @@ public class CollectorConfigurationUtilsTest {
 
     @Test
     public void testConfig() {
+        CollectorConfigurationUtils.getInstance();
         customerInfo.setApiAccessorToken("unknown_license_key");
         k2ServiceInfo.setValidatorServiceEndpointURL("wss://csec.nr-data.net");
 

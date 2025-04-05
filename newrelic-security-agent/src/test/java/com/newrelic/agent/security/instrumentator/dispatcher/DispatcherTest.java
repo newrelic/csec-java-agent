@@ -212,6 +212,9 @@ public class DispatcherTest {
     public void testProcessBatchNoSQLTest() throws Exception {
         BatchSQLOperation noSqlOperation = Mockito.mock(BatchSQLOperation.class);
         SecurityMetaData metaData = Mockito.mock(SecurityMetaData.class);
+        SQLOperation op = Mockito.mock(SQLOperation.class);
+        Mockito.doReturn(Collections.singletonMap("key","val")).when(op).getParams();
+        Mockito.doReturn(Collections.singletonList(op)).when(noSqlOperation).getOperations();
         setMocks(metaData, noSqlOperation, VulnerabilityCaseType.NOSQL_DB_COMMAND);
 
         Dispatcher dispatcher = new Dispatcher(noSqlOperation, metaData);
@@ -608,10 +611,6 @@ public class DispatcherTest {
         Mockito.doReturn(Thread.currentThread().getStackTrace()).when(operation).getStackTrace();
         SecurityMetaData metaData = Mockito.mock(SecurityMetaData.class);
 
-        HttpRequest httpRequest = Mockito.mock(HttpRequest.class);
-        HttpResponse response = Mockito.mock(HttpResponse.class);
-        Mockito.doReturn(httpRequest).when(metaData).getRequest();
-        Mockito.doReturn(response).when(metaData).getResponse();
         setMocks(metaData, operation, VulnerabilityCaseType.REFLECTED_XSS);
 
         Dispatcher dispatcher = new Dispatcher(operation, metaData);
@@ -662,8 +661,12 @@ public class DispatcherTest {
     private void setMocks(SecurityMetaData metaData, AbstractOperation operation, VulnerabilityCaseType caseType) {
         doReturn(caseType).when(operation).getCaseType();
         doReturn(Mockito.mock(AgentMetaData.class)).when(metaData).getMetaData();
-        doReturn(Mockito.mock(HttpRequest.class)).when(metaData).getRequest();
-        doReturn(Mockito.mock(HttpResponse.class)).when(metaData).getResponse();
+        HttpRequest httpRequest = new HttpRequest();
+        HttpResponse response = new HttpResponse();
+        httpRequest.setUrl("/url"); httpRequest.getBody().append("hello");
+
+        doReturn(httpRequest).when(metaData).getRequest();
+        doReturn(response).when(metaData).getResponse();
         doReturn(Mockito.mock(K2RequestIdentifier.class)).when(metaData).getFuzzRequestIdentifier();
         String header = "header";
         doReturn(header).when(metaData).getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
