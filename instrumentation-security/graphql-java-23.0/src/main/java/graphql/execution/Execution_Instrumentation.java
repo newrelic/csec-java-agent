@@ -6,19 +6,21 @@ import com.newrelic.api.agent.security.schema.HttpRequestCustomDataTypeEnum;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import graphql.EngineRunningState;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
+import graphql.execution.instrumentation.InstrumentationState;
+import graphql.language.Document;
+import graphql.schema.GraphQLSchema;
 
 import java.util.concurrent.CompletableFuture;
 
-@Weave(type = MatchType.BaseClass, originalName = "graphql.execution.ExecutionStrategy")
-public class ExecutionStrategy_Instrumentation {
+@Weave(originalName = "graphql.execution.Execution", type = MatchType.ExactClass)
+public class Execution_Instrumentation {
 
-    public CompletableFuture<ExecutionResult> execute(ExecutionContext executionContext, ExecutionStrategyParameters parameters) throws NonNullableFieldWasNullException {
-        try {
+    public CompletableFuture<ExecutionResult> execute(Document document, GraphQLSchema graphQLSchema, ExecutionId executionId, ExecutionInput executionInput, InstrumentationState instrumentationState, EngineRunningState engineRunningState) {        try {
             if (NewRelicSecurity.isHookProcessingActive()) {
                 HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
-                ExecutionInput executionInput = executionContext.getExecutionInput();
                 if (executionInput.getQuery() != null && !executionInput.getQuery().isEmpty()) {
                     request.getCustomDataType().put("*.query", HttpRequestCustomDataTypeEnum.GRAPHQL_QUERY.name());
                 }
