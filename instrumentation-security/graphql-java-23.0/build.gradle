@@ -9,6 +9,12 @@ jar {
     manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.graphql-java-23.0' }
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
 verifyInstrumentation {
     passesOnly('com.graphql-java:graphql-java:[23.0,)')
     fails('com.graphql-java:graphql-java:[16.0,23.0)')
