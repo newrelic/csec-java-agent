@@ -35,6 +35,11 @@ public abstract class Method_Instrumentation {
     }
 
     private void registerExitOperation(AbstractOperation operation) {
+        if (operation == null || !NewRelicSecurity.isHookProcessingActive() ||
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
+        ) {
+            return;
+        }
         NewRelicSecurity.getAgent().registerExitEvent(operation);
     }
 

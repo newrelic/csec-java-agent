@@ -746,6 +746,7 @@ public class Dispatcher implements Callable {
             boolean isPrimitive = field.isPrimitive();
             boolean isTransient = false;
             List<String> actualTypeArguments = null;
+            boolean containsClassOrObject = false;
             try {
                 Field genericField = classType.getDeclaredField(name);
                 Type genericType = genericField.getGenericType();
@@ -756,7 +757,25 @@ public class Dispatcher implements Callable {
                     for(Type typeArgument : typeArguments) {
                         actualTypeArguments.add(typeArgument.getTypeName());
                     }
+
+                    containsClassOrObject = Arrays.stream(typeArguments)
+                            .anyMatch(arg -> arg.getTypeName().equals(Class.class.getName()) || arg.getTypeName().equals(Object.class.getName()));
+
                 }
+
+                Class<?> fieldType = genericField.getType();
+
+                do {
+                    if (fieldType.isArray()) {
+                        Class<?> componentType = fieldType.getComponentType();
+                        if (componentType.getName().equals(Class.class.getName()) || componentType.getName().equals(Object.class.getName())) {
+                            containsClassOrObject = true;
+                        }
+                    }
+                    fieldType = fieldType.getComponentType();
+                } while (fieldType != null && fieldType.isArray());
+
+
                 isTransient = Modifier.isTransient(genericField.getModifiers());
             } catch (NoSuchFieldException ignored) {
             }
@@ -770,7 +789,9 @@ public class Dispatcher implements Callable {
                     filedDefinition.setClassDefinition(getClassDefinition(osc, field.getType(), fieldTypes));
                 }
             }
-            if (type.equals(Class.class.getName()) || type.equals(Object.class.getName())
+
+
+            if (containsClassOrObject || type.equals(Class.class.getName()) || type.equals(Object.class.getName())
                     || (filedDefinition.getClassDefinition() != null && !filedDefinition.getClassDefinition().getFields().isEmpty())) {
                 filedDefinitions.add(filedDefinition);
             }

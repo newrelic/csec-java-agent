@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
+
 import java.util.List;
 
 public class FiledDefinition {
@@ -8,12 +10,15 @@ public class FiledDefinition {
 
     private String type;
 
+    @JsonIgnore
     private List<String> parameterizedType;
 
+    @JsonIgnore
     private boolean isPrimitive;
 
     private boolean isTransient;
 
+    @JsonIgnore
     private boolean isSerializable;
 
     private SerializableClassDefinition classDefinition;
