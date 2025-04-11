@@ -20,6 +20,7 @@ import com.newrelic.agent.security.intcodeagent.utils.*;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
+import com.newrelic.api.agent.security.utils.ExecutionIDGenerator;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -40,8 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -405,20 +404,20 @@ public class Agent implements SecurityAgent {
                     return;
                 }
 
-                String executionId = ExecutionIDGenerator.getExecutionId();
-                operation.setExecutionId(executionId);
                 operation.setStartTime(Instant.now().toEpochMilli());
                 if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
                     logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
                 }
-                if (operation instanceof RXSSOperation) {
-                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
-                    securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
-                } else if (operation instanceof SecureCookieOperationSet) {
-                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
-                } else {
-                    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                    operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
+                if (operation.getStackTrace() == null || operation.getStackTrace().length <= 0) {
+                    if (operation instanceof RXSSOperation) {
+                        operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                        securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
+                    } else if (operation instanceof SecureCookieOperationSet) {
+                        operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                    } else {
+                        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                        operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
+                    }
                 }
 
                 // added to fetch request/response in case of grpc requests
@@ -459,8 +458,15 @@ public class Agent implements SecurityAgent {
                     operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
                 }
                 processStackTrace(operation);
-//        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
-//        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
+                if(securityMetaData.getDeserializationInvocation() != null && securityMetaData.getDeserializationInvocation().getActive()){
+                    securityMetaData.getMetaData().setDeserialisationContext(securityMetaData.getDeserializationInvocation().getDeserialisationContext());
+                    securityMetaData.getMetaData().addLinkedEventId(operation.getExecutionId());
+                    securityMetaData.getMetaData().setParentEventId(securityMetaData.getDeserializationInvocation().getEid());
+                    securityMetaData.getMetaData().setTriggerViaDeserialisation(true);
+                } else {
+                    securityMetaData.getMetaData().setTriggerViaDeserialisation(false);
+                }
+
                 HttpRequest request = securityMetaData.getRequest();
                 Framework frameWork = Framework.UNKNOWN;
                 if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {

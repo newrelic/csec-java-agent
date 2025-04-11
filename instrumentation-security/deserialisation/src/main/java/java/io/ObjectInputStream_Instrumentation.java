@@ -2,36 +2,54 @@ package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.DeserializationInfo;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
-import com.newrelic.api.agent.security.schema.operation.DeserialisationOperation;
+import com.newrelic.api.agent.security.schema.*;
+import com.newrelic.api.agent.security.schema.Serializable;
+import com.newrelic.api.agent.security.schema.operation.DeserializationOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
+import java.util.Arrays;
 
-@Weave(type = MatchType.ExactClass, originalName = "java.io.ObjectInputStream")
+
+@Weave(type = MatchType.BaseClass, originalName = "java.io.ObjectInputStream")
 public abstract class ObjectInputStream_Instrumentation {
 
     private void readSerialData(Object obj, ObjectStreamClass desc)
             throws IOException {
-        boolean isLockAcquired = acquireLockIfPossible();
-        AbstractOperation operation = null;
-        DeserializationInfo dInfo = null;
-        if(isLockAcquired) {
-            dInfo = preProcessSecurityHook(obj);
-        }
+        DeserializationInfo dInfo = preProcessSecurityHook(obj);
+        Weaver.callOriginal();
+    }
+
+    private void filterCheck(Class<?> clazz, int arrayLength)
+            throws InvalidClassException {
+        boolean isLockAcquired = acquireLockIfPossible("filterCheck");
+        boolean filterCheck = false;
         try {
             Weaver.callOriginal();
-            operation = postProcessSecurityHook(dInfo);
+            filterCheck = true;
         } finally {
             if(isLockAcquired) {
-                finalProcessSecurityHook(dInfo);
-                GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME);
+                processFilterCheck(clazz, filterCheck);
+                GenericHelper.releaseLock(String.format(ObjectInputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, "filterCheck"));
             }
         }
-        //TODO add register exit operation if required
+    }
+
+    protected Class<?> resolveClass(ObjectStreamClass desc)
+            throws IOException, ClassNotFoundException
+    {
+        boolean isLockAcquired = acquireLockIfPossible("resolve");
+        Class<?> returnValue = null;
+        try {
+            returnValue = Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired) {
+                processResolveClass(desc, returnValue);
+                GenericHelper.releaseLock(String.format(ObjectInputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, "resolve"));
+            }
+        }
+        return returnValue;
     }
 
     private DeserializationInfo preProcessSecurityHook(Object obj) {
@@ -40,27 +58,77 @@ public abstract class ObjectInputStream_Instrumentation {
         return dInfo;
     }
 
-    private DeserialisationOperation postProcessSecurityHook(DeserializationInfo dInfo) {
-        if (dInfo != null && NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() == dInfo) {
-            DeserialisationOperation operation = new DeserialisationOperation(
+
+    private final Object readObject(Class<?> type)
+            throws IOException, ClassNotFoundException {
+        boolean isLockAcquired = acquireLockIfPossible("readObject");
+        DeserializationInvocation deserializationInvocation = null;
+        DeserializationOperation operation = null;
+
+        if(isLockAcquired) {
+            operation = new DeserializationOperation(
                     this.getClass().getName(),
-                    SecurityHelper.METHOD_NAME_READ_OBJECT
+                    ObjectInputStreamHelper.METHOD_NAME_READ_OBJECT
             );
-            NewRelicSecurity.getAgent().registerOperation(operation);
-            return operation;
+            DeserialisationContext deserialisationContext = new DeserialisationContext(type.getName(), Arrays.copyOfRange(Thread.currentThread().getStackTrace(), 1, 10));
+            deserializationInvocation = new DeserializationInvocation(true, operation.getExecutionId(), deserialisationContext);
+            NewRelicSecurity.getAgent().getSecurityMetaData().setDeserializationInvocation(deserializationInvocation);
+            operation.setDeserializationInvocation(deserializationInvocation);
+//            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(InstrumentationConstants.ACTIVE_DESERIALIZATION, true);
         }
-        return null;
+        try {
+            return Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired) {
+                if(NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() != null) {
+                    operation.setRootDeserializationInfo(NewRelicSecurity.getAgent().getSecurityMetaData()
+                            .peekDeserializationRoot());
+                    operation.setEntityName(operation.getRootDeserializationInfo().getType());
+                }
+                NewRelicSecurity.getAgent().registerOperation(operation);
+                NewRelicSecurity.getAgent().getSecurityMetaData().setDeserializationInvocation(null);
+                NewRelicSecurity.getAgent().getSecurityMetaData().resetDeserializationRoot();
+                GenericHelper.releaseLock(String.format(ObjectInputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, "readObject"));
+            }
+        }
     }
 
-    private void finalProcessSecurityHook(DeserializationInfo dInfo) {
-        if (dInfo != null &&
-                NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() != null &&
-                NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() == dInfo) {
-            NewRelicSecurity.getAgent().getSecurityMetaData().resetDeserializationRoot();
+    private void processFilterCheck(Class<?> clazz, boolean filterCheck) {
+        System.out.println("lock acquired Filter check ");
+        DeserializationInvocation deserializationInvocation = NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation();
+        System.out.println("Filter check deserializationInvocation : "+deserializationInvocation);
+        if(deserializationInvocation != null && clazz != null) {
+            System.out.println("Filter check for class : "+clazz.getName()+" is deserializable : "+filterCheck);
+            com.newrelic.api.agent.security.schema.Serializable serializable = deserializationInvocation.getEncounteredSerializableByName(clazz.getName());
+            if(serializable == null) {
+                serializable = new Serializable(clazz.getName(), true);
+                serializable.setKlass(clazz);
+                deserializationInvocation.addEncounteredSerializable(serializable);
+//                serializable.setClassDefinition(getClassDefinition(ObjectStreamClass.lookup(clazz)));
+            }
+            if(!filterCheck) {
+                serializable.setDeserializable(false);
+            }
         }
     }
 
-    private boolean acquireLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.UNSAFE_DESERIALIZATION, SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME);
+    private void processResolveClass(ObjectStreamClass desc, Class<?> returnValue) {
+        DeserializationInvocation deserializationInvocation = NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation();
+        if(deserializationInvocation != null) {
+            Serializable serializable = deserializationInvocation.getEncounteredSerializableByName(desc.getName());
+            if(serializable == null) {
+                serializable = new Serializable(desc.getName(), true);
+                serializable.setKlass(returnValue);
+                deserializationInvocation.addEncounteredSerializable(serializable);
+//                serializable.setClassDefinition(getClassDefinition(desc));
+            }
+            if(returnValue == null) {
+                serializable.setDeserializable(false);
+            }
+        }
+    }
+
+    private boolean acquireLockIfPossible(String operation) {
+        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.UNSAFE_DESERIALIZATION, String.format(ObjectInputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, operation));
     }
 }

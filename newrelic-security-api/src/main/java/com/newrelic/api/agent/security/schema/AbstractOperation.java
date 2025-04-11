@@ -1,6 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.utils.ExecutionIDGenerator;
 
 public abstract class AbstractOperation {
 
@@ -27,8 +27,6 @@ public abstract class AbstractOperation {
 
     private boolean isLowSeverityHook;
 
-    private DeserializationInfo deserializationInfo;
-
     public AbstractOperation() {
         this.className = EMPTY;
         this.sourceMethod = EMPTY;
@@ -43,13 +41,7 @@ public abstract class AbstractOperation {
             this.className = className;
             this.methodName = methodName;
             this.blockingEndTime = 0L;
-            if (NewRelicSecurity.getAgent() != null &&
-                    NewRelicSecurity.getAgent().getSecurityMetaData() != null &&
-                    NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() != null) {
-                this.deserializationInfo = NewRelicSecurity.getAgent().getSecurityMetaData()
-                        .peekDeserializationRoot();
-//                this.deserializationInfo.computeObjectMap();
-            }
+            this.executionId = ExecutionIDGenerator.getExecutionId();
     }
 
     public String getClassName() {
@@ -145,13 +137,5 @@ public abstract class AbstractOperation {
 
     public void setLowSeverityHook(boolean lowSeverityHook) {
         this.isLowSeverityHook = lowSeverityHook;
-    }
-
-    public DeserializationInfo getDeserializationInfo() {
-        return deserializationInfo;
-    }
-
-    public void setDeserializationInfo(DeserializationInfo deserializationInfo) {
-        this.deserializationInfo = deserializationInfo;
     }
 }

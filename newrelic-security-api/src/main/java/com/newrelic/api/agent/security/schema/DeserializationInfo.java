@@ -1,13 +1,12 @@
 package com.newrelic.api.agent.security.schema;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class DeserializationInfo {
 
     private String type;
-    private List<DeserializationInfo> unlinkedChildren = new ArrayList<>();
+    private Set<DeserializationInfo> unlinkedChildren = new HashSet<>();
     private Object instance;
 
     public DeserializationInfo(String type, Object instance) {
@@ -42,11 +41,24 @@ public class DeserializationInfo {
         this.instance = instance;
     }
 
-    public List<DeserializationInfo> getUnlinkedChildren() {
+    public Set<DeserializationInfo> getUnlinkedChildren() {
         return unlinkedChildren;
     }
 
-    public void setUnlinkedChildren(List<DeserializationInfo> unlinkedChildren) {
+    public void setUnlinkedChildren(Set<DeserializationInfo> unlinkedChildren) {
         this.unlinkedChildren = unlinkedChildren;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DeserializationInfo)) return false;
+        DeserializationInfo that = (DeserializationInfo) o;
+        return Objects.equals(type, that.type) && Objects.equals(instance, that.instance);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, instance);
     }
 }

@@ -1,6 +1,9 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
@@ -32,6 +35,12 @@ import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.io.ObjectStreamField;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,6 +76,8 @@ public class Dispatcher implements Callable {
     public static final String COOKIE_IS_SECURE = "isSecure";
     public static final String COOKIE_IS_HTTP_ONLY = "isHttpOnly";
     public static final String COOKIE_IS_SAME_SITE_STRICT = "isSameSiteStrict";
+    private static final int MAX_DEPTH = 3;
+    public static final String CLASS_EXTENSION = ".class";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
@@ -232,22 +243,27 @@ public class Dispatcher implements Callable {
                     eventBean = prepareSolrDbRequestEvent(eventBean, solrDbOperation);
                     break;
                 case UNSAFE_DESERIALIZATION:
-                    prepareDeserializationEvent(eventBean, (DeserialisationOperation) operation);
+                    prepareDeserializationEvent(eventBean, (DeserializationOperation) operation);
+                    break;
+                case REFLECTION:
+                    JavaReflectionOperation javaReflectionOperationalBean = (JavaReflectionOperation) operation;
+                    eventBean = prepareReflectionEvent(eventBean, javaReflectionOperationalBean);
+                    break;
                 default:
 
             }
 
-            if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(operation.getCaseType())) {
-                if (VulnerabilityCaseType.FILE_OPERATION.equals(operation.getCaseType())
-                        && ((FileOperation) operation).isGetBooleanAttributesCall()) {
-                    eventBean = processStackTrace(eventBean, operation.getCaseType(), false);
-                } else {
-                    eventBean = processStackTrace(eventBean, operation.getCaseType(), true);
-                }
-                if (eventBean == null) {
-                    return null;
-                }
-            }
+//            if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(operation.getCaseType())) {
+//                if (VulnerabilityCaseType.FILE_OPERATION.equals(operation.getCaseType())
+//                        && ((FileOperation) operation).isGetBooleanAttributesCall()) {
+//                    eventBean = processStackTrace(eventBean, operation.getCaseType(), false);
+//                } else {
+//                    eventBean = processStackTrace(eventBean, operation.getCaseType(), true);
+//                }
+//                if (eventBean == null) {
+//                    return null;
+//                }
+//            }
 
             EventSendPool.getInstance().sendEvent(eventBean);
             if (!firstEventSent.get()) {
@@ -262,6 +278,28 @@ public class Dispatcher implements Callable {
                     this.getClass().getName());
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareReflectionEvent(JavaAgentEventBean eventBean, JavaReflectionOperation javaReflectionOperationalBean) {
+        JSONArray params = new JSONArray();
+        JSONObject javaReflection = new JSONObject();
+        javaReflection.put("declaringClass", javaReflectionOperationalBean.getDeclaringClass());
+        javaReflection.put("method", javaReflectionOperationalBean.getNameOfMethod());
+        javaReflection.put("declaredMethods", javaReflectionOperationalBean.getDeclaredMethods());
+        try {
+            JSONArray arguments = new JSONArray();
+            for (Object arg : javaReflectionOperationalBean.getArgs()) {
+                arguments.add(JsonConverter.getObjectMapper().writeValueAsString(arg));
+            }
+            javaReflection.put("args", arguments);
+        } catch (Exception ignored) {}
+        try {
+            javaReflection.put("obj", JsonConverter.getObjectMapper().writeValueAsString(javaReflectionOperationalBean.getObj()));
+        } catch (JsonProcessingException ignored) {
+        }
+        params.add(javaReflection);
+        eventBean.setParameters(params);
+        return eventBean;
     }
 
     private boolean isReplayEndpointConfirmed() {
@@ -333,12 +371,28 @@ public class Dispatcher implements Callable {
     private JavaAgentEventBean processFileOperationEvent(JavaAgentEventBean eventBean, FileOperation fileOperationalBean) {
         prepareFileEvent(eventBean, fileOperationalBean);
         String URL = StringUtils.substringBefore(securityMetaData.getRequest().getUrl(), QUESTION_CHAR);
+        if(eventBean.getMetaData().isTriggerViaDeserialisation() && isClassLoadingOperation(fileOperationalBean.getFileName())) {
+            //Class loading event while deserialization, drop it.
+            logger.log(LogLevel.FINEST, String.format("Class loading event while deserialization, drop it : %s", fileOperationalBean.getFileName()), this.getClass().getName());
+            return null;
+        }
+
         if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) && allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
             // Event is bypassed. Drop it.
+            logger.log(LogLevel.FINEST, String.format("File Event is bypassed. Drop it : %s", operation), this.getClass().getName());
             return null;
         }
         return eventBean;
+    }
+
+    private boolean isClassLoadingOperation(List<String> fileName) {
+        for (String file : fileName) {
+            if (file.endsWith(CLASS_EXTENSION)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -656,17 +710,118 @@ public class Dispatcher implements Callable {
     }
 
     private static JavaAgentEventBean prepareDeserializationEvent(JavaAgentEventBean eventBean,
-                                                       DeserialisationOperation deserialisationOperation) {
-        DeserializationInfo rootDeserializationInfo = deserialisationOperation.getRootDeserializationInfo();
+                                                       DeserializationOperation deserializationOperation) throws JsonProcessingException {
+        DeserializationInfo rootDeserializationInfo = deserializationOperation.getRootDeserializationInfo();
         JSONArray params = new JSONArray();
+        JSONObject deserializationInfo = new JSONObject();
         if(rootDeserializationInfo != null) {
-            JSONObject deserializationInfo = new JSONObject();
             deserializationInfo.put("type", rootDeserializationInfo.getType());
-            deserializationInfo.put("value", GsonUtil.toJson(rootDeserializationInfo.getInstance()));
-            params.add(deserializationInfo);
+            deserializationInfo.put("value", JsonConverter.getObjectMapper().writeValueAsString(rootDeserializationInfo.getInstance()));
         }
+        Set<String> fieldTypes = new HashSet<>();
+        fieldTypes.addAll(deserializationOperation.getDeserializationInvocation().getEncounteredSerializable().keySet());
+        gatherClassDefinitions(deserializationOperation.getDeserializationInvocation().getEncounteredSerializable(), fieldTypes);
+        deserializationInfo.put("classInfo", deserializationOperation.getDeserializationInvocation().getEncounteredSerializable());
+        params.add(deserializationInfo);
         eventBean.setParameters(params);
         return eventBean;
+    }
+
+    private static void gatherClassDefinitions(Map<String, Serializable> encounteredSerializable, Set<String> fieldTypes) {
+        for (Serializable serializable : encounteredSerializable.values()) {
+            if(serializable.getDeserializable()) {
+                ObjectStreamClass osc = ObjectStreamClass.lookup(serializable.getKlass());
+                if(osc != null) {
+                    serializable.setClassDefinition(getClassDefinition(osc, serializable.getKlass(), fieldTypes));
+                }
+            }
+        }
+    }
+
+    private static SerializableClassDefinition getClassDefinition(ObjectStreamClass desc, Class<?> classType, Set<String> fieldTypes) {
+        List<FiledDefinition> filedDefinitions = new ArrayList<>();
+        for (ObjectStreamField field : desc.getFields()) {
+            String name = field.getName();
+            String type = field.getType().getName();
+            boolean isPrimitive = field.isPrimitive();
+            boolean isTransient = false;
+            List<String> actualTypeArguments = null;
+            try {
+                Field genericField = classType.getDeclaredField(name);
+                Type genericType = genericField.getGenericType();
+                if(genericType instanceof ParameterizedType) {
+                    ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                    Type[] typeArguments = parameterizedType.getActualTypeArguments();
+                    actualTypeArguments = new ArrayList<>();
+                    for(Type typeArgument : typeArguments) {
+                        actualTypeArguments.add(typeArgument.getTypeName());
+                    }
+                }
+                isTransient = Modifier.isTransient(genericField.getModifiers());
+            } catch (NoSuchFieldException ignored) {
+            }
+            boolean isSerializable = true;
+            FiledDefinition filedDefinition = new FiledDefinition(name, type, isPrimitive, isTransient, isSerializable);
+            filedDefinition.setParameterizedType(actualTypeArguments);
+            if(!isPrimitive && !fieldTypes.contains(type)) {
+                fieldTypes.add(type);
+                ObjectStreamClass osc = ObjectStreamClass.lookup(field.getType());
+                if(osc != null) {
+                    filedDefinition.setClassDefinition(getClassDefinition(osc, field.getType(), fieldTypes));
+                }
+            }
+            if (type.equals(Class.class.getName()) || type.equals(Object.class.getName())
+                    || (filedDefinition.getClassDefinition() != null && !filedDefinition.getClassDefinition().getFields().isEmpty())) {
+                filedDefinitions.add(filedDefinition);
+            }
+        }
+        SerializableClassDefinition serializableClassDefinition = new SerializableClassDefinition(desc.getName(), classType.isInterface(), filedDefinitions);
+//        serializableClassDefinition.addAllSuperClasses(getAllInterfaces(classType));
+//        serializableClassDefinition.addAllSuperClasses(getAllSuperClasses(classType));
+        return serializableClassDefinition;
+    }
+
+    public static Set<String> getAllInterfaces(Class<?> clazz) {
+        Set<String> interfaces = new HashSet<>();
+        while (clazz != null) {
+            for (Class<?> iface : clazz.getInterfaces()) {
+                interfaces.add(iface.getName());
+                interfaces.addAll(getAllInterfaces(iface));
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return interfaces;
+    }
+
+    public static List<String> getAllSuperClasses(Class<?> clazz) {
+        List<String> superClasses = new ArrayList<>();
+        Class<?> currentClass = clazz.getSuperclass();
+
+        while (currentClass != null) {
+            superClasses.add(currentClass.getName());
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return superClasses;
+    }
+
+    private static JSONArray getUnlinkedChildrenJson(Set<DeserializationInfo> unlinkedChildren) {
+        JSONArray unlinkedChildrenJson = new JSONArray();
+        for(DeserializationInfo deserializationInfo : unlinkedChildren) {
+            try {
+                JSONObject deserializationInfoJson = new JSONObject();
+                deserializationInfoJson.put("type", deserializationInfo.getType());
+                deserializationInfoJson.put("value", JsonConverter.getObjectMapper().writeValueAsString(deserializationInfo.getInstance()));
+                deserializationInfoJson.put("unlinkedChildren", getUnlinkedChildrenJson(deserializationInfo.getUnlinkedChildren()));
+                unlinkedChildrenJson.add(deserializationInfoJson);
+            } catch (Throwable e){
+                logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format("Unable to stringify the Object %s", deserializationInfo.getInstance()), e,
+                        Dispatcher.class.getName());
+                Agent.getInstance().reportIncident(LogLevel.WARNING, String.format("Unable to stringify the Object %s", deserializationInfo.getInstance()), e,
+                        Dispatcher.class.getName());
+            }
+        }
+        return unlinkedChildrenJson;
     }
 
     private boolean allowedExtensionFileIO(JSONArray params, String sourceString, String url) {
@@ -687,69 +842,6 @@ public class Dispatcher implements Callable {
             }
         }
         return false;
-    }
-
-    private JavaAgentEventBean processStackTrace(JavaAgentEventBean eventBean,
-            VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
-
-        String klassName = null;
-        for (int i = 0; i < operation.getStackTrace().length; i++) {
-            // TODO : check this sequence. Why this is being set from inside Deserialisation check.
-
-            klassName = operation.getStackTrace()[i].getClassName();
-            if (VulnerabilityCaseType.SYSTEM_COMMAND.equals(vulnerabilityCaseType)
-                    || VulnerabilityCaseType.SQL_DB_COMMAND.equals(vulnerabilityCaseType)
-                    || VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
-                    || VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)
-                    || VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
-                    || VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
-                    || VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
-                xxeTriggerCheck(i, eventBean, klassName);
-                if (deserialisationCheck) {
-                    deserializationTriggerCheck(i, eventBean, klassName);
-                }
-            }
-        }
-        return eventBean;
-    }
-
-    private void xxeTriggerCheck(int i, JavaAgentEventBean eventBean, String klassName) {
-
-        if ((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL)
-                && StringUtils.equals(operation.getStackTrace()[i].getMethodName(), SCAN_DOCUMENT))
-                || (StringUtils.contains(klassName, XML_ENTITY_MANAGER)
-                && StringUtils.equals(operation.getStackTrace()[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
-            eventBean.getMetaData().setTriggerViaXXE(true);
-        }
-    }
-
-    private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DESERIALIZATION_ENABLED, true)) {
-            return;
-        }
-        if (ObjectInputStream.class.getName().equals(klassName)
-                && StringUtils.equals(operation.getStackTrace()[index].getMethodName(), READ_OBJECT)) {
-            eventBean.getMetaData().setTriggerViaDeserialisation(true);
-        }
-    }
-
-    private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RCI_ENABLED, true)) {
-            return;
-        }
-
-        if (operation.getStackTrace()[index].getLineNumber() <= 0 && index > 0
-                && operation.getStackTrace()[index - 1].getLineNumber() > 0 &&
-                StringUtils.isNotBlank(operation.getStackTrace()[index - 1].getFileName())) {
-            eventBean.getMetaData().setTriggerViaRCI(true);
-            eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index]));
-            eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index - 1]));
-        }
-        if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
-                && StringUtils.equals(operation.getStackTrace()[index].getMethodName(), INVOKE_0) && index > 0) {
-            eventBean.getMetaData().setTriggerViaRCI(true);
-            eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index - 1]));
-        }
     }
 
     private JavaAgentEventBean setGenericProperties(AbstractOperation objectBean, JavaAgentEventBean eventBean) {
