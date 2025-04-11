@@ -616,7 +616,7 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test-case may fail because this is not instrumented(RenameCollectionOperation).")
+    @Ignore("this test case is failing, as RenameCollectionOperation is not instrumented.")
     public void testRenameCollection()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -641,7 +641,7 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test-case may fail because this is not instrumented(RenameCollectionOperation).")
+    @Ignore("this test case is failing, as RenameCollectionOperation is not instrumented.")
     public void testRenameCollection1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -665,7 +665,7 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test case may fail, because this is not instrumented(ListIndexesOperation).")
+    @Ignore("this test case is failing, as ListIndexesOperation is not instrumented.")
     public void testListIndexes()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -694,7 +694,7 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test case may fail, because this is not instrumented(ListIndexesOperation).")
+    @Ignore("this test case is failing, as ListIndexesOperation is not instrumented.")
     public void testListIndexes1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
