@@ -17,6 +17,7 @@ public class IastDetectionCategory {
     Boolean xpathInjectionEnabled = false;
     Boolean ssrfEnabled = false;
     Boolean unsafeDeserializationEnabled = false;
+    Boolean insecureReflection = false;
 
     @JsonIgnore
     private String disabledCategoriesCSV;
@@ -162,6 +163,10 @@ public class IastDetectionCategory {
             disabledCategoriesCSVBuilder.append(VulnerabilityCaseType.UNSAFE_DESERIALIZATION);
             disabledCategoriesCSVBuilder.append(STR_COMMA);
         }
+        if (insecureReflection) {
+            disabledCategoriesCSVBuilder.append(VulnerabilityCaseType.REFLECTION);
+            disabledCategoriesCSVBuilder.append(STR_COMMA);
+        }
         if (disabledCategoriesCSVBuilder.length() > 0) {
             disabledCategoriesCSVBuilder.deleteCharAt(disabledCategoriesCSVBuilder.length() - 1);
         }
@@ -178,5 +183,13 @@ public class IastDetectionCategory {
 
     public void setUnsafeDeserializationEnabled(Boolean unsafeDeserializationEnabled) {
         this.unsafeDeserializationEnabled = unsafeDeserializationEnabled;
+    }
+
+    public Boolean getInsecureReflectionEnabled() {
+        return insecureReflection;
+    }
+
+    public void setInsecureReflectionEnabled(Boolean insecureReflection) {
+        this.insecureReflection = insecureReflection;
     }
 }

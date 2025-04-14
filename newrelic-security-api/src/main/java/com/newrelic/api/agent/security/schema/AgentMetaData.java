@@ -53,8 +53,6 @@ public class AgentMetaData {
 
     private String parentEventId;
 
-    private DeserialisationContext deserialisationContext;
-
     public AgentMetaData() {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
@@ -88,9 +86,6 @@ public class AgentMetaData {
         this.skipScanParameters = agentMetaData.skipScanParameters;
         this.linkedEventIds = new HashSet<>(agentMetaData.linkedEventIds);
         this.parentEventId = agentMetaData.parentEventId;
-        if(deserialisationContext != null) {
-            this.deserialisationContext = new DeserialisationContext(agentMetaData.deserialisationContext);
-        }
     }
 
     public boolean isTriggerViaRCI() {
@@ -270,11 +265,4 @@ public class AgentMetaData {
         this.parentEventId = parentEventId;
     }
 
-    public DeserialisationContext getDeserialisationContext() {
-        return deserialisationContext;
-    }
-
-    public void setDeserialisationContext(DeserialisationContext deserialisationContext) {
-        this.deserialisationContext = deserialisationContext;
-    }
 }

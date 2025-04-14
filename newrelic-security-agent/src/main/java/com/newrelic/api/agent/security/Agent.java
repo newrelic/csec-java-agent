@@ -459,7 +459,6 @@ public class Agent implements SecurityAgent {
                 }
                 processStackTrace(operation);
                 if(securityMetaData.getDeserializationInvocation() != null && securityMetaData.getDeserializationInvocation().getActive()){
-                    securityMetaData.getMetaData().setDeserialisationContext(securityMetaData.getDeserializationInvocation().getDeserialisationContext());
                     securityMetaData.getMetaData().addLinkedEventId(operation.getExecutionId());
                     securityMetaData.getMetaData().setParentEventId(securityMetaData.getDeserializationInvocation().getEid());
                     securityMetaData.getMetaData().setTriggerViaDeserialisation(true);

@@ -14,12 +14,9 @@ public class DeserializationInvocation {
 
     private Map<String, Serializable> encounteredSerializable;
 
-    private DeserialisationContext deserialisationContext;
-
-    public DeserializationInvocation(boolean active, String executionId, DeserialisationContext deserialisationContext) {
+    public DeserializationInvocation(boolean active, String executionId) {
         this.active = active;
         this.eid = executionId;
-        this.deserialisationContext = deserialisationContext;
         this.readObjectInAction = new Stack<>();
         encounteredSerializable = new HashMap<>();
     }
@@ -77,13 +74,5 @@ public class DeserializationInvocation {
             return null;
         }
         return this.readObjectInAction.peek();
-    }
-
-    public DeserialisationContext getDeserialisationContext() {
-        return deserialisationContext;
-    }
-
-    public void setDeserialisationContext(DeserialisationContext deserialisationContext) {
-        this.deserialisationContext = deserialisationContext;
     }
 }

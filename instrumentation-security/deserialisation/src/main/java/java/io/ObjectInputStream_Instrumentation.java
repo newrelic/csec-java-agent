@@ -70,8 +70,7 @@ public abstract class ObjectInputStream_Instrumentation {
                     this.getClass().getName(),
                     ObjectInputStreamHelper.METHOD_NAME_READ_OBJECT
             );
-            DeserialisationContext deserialisationContext = new DeserialisationContext(type.getName(), Arrays.copyOfRange(Thread.currentThread().getStackTrace(), 1, 10));
-            deserializationInvocation = new DeserializationInvocation(true, operation.getExecutionId(), deserialisationContext);
+            deserializationInvocation = new DeserializationInvocation(true, operation.getExecutionId());
             NewRelicSecurity.getAgent().getSecurityMetaData().setDeserializationInvocation(deserializationInvocation);
             operation.setDeserializationInvocation(deserializationInvocation);
 //            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(InstrumentationConstants.ACTIVE_DESERIALIZATION, true);

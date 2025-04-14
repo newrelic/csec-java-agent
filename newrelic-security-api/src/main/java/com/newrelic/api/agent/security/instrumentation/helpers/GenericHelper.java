@@ -107,6 +107,9 @@ public class GenericHelper {
             case UNSAFE_DESERIALIZATION:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getUnsafeDeserializationEnabled();
                 break;
+            case REFLECTION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInsecureReflectionEnabled();
+                break;
             default:
                 break;
         }
