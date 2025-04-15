@@ -45,7 +45,7 @@ public abstract class Method_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(Object obj, Class<?> declaringClass, Class<?>[] parameterTypes, String name, Object[] args) {
         try {
-            if (NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation() != null && NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation().getActive()) {
+            if (!NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation() != null && NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation().getActive()) {
                 if(StringUtils.isNotBlank(NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation().peekReadObjectInAction())
                     && !StringUtils.equals(name, "readObject")) {
                     JavaReflectionOperation operation = new JavaReflectionOperation(this.getClass().getName(), "invoke", declaringClass.getName(), name, args, obj);

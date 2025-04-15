@@ -17,7 +17,9 @@ public abstract class ObjectInputStream_Instrumentation {
 
     private void readSerialData(Object obj, ObjectStreamClass desc)
             throws IOException {
-        DeserializationInfo dInfo = preProcessSecurityHook(obj);
+        if(NewRelicSecurity.isHookProcessingActive()) {
+            DeserializationInfo dInfo = preProcessSecurityHook(obj);
+        }
         Weaver.callOriginal();
     }
 
@@ -93,11 +95,9 @@ public abstract class ObjectInputStream_Instrumentation {
     }
 
     private void processFilterCheck(Class<?> clazz, boolean filterCheck) {
-        System.out.println("lock acquired Filter check ");
+
         DeserializationInvocation deserializationInvocation = NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation();
-        System.out.println("Filter check deserializationInvocation : "+deserializationInvocation);
         if(deserializationInvocation != null && clazz != null) {
-            System.out.println("Filter check for class : "+clazz.getName()+" is deserializable : "+filterCheck);
             com.newrelic.api.agent.security.schema.Serializable serializable = deserializationInvocation.getEncounteredSerializableByName(clazz.getName());
             if(serializable == null) {
                 serializable = new Serializable(clazz.getName(), true);
