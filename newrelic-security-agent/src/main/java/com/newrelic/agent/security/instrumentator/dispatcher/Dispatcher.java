@@ -716,7 +716,11 @@ public class Dispatcher implements Callable {
         JSONObject deserializationInfo = new JSONObject();
         if(rootDeserializationInfo != null) {
             deserializationInfo.put("type", rootDeserializationInfo.getType());
-            deserializationInfo.put("value", JsonConverter.getObjectMapper().writeValueAsString(rootDeserializationInfo.getInstance()));
+            try {
+                deserializationInfo.put("value", JsonConverter.getObjectMapper().writeValueAsString(rootDeserializationInfo.getInstance()));
+            } catch (Exception ignored) {
+                logger.log(LogLevel.FINEST, String.format("Unable to stringify the Object %s", rootDeserializationInfo.getInstance()), Dispatcher.class.getName());
+            }
         }
         Set<String> fieldTypes = new HashSet<>();
         fieldTypes.addAll(deserializationOperation.getDeserializationInvocation().getEncounteredSerializable().keySet());
