@@ -52,7 +52,7 @@ public class GenericHelper {
         return false;
     }
 
-    private static boolean isLockAcquirePossible(VulnerabilityCaseType caseType) {
+    public static boolean isLockAcquirePossible(VulnerabilityCaseType caseType) {
         if (!NewRelicSecurity.isHookProcessingActive()){
             return false;
         }

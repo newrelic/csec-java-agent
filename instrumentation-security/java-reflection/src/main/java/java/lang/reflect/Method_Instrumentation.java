@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JavaReflectionOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -45,21 +46,20 @@ public abstract class Method_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(Object obj, Class<?> declaringClass, Class<?>[] parameterTypes, String name, Object[] args) {
         try {
-            if (!NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation() != null && NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation().getActive()) {
-                if(StringUtils.isNotBlank(NewRelicSecurity.getAgent().getSecurityMetaData().getDeserializationInvocation().peekReadObjectInAction())
-                    && !StringUtils.equals(name, "readObject")) {
-                    JavaReflectionOperation operation = new JavaReflectionOperation(this.getClass().getName(), "invoke", declaringClass.getName(), name, args, obj);
-                    List<String> methodNames = new ArrayList<>();
-                    for (Method method : declaringClass.getDeclaredMethods()) {
-                        if(Arrays.equals(method.getParameterTypes(), parameterTypes)) {
-                            methodNames.add(method.getName());
-                        }
-                    }
-                    operation.setDeclaredMethods(methodNames);
-                    NewRelicSecurity.getAgent().registerOperation(operation);
-                    return operation;
+            if(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || !GenericHelper.isLockAcquirePossible(VulnerabilityCaseType.REFLECTION)) {
+                return null;
+            }
+
+            JavaReflectionOperation operation = new JavaReflectionOperation(this.getClass().getName(), "invoke", declaringClass.getName(), name, args, obj);
+            List<String> methodNames = new ArrayList<>();
+            for (Method method : declaringClass.getDeclaredMethods()) {
+                if(Arrays.equals(method.getParameterTypes(), parameterTypes)) {
+                    methodNames.add(method.getName());
                 }
             }
+            operation.setDeclaredMethods(methodNames);
+            NewRelicSecurity.getAgent().registerOperation(operation);
+            return operation;
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, "JAVA-REFLECTION", e.getMessage()), e, Method_Instrumentation.class.getName());
