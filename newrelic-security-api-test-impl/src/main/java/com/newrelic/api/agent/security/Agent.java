@@ -25,6 +25,7 @@ public class Agent implements SecurityAgent {
 
     public static final String OPERATIONS = "operations";
     public static final String EXIT_OPERATIONS = "exit-operations";
+    public static final String APPLICATION_RUNTIME_ERROR = "application-runtime-error";
     private static Agent instance;
     private final IastDetectionCategory defaultIastDetectionCategory = new IastDetectionCategory();
 
@@ -125,6 +126,7 @@ public class Agent implements SecurityAgent {
                     meta = new SecurityMetaData();
                     meta.addCustomAttribute(OPERATIONS, new ArrayList<AbstractOperation>());
                     meta.addCustomAttribute(EXIT_OPERATIONS, new ArrayList<AbstractOperation>());
+                    meta.addCustomAttribute(APPLICATION_RUNTIME_ERROR, new ArrayList<Exception>());
                     securityMetaDataMap.put(tx.hashCode(), meta);
                 }
                 populateSecurityData(meta);
@@ -221,7 +223,10 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void reportApplicationRuntimeError(SecurityMetaData securityMetaData, Throwable exception) {
-
+        if (this.getSecurityMetaData().getCustomAttribute(APPLICATION_RUNTIME_ERROR, List.class).contains(exception)) {
+            return;
+        }
+        this.getSecurityMetaData().getCustomAttribute(APPLICATION_RUNTIME_ERROR, List.class).add(exception);
     }
 
     @Override
