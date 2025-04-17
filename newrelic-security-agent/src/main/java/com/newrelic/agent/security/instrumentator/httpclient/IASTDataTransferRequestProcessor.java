@@ -118,7 +118,9 @@ public class IASTDataTransferRequestProcessor {
                 pendingRequestIds.addAll(RestRequestThreadPool.getInstance().getPendingIds());
                 pendingRequestIds.addAll(GrpcClientRequestReplayHelper.getInstance().getPendingIds());
                 request.setPendingRequestIds(pendingRequestIds);
-                WSClient.getInstance().send(request.toString());
+                if(WSClient.getInstance().isOpen()) {
+                    WSClient.getInstance().send(request.toString());
+                }
             }
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), this.getClass().getName());

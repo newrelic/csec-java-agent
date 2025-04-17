@@ -4,6 +4,7 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.operation.SolrDbOperation;
+import com.newrelic.security.test.marker.*;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -14,6 +15,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.GenericContainer;
@@ -27,6 +29,7 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.apache.solr")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category({ Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class SolrTest {
 
     private static GenericContainer<?> solrServer;

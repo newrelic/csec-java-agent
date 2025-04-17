@@ -14,14 +14,22 @@ on:
         description: 'Whether to run CSEC instrumentation unit tests'
         required: true
         default: true
+        type: boolean
+      csec-run-scala-unittest:
+        description: 'Whether to run CSEC scala instrumentation unit tests ?'
+        required: true
+        type: boolean
+        default: false
       csec-run-instrumentation-verify:
         description: 'Whether to run CSEC instrumentation verifier'
         required: true
         default: true
+        type: boolean
       slack-notify:
         description: 'Whether to notify build status on slack'
         required: true
         default: true
+        type: boolean
       description:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
         required: true
@@ -34,12 +42,13 @@ permissions:
 jobs:
   build-csec-agent:
     name: Build CSEC agent artifacts
-    uses: ./.github/workflows/X-Reusable-Build-Security-Agent.yml
+    uses: ./.github/workflows/GHA-Unit-Tests.yml
     with:
       apm-repo: ${{ inputs.apm-repo }}
       apm-source-ref: ${{ inputs.apm-source-ref }}
       run-unit-test: ${{ inputs.csec-run-unittest }}
       is-release: false
+      csec-run-scala-unittest: ${{ inputs.csec-run-scala-unittest }}
     secrets: inherit
 
   verify-instrumentation:

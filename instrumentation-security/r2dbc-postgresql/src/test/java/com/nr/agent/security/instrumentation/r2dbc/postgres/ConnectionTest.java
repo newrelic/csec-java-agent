@@ -20,37 +20,42 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.testcontainers.containers.PostgreSQLContainer;
 import reactor.core.publisher.Mono;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = "io.r2dbc.postgresql")
 public class ConnectionTest {
 
-    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
-    public static Connection connection;
-    private static final String DB_USER = "user";
-    private static final String DB_PASSWORD = "password";
-    private static final String DB_NAME = "test";
+    private static PostgreSQLContainer<?> postgres;
+    private static Connection connection;
+    private static String DB_USER = "user";
+    private static String DB_PASSWORD = "password";
+    private static String DB_NAME = "test";
     private static final String HOST = "localhost";
     private static final List<String> QUERIES = new ArrayList<>();
-    private static final int PORT = getRandomPort();
+    private static int PORT;
 
     @BeforeClass
-    public static void setup() throws Exception {
+    public static void setup() {
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
         QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'Max', 'Power')");
         QUERIES.add("SELECT * FROM USERS");
 
-        postgres.start(HOST, PORT, DB_NAME, DB_USER, DB_PASSWORD);
+        postgres = new PostgreSQLContainer<>("postgres:9.6");
+        postgres.setPortBindings(Collections.singletonList(PORT + ":5432"));
+        postgres.start();
+        DB_NAME = postgres.getDatabaseName();
+        DB_USER = postgres.getUsername();
+        DB_PASSWORD = postgres.getPassword();
     }
 
     @After
@@ -139,27 +144,11 @@ public class ConnectionTest {
         Mono.from(connection.createStatement(QUERIES.get(0)).execute()).block();
     }
     private void connect2() {
-        if (postgres.getConnectionUrl().isPresent()){
-            String url = postgres.getConnectionUrl().get()
+            String url = postgres.getJdbcUrl()
                     .replace("jdbc", "r2dbc")
-                    .replace(HOST, "user:password@localhost")
-                    .replace("?user=user&password=password", "");
-
+                    .replace(HOST, String.format("%s:%s@%s", DB_USER, DB_PASSWORD, HOST));
             ConnectionFactory connectionFactory = ConnectionFactories.get(url);
             connection = Mono.from(connectionFactory.create()).block();
             Mono.from(connection.createStatement(QUERIES.get(0)).execute()).block();
-        }
-    }
-
-    private static int getRandomPort() {
-        int port;
-        try {
-            ServerSocket socket = new ServerSocket(0);
-            port = socket.getLocalPort();
-            socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to allocate ephemeral port");
-        }
-        return port;
     }
 }

@@ -38,7 +38,7 @@ public class EventSender implements Callable<Boolean> {
         if (event instanceof JavaAgentEventBean) {
             ((JavaAgentEventBean) event).setEventGenerationTime(System.currentTimeMillis());
         }
-        if(WSUtils.isConnected()) {
+        if(WSClient.getInstance().isOpen()) {
             WSClient.getInstance().send(JsonConverter.toJSON(event));
         }
         return true;

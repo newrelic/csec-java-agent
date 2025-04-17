@@ -18,6 +18,13 @@ verifyInstrumentation {
     excludeRegex('com.datastax.cassandra:cassandra-driver-core:2.*')
 }
 
+test {
+    onlyIf {
+        // test is incompatible with version of java greater than 1.8
+        !project.hasProperty("test21")
+    }
+}
+
 site {
     title 'Cassandra'
     type 'Datastore'

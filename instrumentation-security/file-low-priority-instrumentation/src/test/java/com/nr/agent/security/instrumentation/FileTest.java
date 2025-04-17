@@ -7,10 +7,12 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
+import com.newrelic.security.test.marker.*;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.io.File;
@@ -20,6 +22,7 @@ import java.util.UUID;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.random", "java.io"})
+@Category({ Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class FileTest {
     private static final String FILE_NAME = "/tmp/test-" + UUID.randomUUID();
 

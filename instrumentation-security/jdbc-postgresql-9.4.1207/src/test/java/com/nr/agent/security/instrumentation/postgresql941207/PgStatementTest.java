@@ -11,13 +11,12 @@ import com.newrelic.security.test.marker.Java12IncompatibleTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -31,29 +30,34 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
-
-@Category({ Java12IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PgStatementTest {
-    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
+
+    public static PostgreSQLContainer<?> postgres;
+
     public static Connection CONNECTION;
-    private static final String DB_USER = "user";
-    private static final String DB_PASSWORD = "password";
-    private static final String DB_NAME = "test";
+    private static String DB_USER = "user";
+    private static String DB_PASSWORD = "password";
+    private static String DB_NAME = "test";
     private static final String HOST = "localhost";
     private static final List<String> QUERIES = new ArrayList<>();
     private static final int PORT = getRandomPort();
 
     @BeforeClass
     public static void setup() throws Exception {
-        postgres.start(HOST, PORT, DB_NAME, DB_USER, DB_PASSWORD);
+        postgres = new PostgreSQLContainer<>("postgres:9.6");
+        postgres.setPortBindings(Collections.singletonList(PORT + ":5432"));
+        postgres.start();
+        DB_NAME = postgres.getDatabaseName();
+        DB_USER = postgres.getUsername();
+        DB_PASSWORD = postgres.getPassword();
 
         getConnection();
         QUERIES.add(
@@ -76,8 +80,10 @@ public class PgStatementTest {
 
     @AfterClass
     public static void stop() throws SQLException {
-        if (postgres!=null)
+        if (postgres!=null) {
+            postgres.close();
             postgres.stop();
+        }
         if (CONNECTION != null) {
             CONNECTION.close();
         }

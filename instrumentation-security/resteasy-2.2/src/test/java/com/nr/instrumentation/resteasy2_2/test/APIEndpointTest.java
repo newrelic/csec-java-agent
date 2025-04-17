@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.security.test.marker.*;
 import com.nr.instrumentation.resteasy2_2.app.CustomerLocatorResource;
 import com.nr.instrumentation.resteasy2_2.app.TestMapping;
 import org.apache.catalina.LifecycleException;
@@ -12,6 +13,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.resteasy2", "org.jboss.resteasy.core.registry"})
+@Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class APIEndpointTest {
 
     private final String handler = TestMapping.class.getName();

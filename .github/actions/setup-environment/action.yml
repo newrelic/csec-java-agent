@@ -32,12 +32,12 @@ runs:
 
   steps:
     - name: Set up Javas
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: |
+          23
           21
-          20
           17
           11
           8
@@ -49,8 +49,8 @@ runs:
         sed -i -e "s|jdk8=8|jdk8=${JAVA_HOME_8_X64}|
         s|jdk11=11|jdk11=${JAVA_HOME_11_X64}|
         s|jdk17=17|jdk17=${JAVA_HOME_17_X64}|
-        s|jdk20=20|jdk20=${JAVA_HOME_20_X64}|
-        s|jdk21=21|jdk21=${JAVA_HOME_21_X64}|" gradle.properties.gha
+        s|jdk21=21|jdk21=${JAVA_HOME_21_X64}|
+        s|jdk23=23|jdk23=${JAVA_HOME_23_X64}|" gradle.properties.gha
         cat gradle.properties.gha >> gradle.properties
 
     - name: Setup Gradle
@@ -58,7 +58,7 @@ runs:
 
     - name: Setup Gradle options
       shell: bash
-      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64 -Prelease=${{ inputs.is-release }} -Prelease-suffix=${{ inputs.version-suffix }} " >> $GITHUB_ENV
+      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_21_X64,JAVA_HOME_23_X64 -Prelease=${{ inputs.is-release }} -Prelease-suffix=${{ inputs.version-suffix }} " >> $GITHUB_ENV
 
     # Restore the maven cache
     - name: Cache local Maven repository
