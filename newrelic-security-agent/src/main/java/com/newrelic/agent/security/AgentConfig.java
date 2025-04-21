@@ -318,7 +318,7 @@ public class AgentConfig {
         if(value instanceof Boolean) {
             logLevel = IUtilConstants.OFF;
         } else {
-            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL, IUtilConstants.INFO);
+            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL, LogLevel.FINEST.name());
         }
 
         try {
