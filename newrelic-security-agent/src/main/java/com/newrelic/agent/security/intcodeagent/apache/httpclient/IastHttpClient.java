@@ -3,6 +3,7 @@ package com.newrelic.agent.security.intcodeagent.apache.httpclient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.schema.AppServerInfo;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -77,6 +78,9 @@ public class IastHttpClient {
         int serverPort = request.getServerPort();
         if(serverPort > 0){
             Map<String, String> endpoints = prepareEndpoints(serverPort);
+            if (Agent.isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Debug: Trying to establish Application Endpoint", IastHttpClient.class.getName());
+            }
             for (Map.Entry<String, String> endpoint : endpoints.entrySet()) {
                 try {
                     ReadResult result = httpClient.execute(request, endpoint.getValue(), null, true);

@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -71,6 +72,9 @@ public class CallbackUtils {
         logger.log(LogLevel.FINER, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
 
         Set<String> attackContructs = isXSS(combinedRequestData);
+        if (Agent.isDebugEnabled()) {
+            logger.log(LogLevel.FINEST, String.format("Debug: RXSS Attack Constructs found in Request %s", attackContructs), CallbackUtils.class.getName());
+        }
 
         for (String construct : attackContructs) {
             if (StringUtils.containsIgnoreCase(combinedResponseDataString, construct)) {
@@ -84,6 +88,8 @@ public class CallbackUtils {
         }
         if (toReturn.isEmpty()) {
             toReturn.add(StringUtils.EMPTY);
+        } else if (Agent.isDebugEnabled()) {
+            logger.log(LogLevel.FINEST, String.format("Debug: RXSS Attack Constructs found : %s", toReturn), CallbackUtils.class.getName());
         }
         return toReturn;
     }

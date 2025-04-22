@@ -18,6 +18,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.*;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
+import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -38,6 +39,7 @@ import org.java_websocket.framing.CloseFrame;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
@@ -65,6 +67,8 @@ public class Agent implements SecurityAgent {
     public static final String ERROR_WHILE_GENERATING_TRACE_ID_FOR_CATEGORY_S = "Error while generating trace id for category : %s";
     public static final String SKIPPING_THE_API_S_AS_IT_IS_PART_OF_THE_SKIP_SCAN_LIST = "Skipping the API %s as it is part of the skip scan list";
     public static final String INVALID_CRON_EXPRESSION_PROVIDED_FOR_IAST_RESTRICTED_MODE = "Invalid cron expression provided for IAST Mode";
+
+    private static final boolean DEBUG = Boolean.getBoolean("newrelic.debug") || Boolean.parseBoolean(System.getenv("NEWRELIC_DEBUG"));
 
     private AgentInfo info;
 
@@ -400,8 +404,8 @@ public class Agent implements SecurityAgent {
                 String executionId = ExecutionIDGenerator.getExecutionId();
                 operation.setExecutionId(executionId);
                 operation.setStartTime(Instant.now().toEpochMilli());
-                if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
-                    logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
+                if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request() && isDebugEnabled()) {
+                    logger.log(LogLevel.FINEST, String.format("Debug: New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
                 }
                 if (operation instanceof RXSSOperation) {
                     operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
@@ -422,17 +426,19 @@ public class Agent implements SecurityAgent {
                 }
 
                 if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfCSECGeneratedEvent(operation)) {
-                    logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
-                                    JsonConverter.toJSON(operation),
-                            Agent.class.getName());
+                    if (isDebugEnabled()) {
+                        logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                                        JsonConverter.toJSON(operation), Agent.class.getName());
+                    }
                     AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementCsecInternalEvent();
                     return;
                 }
 
                 if(!NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfNRGeneratedEvent(operation)) {
-                    logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
-                                    JsonConverter.toJSON(operation),
-                            Agent.class.getName());
+                    if (isDebugEnabled()) {
+                        logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                                        JsonConverter.toJSON(operation), Agent.class.getName());
+                    }
                     AgentInfo.getInstance().getJaHealthCheck().getEventStats().getDroppedDueTo().incrementNrInternalEvent();
                     return;
                 }
@@ -462,7 +468,9 @@ public class Agent implements SecurityAgent {
                     String route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork);
                     if (route != null) {
                         request.setRoute(route);
-                        logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
+                        if (isDebugEnabled()) {
+                            logger.log(LogLevel.FINEST, "Debug: Route detection using Application Endpoint", this.getClass().getName());
+                        }
                     }
                 }
 
@@ -647,6 +655,9 @@ public class Agent implements SecurityAgent {
             // Section for user class identification using API handlers
             if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
                 //Found -> assign user class and return
+                if (isDebugEnabled()) {
+                    logger.log(LogLevel.FINEST, "Debug: Setting User Class details using API Endpoints detected", this.getClass().getName());
+                }
                 userClassEntity.setUserClassElement(stackTraceElement);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 userClassEntity.setCalledByUserCode(true);
@@ -686,10 +697,18 @@ public class Agent implements SecurityAgent {
 
         // user class identification using annotations
         if (securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
-            return setUserClassEntityByAnnotation(securityMetaData.getMetaData().getServiceTrace());
+            if (isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Debug: Setting User Class details using annotations", this.getClass().getName());
+            }
+            userClassEntity.setUserClassElement(securityMetaData.getMetaData().getServiceTrace()[0]);
+            userClassEntity.setCalledByUserCode(true);
+            return userClassEntity;
         }
 
         if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
+            if (isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Debug: Not able to detect correct user class details", this.getClass().getName());
+            }
             userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
         }
@@ -719,7 +738,7 @@ public class Agent implements SecurityAgent {
         }
     }
 
-    private static void processStackTrace(AbstractOperation operation) {
+    private void processStackTrace(AbstractOperation operation) {
         StackTraceElement[] stackTrace = operation.getStackTrace();
         int resetFactor = 0;
 
@@ -758,6 +777,28 @@ public class Agent implements SecurityAgent {
                     }
                 }
             }
+            if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(operation.getCaseType())) {
+                boolean deserialisationCheck = true;
+                if (VulnerabilityCaseType.FILE_OPERATION.equals(operation.getCaseType()) && ((FileOperation) operation).isGetBooleanAttributesCall()) {
+                    deserialisationCheck = false;
+                }
+                VulnerabilityCaseType vulnerabilityCaseType = operation.getCaseType();
+                String klassName = operation.getStackTrace()[i].getClassName();
+                // TODO : check this sequence. Why this is being set from inside Deserialisation check.
+                if (VulnerabilityCaseType.SYSTEM_COMMAND.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.SQL_DB_COMMAND.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
+                        || VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
+
+                    xxeTriggerCheck(i, operation, klassName);
+                    if (deserialisationCheck) {
+                        deserializationTriggerCheck(i, operation, klassName);
+                    }
+                }
+            }
 
             if (!markedForRemoval) {
                 newTraceForIdCalc.add(stackTrace[i].hashCode());
@@ -767,6 +808,25 @@ public class Agent implements SecurityAgent {
         operation.setStackTrace(stackTrace);
         operation.setSourceMethod(operation.getStackTrace()[0].toString());
         setAPIId(operation, newTraceForIdCalc, operation.getCaseType());
+    }
+
+    private void xxeTriggerCheck(int i, AbstractOperation operation, String klassName) {
+        if ((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL)
+                && StringUtils.equals(operation.getStackTrace()[i].getMethodName(), SCAN_DOCUMENT))
+                || (StringUtils.contains(klassName, XML_ENTITY_MANAGER)
+                && StringUtils.equals(operation.getStackTrace()[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
+            getSecurityMetaData().getMetaData().setTriggerViaXXE(true);
+        }
+    }
+
+    private void deserializationTriggerCheck(int index, AbstractOperation operation, String klassName) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DESERIALIZATION_ENABLED, true)) {
+            return;
+        }
+        if (ObjectInputStream.class.getName().equals(klassName)
+                && StringUtils.equals(operation.getStackTrace()[index].getMethodName(), READ_OBJECT)) {
+            getSecurityMetaData().getMetaData().setTriggerViaDeserialisation(true);
+        }
     }
 
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
@@ -1085,4 +1145,7 @@ public class Agent implements SecurityAgent {
         SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
     }
 
+    public static boolean isDebugEnabled() {
+        return DEBUG;
+    }
 }

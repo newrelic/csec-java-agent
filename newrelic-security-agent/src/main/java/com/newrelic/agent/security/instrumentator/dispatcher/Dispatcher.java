@@ -240,16 +240,8 @@ public class Dispatcher implements Callable {
 
             }
 
-            if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(operation.getCaseType())) {
-                if (VulnerabilityCaseType.FILE_OPERATION.equals(operation.getCaseType())
-                        && ((FileOperation) operation).isGetBooleanAttributesCall()) {
-                    eventBean = processStackTrace(eventBean, operation.getCaseType(), false);
-                } else {
-                    eventBean = processStackTrace(eventBean, operation.getCaseType(), true);
-                }
-                if (eventBean == null) {
-                    return null;
-                }
+            if (eventBean == null) {
+                return null;
             }
 
             EventSendPool.getInstance().sendEvent(eventBean);
@@ -257,7 +249,6 @@ public class Dispatcher implements Callable {
                 logger.logInit(LogLevel.INFO, String.format(EVENT_ZERO_SENT, eventBean), this.getClass().getName());
                 firstEventSent.set(true);
             }
-//        detectDeployedApplication();
         } catch (Throwable e) {
             logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
                     this.getClass().getName());
@@ -589,7 +580,9 @@ public class Dispatcher implements Callable {
             eventBean.setParameters(params);
             return eventBean;
         } catch (Throwable e){
-            e.printStackTrace();
+            if (Agent.isDebugEnabled()) {
+                logger.log(LogLevel.FINEST, "Error while preparing SYSTEM_COMMAND event: " + JsonConverter.toJSON(operation), e, Agent.class.getName());
+            }
         }
         return eventBean;
     }

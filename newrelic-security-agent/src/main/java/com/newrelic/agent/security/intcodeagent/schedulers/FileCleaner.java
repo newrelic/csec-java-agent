@@ -4,6 +4,9 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
+import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import org.apache.commons.io.FileUtils;
@@ -33,6 +36,7 @@ public class FileCleaner {
 
         @Override
         public void run() {
+            // TODO: add debug trace
             AgentInfo.getInstance().getJaHealthCheck().getSchedulerRuns().incrementIastFileCleaner();
             long delay = Instant.now().toEpochMilli() - TimeUnit.MINUTES.toMillis(2);
             logger.log(LogLevel.INFO, FILE_CLEANER_INVOKED_INITIATING_TEMP_FILE_DIRECTORY_CLEANUP, FileCleaner.class.getName());
@@ -40,6 +44,9 @@ public class FileCleaner {
                 return;
             }
             FileUtils.iterateFiles(new File(osVariables.getTmpDirectory()), new AgeFileFilter(delay), DirectoryFileFilter.INSTANCE).forEachRemaining( file -> {
+                if (Agent.isDebugEnabled()) {
+                    NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: Cleaning temp files created during IAST analysis : %s", file), FileCleaner.class.getName());
+                }
                 FileUtils.deleteQuietly(file);
             });
 
@@ -51,8 +58,14 @@ public class FileCleaner {
                     long age = delay - Files.getLastModifiedTime(Paths.get(file)).toMillis();
                     if(age > 0){
                         FileUtils.deleteQuietly(new File(file));
+                        if (Agent.isDebugEnabled()) {
+                            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: Cleaning temp files created during IAST analysis : %s", file), FileCleaner.class.getName());
+                        }
                     }
                 } catch (IOException | InvalidPathException e) {
+                    if (Agent.isDebugEnabled()) {
+                        NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Debug: Error while cleaning temp files created during IAST analysis : %s", file), e, FileCleaner.class.getName());
+                    }
                 }
             }
         }
