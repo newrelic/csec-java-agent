@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -26,6 +27,9 @@ public abstract class FilterChain_Instrumentation {
 
     public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
         boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
+        if (request instanceof HttpServletRequest) {
+            HttpServletHelper.setRoute((HttpServletRequest)request);
+        }
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }

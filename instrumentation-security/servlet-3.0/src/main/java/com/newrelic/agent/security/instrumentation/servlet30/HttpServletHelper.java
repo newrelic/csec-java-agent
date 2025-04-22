@@ -14,17 +14,17 @@ import java.util.Collection;
 import java.util.Map;
 
 public class HttpServletHelper {
-    private static final String WILDCARD = "*";
-    private static final String SEPARATOR = "/";
-    public static final String SERVLET_3_0 = "SERVLET-3.0";
+
+    private static final String SERVLET_3_0 = "SERVLET-3.0";
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
+            String contextPath = StringUtils.removeStart(StringUtils.removeEnd(servletContext.getContextPath(), URLMappingsHelper.SEPARATOR), StringUtils.SEPARATOR);
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
-            getJSPMappings(servletContext, SEPARATOR);
+            getJSPMappings(servletContext, URLMappingsHelper.SEPARATOR);
 
-            for (ServletRegistration servletRegistration : servletRegistrations.values()) {
-                for (String s : servletRegistration.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s, servletRegistration.getClassName()));
+            for (ServletRegistration servletReg : servletRegistrations.values()) {
+                for (String mapping : servletReg.getMappings()) {
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, mapping, servletReg.getClassName()));
                 }
             }
         } catch (Exception e){
@@ -34,18 +34,18 @@ public class HttpServletHelper {
 
     public static void getJSPMappings(ServletContext servletContext, String dir) {
         try {
-            if(dir.endsWith(SEPARATOR)){
+            if(dir.endsWith(URLMappingsHelper.SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
                 for (String path : resourcePaths) {
-                    String entry = StringUtils.removeStart(StringUtils.removeEnd(path, SEPARATOR), StringUtils.SEPARATOR);
+                    String entry = StringUtils.removeStart(StringUtils.removeEnd(path, URLMappingsHelper.SEPARATOR), StringUtils.SEPARATOR);
                     if ( StringUtils.equalsAny(entry, "META-INF", "WEB-INF")) {
                         continue;
                     }
-                    if(path.endsWith(SEPARATOR)) {
+                    if(path.endsWith(URLMappingsHelper.SEPARATOR)) {
                         getJSPMappings(servletContext, path);
                     }
                     else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX")) {
-                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, path));
                     }
                 }
             }
@@ -53,4 +53,5 @@ public class HttpServletHelper {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_3_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
+
 }

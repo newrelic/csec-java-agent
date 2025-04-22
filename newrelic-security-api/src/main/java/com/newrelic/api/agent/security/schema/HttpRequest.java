@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 import java.nio.file.Paths;
 import java.util.*;
@@ -97,6 +98,7 @@ public class HttpRequest {
         this.route = servletInfo.route;
         this.requestURI = servletInfo.requestURI;
         this.pathParameterMap = servletInfo.pathParameterMap;
+        this.pathParameters = servletInfo.pathParameters;
         this.queryParameters = servletInfo.queryParameters;
         this.requestHeaderParameters = servletInfo.requestHeaderParameters;
         this.requestBodyParameters = servletInfo.requestBodyParameters;
@@ -252,7 +254,10 @@ public class HttpRequest {
     }
 
     public void setRoute(String route){
-        this.route = StringUtils.removeEnd(StringUtils.prependIfMissing(route, StringUtils.SEPARATOR), StringUtils.SEPARATOR);
+        if(!NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().isEmpty() && !NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().getFramework().equals(Framework.SERVLET.name())){
+            return;
+        }
+        setRoute(route, true);
     }
 
     public String getRequestURI() {
@@ -263,7 +268,11 @@ public class HttpRequest {
         this.requestURI = requestURI;
     }
 
-    public void setRoute(String segment, boolean isAlreadyServlet) {
+    public void setRoute(String segment, Boolean isAlreadyServlet) {
+        if (isAlreadyServlet == null){
+            this.route = StringUtils.EMPTY;
+            return;
+        }
         // remove servlet detected route if another framework detected;
         if (isAlreadyServlet) {
             this.route = StringUtils.EMPTY;

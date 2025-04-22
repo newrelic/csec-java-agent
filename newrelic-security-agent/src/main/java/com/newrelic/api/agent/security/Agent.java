@@ -453,18 +453,8 @@ public class Agent implements SecurityAgent {
                 processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
-                HttpRequest request = securityMetaData.getRequest();
-                Framework frameWork = Framework.UNKNOWN;
-                if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
-                    frameWork = Framework.valueOf(securityMetaData.getMetaData().getFramework());
-                }
-                if (!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isEmpty(request.getRoute())){
-                    String route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"), frameWork);
-                    if (route != null) {
-                        request.setRoute(route);
-                        logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
-                    }
-                }
+
+                setRouteIfNotPresent();
 
                 if (needToGenerateEvent(operation.getApiID())) {
                     DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
@@ -484,9 +474,29 @@ public class Agent implements SecurityAgent {
             }
         }
     }
-    private String getEndpointRoute(String uri, Framework framework){
-        switch (framework){
-            default: return getEndpointRoute(uri);
+
+    // fallback mechanism for route detection
+    private void setRouteIfNotPresent() {
+        HttpRequest request = getSecurityMetaData().getRequest();
+        if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(request.getMethod(), request.getRoute())) ||
+                URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, request.getRoute()))){
+            return;
+        }
+        request.setRoute("", null);
+        Framework frameWork = Framework.UNKNOWN;
+        if(StringUtils.isNotBlank(getSecurityMetaData().getMetaData().getFramework())) {
+            frameWork = Framework.valueOf(getSecurityMetaData().getMetaData().getFramework());
+        }
+        if (!getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
+            String route;
+            switch (frameWork){
+                default: route = getEndpointRoute(StringUtils.substringBefore(request.getUrl(), "?"));
+            }
+            if(route != null && !route.isEmpty()){
+                request.setRoute(route);
+                getSecurityMetaData().getMetaData().setFramework(Framework.SERVLET);
+                logger.log(LogLevel.FINEST,"Route detection using Application Endpoint", this.getClass().getName());
+            }
         }
     }
 

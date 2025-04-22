@@ -32,6 +32,9 @@ public abstract class Servlet_Instrumentation {
 
     public void service(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
+        if (request instanceof HttpServletRequest) {
+            HttpServletHelper.setRoute((HttpServletRequest)request);
+        }
         if(isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }

@@ -23,9 +23,9 @@ public class HttpServletHelper {
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, SEPARATOR);
 
-            for (ServletRegistration servletRegistration : servletRegistrations.values()) {
-                for (String mapping : servletRegistration.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, servletRegistration.getClassName()));
+            for (ServletRegistration servletReg : servletRegistrations.values()) {
+                for (String mapping : servletReg.getMappings()) {
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, servletReg.getClassName()));
                 }
             }
         } catch (Exception e){

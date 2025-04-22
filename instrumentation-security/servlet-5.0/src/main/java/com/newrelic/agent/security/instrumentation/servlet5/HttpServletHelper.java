@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
@@ -11,6 +12,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletMapping;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Collection;
@@ -109,9 +111,9 @@ public class HttpServletHelper {
             Map<String, ? extends ServletRegistration> servletRegistrations = servletContext.getServletRegistrations();
             getJSPMappings(servletContext, SEPARATOR);
 
-            for (ServletRegistration servletRegistration : servletRegistrations.values()) {
-                for (String s : servletRegistration.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s, servletRegistration.getClassName()));
+            for (ServletRegistration servletReg : servletRegistrations.values()) {
+                for (String mapping : servletReg.getMappings()) {
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, servletReg.getClassName()));
                 }
             }
         } catch (Exception e){
@@ -138,6 +140,23 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
+        }
+    }
+
+    public static void setRoute(HttpServletRequest request){
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || URLMappingsHelper.getApplicationURLMappings().isEmpty()){
+                return;
+            }
+            HttpServletMapping mapping = request.getHttpServletMapping();
+            if (URLMappingsHelper.getApplicationURLMappings().contains(new ApplicationURLMapping(URLMappingsHelper.WILDCARD, request.getServletPath()))) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(request.getServletPath());
+            } else if (mapping != null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setRoute(mapping.getPattern());
+            }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFramework(Framework.SERVLET);
+        } catch (Exception e){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_ROUTE_FOR_INCOMING_REQUEST, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

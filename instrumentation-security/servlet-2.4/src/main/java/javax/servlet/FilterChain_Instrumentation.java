@@ -68,7 +68,6 @@ public abstract class FilterChain_Instrumentation {
             }
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
-
             securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
 
             securityRequest.setProtocol(httpServletRequest.getScheme());
