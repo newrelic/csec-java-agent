@@ -32,6 +32,8 @@ public interface IUtilConstants {
     String SKIP_XPATH_INJECTION = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".xpath_injection";
     String SKIP_SSRF = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".ssrf";
     String SKIP_RXSS = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".rxss";
+    String SKIP_UNSAFE_DESERIALIZATION = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".unsafe_deserialization";
+    String SKIP_UNSAFE_REFLECTION = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".unsafe_reflection";
 
     String RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE = "security.restriction_criteria.scan_time.schedule";
     String RESTRICTION_CRITERIA_SCAN_TIME_DURATION = "security.restriction_criteria.scan_time.duration";

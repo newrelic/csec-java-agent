@@ -80,12 +80,10 @@ public class Agent implements SecurityAgent {
             }
         }
         System.out.println("Registering operation : " + operation.hashCode() + " : " + NewRelic.getAgent().getTransaction().hashCode());
-        String executionId = "dummy-exec-id";
         String apiId = "dummy-api-id";
         if(operation instanceof FileIntegrityOperation && ((FileIntegrityOperation) operation).getFileName().endsWith(".new.class")){
             return;
         }
-        operation.setExecutionId(executionId);
         operation.setApiID(apiId);
         operation.setStartTime(Instant.now().toEpochMilli());
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();

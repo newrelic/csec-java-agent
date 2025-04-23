@@ -193,6 +193,8 @@ public class AgentConfig {
             agentMode.getSkipScan().getIastDetectionCategory().setXpathInjectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_XPATH_INJECTION, false));
             agentMode.getSkipScan().getIastDetectionCategory().setSsrfEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_SSRF, false));
             agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_RXSS, false));
+            agentMode.getSkipScan().getIastDetectionCategory().setUnsafeDeserializationEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_UNSAFE_DESERIALIZATION, false));
+            agentMode.getSkipScan().getIastDetectionCategory().setInsecureReflectionEnabled(NewRelic.getAgent().getConfig().getValue(SKIP_UNSAFE_REFLECTION, false));
             if(!agentMode.getSkipScan().getIastDetectionCategory().getRxssEnabled() && !NewRelic.getAgent().getConfig().getValue(REPORT_HTTP_RESPONSE_BODY, true)) {
                 agentMode.getSkipScan().getIastDetectionCategory().setRxssEnabled(true);
             }
@@ -316,7 +318,7 @@ public class AgentConfig {
         if(value instanceof Boolean) {
             logLevel = IUtilConstants.OFF;
         } else {
-            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL, IUtilConstants.INFO);
+            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL, LogLevel.FINEST.name());
         }
 
         try {

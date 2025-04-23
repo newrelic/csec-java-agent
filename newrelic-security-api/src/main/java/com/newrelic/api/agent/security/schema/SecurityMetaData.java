@@ -28,6 +28,8 @@ public class SecurityMetaData {
 
     private Set<AbstractOperation> unregisteredOperations;
 
+    private DeserializationInvocation deserializationInvocation;
+
     public SecurityMetaData() {
         request = new HttpRequest();
         response = new HttpResponse();
@@ -125,4 +127,31 @@ public class SecurityMetaData {
         customData.clear();
     }
 
+    public boolean addToDeserializationRoot(DeserializationInfo dinfo) {
+        if (getCustomAttribute("deserializationRoot", DeserializationInfo.class) == null){
+            addCustomAttribute("deserializationRoot", dinfo);
+            return true;
+        } else {
+            DeserializationInfo root = getCustomAttribute("deserializationRoot", DeserializationInfo.class);
+            root.getUnlinkedChildren().add(dinfo);
+            return false;
+        }
+    }
+
+    public void resetDeserializationRoot() {
+        this.removeCustomAttribute("deserializationRoot");
+        this.metaData.clearLinkedEventIds();
+    }
+
+    public DeserializationInfo peekDeserializationRoot() {
+        return getCustomAttribute("deserializationRoot", DeserializationInfo.class);
+    }
+
+    public DeserializationInvocation getDeserializationInvocation() {
+        return deserializationInvocation;
+    }
+
+    public void setDeserializationInvocation(DeserializationInvocation deserializationInvocation) {
+        this.deserializationInvocation = deserializationInvocation;
+    }
 }

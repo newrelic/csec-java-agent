@@ -4,6 +4,21 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - TBD
+### Adds
+- [PR-395](https://github.com/newrelic/csec-java-agent/pull/395) **Support for Deserialization Vulnerability Detection**: Implemented mechanisms to detect vulnerabilities arising from unsafe deserialization processes.
+- [PR-395](https://github.com/newrelic/csec-java-agent/pull/395) **Support for Vulnerability Detection of Remote Code Invocation via Reflection**: Enhanced capability to identify security risks associated with remote code execution through reflection.
+- [PR-343](https://github.com/newrelic/csec-java-agent/pull/343) **HTTP Response Handling for Vulnerabilities**: Developed the functionality to send HTTP responses for detected vulnerabilities directly to the UI.
+
+### Changes
+- [PR-343](https://github.com/newrelic/csec-java-agent/pull/343) **Trimmed Response Body**: Updated the response handling logic to trim response bodies to a maximum of 500KB when larger. This optimization aids in performance and resource conservation.
+- [PR-396](https://github.com/newrelic/csec-java-agent/pull/396) Upgraded _commons-io:commons-io_ from version 2.7 to 2.14.0
+- [PR-403](https://github.com/newrelic/csec-java-agent/pull/403) GraphQL Supported Version Range: Restricted the supported version range for GraphQL due to the release of a new version on April 7th, 2025
+
+### Fixes
+- [PR-372](https://github.com/newrelic/csec-java-agent/pull/372) **Repeat IAST Request Relay Commands**: Reconfigured logic to repeat IAST control commands until the endpoint is confirmed.
+
+
 ## [1.6.1] - 2025-3-1
 ### Adds
 - [PR-309](https://github.com/newrelic/csec-java-agent/pull/309) Introduced API Endpoint detection for Resin Server. [NR-293077](https://new-relic.atlassian.net/browse/NR-293077)
@@ -16,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-384](https://github.com/newrelic/csec-java-agent/pull/384) Limited instrumentation capabilities in Apache Solr following the release of version 9.8.0 on January 21, 2025. [NR-370635](https://new-relic.atlassian.net/browse/NR-370635)
 - [PR-364](https://github.com/newrelic/csec-java-agent/pull/364) Modified HealthCheck to include the iastTestIdentifier and adjusted WebSocket headers to send instance-count only when its value is greater than zero. [NR-347851](https://new-relic.atlassian.net/browse/NR-347851)
 - [PR-349](https://github.com/newrelic/csec-java-agent/pull/349) Enhanced the process for rolling over log files, allowing for specific prefixes and suffixes. [NR-337016](https://new-relic.atlassian.net/browse/NR-337016)
+
 
 ## [1.6.0] - 2024-12-16
 ### Adds

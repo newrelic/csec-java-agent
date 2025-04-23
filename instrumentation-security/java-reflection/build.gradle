@@ -1,0 +1,16 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+}
+
+// This instrumentation module should not use the bootstrap classpath
+
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.java-reflection' }
+}
+
+verifyInstrumentation {
+    verifyClasspath = false // We don't want to verify classpath since these are JDK classes
+}

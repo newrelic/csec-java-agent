@@ -49,6 +49,10 @@ public class AgentMetaData {
 
     private AppServerInfo appServerInfo;
 
+    private Set<String> linkedEventIds;
+
+    private String parentEventId;
+
     public AgentMetaData() {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
@@ -57,6 +61,7 @@ public class AgentMetaData {
         this.appServerInfo = new AppServerInfo();
         this.framework = StringUtils.EMPTY;
         this.skipScanParameters = new SkipScanParameters();
+        this.linkedEventIds = new HashSet<>();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -79,6 +84,8 @@ public class AgentMetaData {
         this.fromJumpRequiredInStackTrace = agentMetaData.getFromJumpRequiredInStackTrace();
         this.framework = agentMetaData.framework;
         this.skipScanParameters = agentMetaData.skipScanParameters;
+        this.linkedEventIds = new HashSet<>(agentMetaData.linkedEventIds);
+        this.parentEventId = agentMetaData.parentEventId;
     }
 
     public boolean isTriggerViaRCI() {
@@ -229,4 +236,33 @@ public class AgentMetaData {
     public void setSkipScanParameters(SkipScanParameters skipScanParameters) {
         this.skipScanParameters = skipScanParameters;
     }
+
+    public Set<String> getLinkedEventIds() {
+        return linkedEventIds;
+    }
+
+    public boolean addLinkedEventId(String linkedEventId) {
+        return linkedEventIds.add(linkedEventId);
+    }
+
+    public boolean removeLinkedEventId(String linkedEventId) {
+        return linkedEventIds.remove(linkedEventId);
+    }
+
+    public void setLinkedEventIds(Set<String> linkedEventIds) {
+        this.linkedEventIds = linkedEventIds;
+    }
+
+    public void clearLinkedEventIds() {
+        linkedEventIds.clear();
+    }
+
+    public String getParentEventId() {
+        return parentEventId;
+    }
+
+    public void setParentEventId(String parentEventId) {
+        this.parentEventId = parentEventId;
+    }
+
 }
