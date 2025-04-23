@@ -37,6 +37,9 @@ public class HttpServletResponse_Instrumentation {
                 releaseLock(cookie.hashCode());
             }
         }
+        if (isOwaspHookEnabled) {
+            registerExitOperation(isLockAcquired, operation);
+        }
     }
 
     private AbstractOperation preprocessSecurityHook(Cookie cookie, String className, String methodName) {
@@ -76,6 +79,17 @@ public class HttpServletResponse_Instrumentation {
                     HttpServletHelper.SERVLET_2_4, e.getMessage()), e, HttpServletResponse_Instrumentation.class.getName());
         }
         return null;
+    }
+
+    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+        try {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+                return;
+            }
+            NewRelicSecurity.getAgent().registerExitEvent(operation);
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, HttpServletResponse_Instrumentation.class.getName());
+        }
     }
 
     private void releaseLock(int hashCode) {
