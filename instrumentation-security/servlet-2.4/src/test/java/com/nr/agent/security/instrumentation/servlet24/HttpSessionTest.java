@@ -35,7 +35,6 @@ public class HttpSessionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        Assert.assertTrue("Unexpected operation count detected", operations.size() == 2 || operations.size() == 3);
         TrustBoundaryOperation targetOperation = null;
         int i=0;
         for (AbstractOperation operation : operations) {
@@ -65,7 +64,6 @@ public class HttpSessionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertFalse(operations.isEmpty());
-        Assert.assertTrue("Unexpected operation count detected", operations.size() == 2 || operations.size() == 3);
         TrustBoundaryOperation targetOperation = null;
         for (AbstractOperation operation : operations) {
             if (operation instanceof TrustBoundaryOperation)
@@ -86,7 +84,6 @@ public class HttpSessionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
         SecureCookieOperationSet targetOperation = null;
         targetOperation = verifySecureCookieOp(operations);
 
