@@ -126,6 +126,14 @@ public class RestRequestProcessor implements Callable<Boolean> {
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
             RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
+        } catch (IllegalArgumentException e) {
+            logger.log(LogLevel.SEVERE,
+                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
+                    e, RestRequestProcessor.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
+                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()),
+                    e, RestRequestProcessor.class.getName());
+            throw e;
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
