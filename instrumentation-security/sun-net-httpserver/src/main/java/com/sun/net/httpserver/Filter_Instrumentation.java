@@ -72,7 +72,7 @@ public class Filter_Instrumentation {
     }
     private void postProcessSecurityHook(HttpExchange exchange) {
         try {
-            if(!NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            if(!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
 

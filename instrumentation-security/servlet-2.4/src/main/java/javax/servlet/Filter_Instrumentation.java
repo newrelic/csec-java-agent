@@ -85,11 +85,11 @@ public abstract class Filter_Instrumentation {
 
     private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))
             ) {
                 return;
             }
-            if(NewRelic.getAgent().getTransaction().isWebTransaction()) {
+            if(NewRelic.getAgent().getTransaction().isWebTransaction() && response != null) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(httpServletResponse.getStatus());
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(httpServletResponse.getContentType());

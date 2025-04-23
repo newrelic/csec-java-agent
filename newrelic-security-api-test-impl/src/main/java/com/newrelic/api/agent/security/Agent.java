@@ -2,10 +2,12 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.ThreadLocalLockHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
+import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -30,7 +32,7 @@ public class Agent implements SecurityAgent {
 
     private static final Object lock = new Object();
 
-    private Map<Integer, SecurityMetaData> securityMetaDataMap = new ConcurrentHashMap<>();
+    private final Map<Integer, SecurityMetaData> securityMetaDataMap = new ConcurrentHashMap<>();
 
     private java.net.URL agentJarURL;
 
@@ -68,6 +70,15 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if (ThreadLocalLockHelper.isLockHeldByCurrentThread()) {
+            return;
+        }
+        if (operation.isLowSeverityHook() && operation instanceof FileOperation ){
+            List<String> fileNames = ((FileOperation) operation).getFileName();
+            if (!fileNames.isEmpty() && !fileNames.get(0).startsWith("/tmp/test-")) {
+                return;
+            }
+        }
         System.out.println("Registering operation : " + operation.hashCode() + " : " + NewRelic.getAgent().getTransaction().hashCode());
         String apiId = "dummy-api-id";
         if(operation instanceof FileIntegrityOperation && ((FileIntegrityOperation) operation).getFileName().endsWith(".new.class")){

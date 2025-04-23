@@ -495,30 +495,6 @@ public class AgentUtils {
         return result;
     }
 
-    public boolean unZipFile(File zipFile, File outputDir) {
-        // Create zip file stream.
-        try (ZipArchiveInputStream archive = new ZipArchiveInputStream(
-                new BufferedInputStream(new FileInputStream(zipFile)))) {
-
-            ZipArchiveEntry entry;
-            while ((entry = archive.getNextZipEntry()) != null) {
-                // Print values from entry.
-                // ZipEntry.DEFLATED is int 8
-                File file = new File(outputDir, entry.getName());
-                if (entry.isDirectory()) {
-                    file.mkdirs();
-                } else {
-                    // Stream file content
-                    IOUtils.copy(archive, new FileOutputStream(file));
-                }
-            }
-            return true;
-        } catch (IOException e) {
-            logger.log(LogLevel.SEVERE, "Error : ", e, AgentUtils.class.getName());
-        }
-        return false;
-    }
-
     public static Set<PosixFilePermission> intToPosixFilePermission(int mode) {
         if (mode >= 1000 || mode < 0) {
             throw new IllegalArgumentException("Invalid mode " + mode);

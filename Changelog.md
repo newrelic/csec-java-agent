@@ -18,6 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 - [PR-372](https://github.com/newrelic/csec-java-agent/pull/372) **Repeat IAST Request Relay Commands**: Reconfigured logic to repeat IAST control commands until the endpoint is confirmed.
 
+
+## [1.6.1] - 2025-3-1
+### Adds
+- [PR-309](https://github.com/newrelic/csec-java-agent/pull/309) Introduced API Endpoint detection for Resin Server. [NR-293077](https://new-relic.atlassian.net/browse/NR-293077)
+- [PR-380](https://github.com/newrelic/csec-java-agent/pull/380) Enabled sending of critical messages upon detection of server ports and confirmation of endpoints.
+  [NR-368586](https://new-relic.atlassian.net/browse/NR-368586), [NR-368585](https://new-relic.atlassian.net/browse/NR-368585)
+- [PR-385](https://github.com/newrelic/csec-java-agent/pull/385) Implemented support for skipping analysis of transitive APIs in IAST maintaining the integrity of the skip list is maintained. [NR-341300](https://new-relic.atlassian.net/browse/NR-341300)
+### Fixes
+- [PR-374](https://github.com/newrelic/csec-java-agent/pull/374) Resolved an issue that prevented event generation when the RXSS category was disabled.
+- [PR-384](https://github.com/newrelic/csec-java-agent/pull/384) Limited instrumentation capabilities in Apache Struts 2 following the release of version 7.0.0 on December 11, 2024. [NR-353483](https://new-relic.atlassian.net/browse/NR-353483)
+- [PR-384](https://github.com/newrelic/csec-java-agent/pull/384) Limited instrumentation capabilities in Apache Solr following the release of version 9.8.0 on January 21, 2025. [NR-370635](https://new-relic.atlassian.net/browse/NR-370635)
+- [PR-364](https://github.com/newrelic/csec-java-agent/pull/364) Modified HealthCheck to include the iastTestIdentifier and adjusted WebSocket headers to send instance-count only when its value is greater than zero. [NR-347851](https://new-relic.atlassian.net/browse/NR-347851)
+- [PR-349](https://github.com/newrelic/csec-java-agent/pull/349) Enhanced the process for rolling over log files, allowing for specific prefixes and suffixes. [NR-337016](https://new-relic.atlassian.net/browse/NR-337016)
+
+
 ## [1.6.0] - 2024-12-16
 ### Adds
 - [PR-329](https://github.com/newrelic/csec-java-agent/pull/329) Apache Pekko Server Support: The security agent now supports Apache Pekko Server version 1.0.0 and newer, compatible with Scala 2.13 and above. [NR-308780](https://new-relic.atlassian.net/browse/NR-308780), [NR-308781](https://new-relic.atlassian.net/browse/NR-308781), [NR-308791](https://new-relic.atlassian.net/browse/NR-308791), [NR-308792](https://new-relic.atlassian.net/browse/NR-308792) [NR-308782](https://new-relic.atlassian.net/browse/NR-308782)

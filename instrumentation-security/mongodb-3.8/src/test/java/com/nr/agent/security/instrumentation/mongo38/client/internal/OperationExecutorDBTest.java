@@ -144,7 +144,7 @@ public class OperationExecutorDBTest {
         fields.put("attack", 1);
         fields.put("defense", 1);
         DBObject project = new BasicDBObject("$project", fields);
-        List<DBObject> pipeline = Arrays.asList(project);
+        List<DBObject> pipeline = Collections.singletonList(project);
         mcollection.aggregate(pipeline);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -172,7 +172,7 @@ public class OperationExecutorDBTest {
         fields.put("attack", 1);
         fields.put("defense", 1);
         DBObject project = new BasicDBObject("$project", fields);
-        List<DBObject> pipeline = Arrays.asList(project);
+        List<DBObject> pipeline = Collections.singletonList(project);
         mcollection.aggregate(pipeline, ReadPreference.primary());
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -200,7 +200,7 @@ public class OperationExecutorDBTest {
         fields.put("attack", 1);
         fields.put("defense", 1);
         DBObject project = new BasicDBObject("$project", fields);
-        List<DBObject> pipeline = Arrays.asList(project);
+        List<DBObject> pipeline = Collections.singletonList(project);
         AggregationOptions aggregationOptions = AggregationOptions.builder().batchSize(100)
                 .outputMode(AggregationOptions.OutputMode.CURSOR).allowDiskUse(true).build();
         mcollection.aggregate(pipeline, aggregationOptions);
@@ -231,7 +231,7 @@ public class OperationExecutorDBTest {
         fields.put("attack", 1);
         fields.put("defense", 1);
         DBObject project = new BasicDBObject("$project", fields);
-        List<DBObject> pipeline = Arrays.asList(project);
+        List<DBObject> pipeline = Collections.singletonList(project);
         AggregationOptions aggregationOptions = AggregationOptions.builder().batchSize(100)
                 .outputMode(AggregationOptions.OutputMode.CURSOR).allowDiskUse(true).build();
         mcollection.aggregate(pipeline, aggregationOptions, ReadPreference.primary());
@@ -253,7 +253,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this test case may fail, because this is not instrumented(AggregateExplainOperation)")
+    @Ignore("this testcase is failing, as AggregateExplainOperation is not instrumented")
     public void testExplainAggregate()  {
 
         DB database = mongoClient.getDB("test");
@@ -1033,7 +1033,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(RenameCollectionOperation).")
+    @Ignore("this testcase is failing, as RenameCollectionOperation is not instrumented")
     public void testRename()  {
 
         DB database = mongoClient.getDB("test");
@@ -1057,7 +1057,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(ParallelCollectionScanOperation).")
+    @Ignore("this testcase is failing, as ParallelCollectionScanOperation is not instrumented")
     public void testParallelScan()  {
 
         DB database = mongoClient.getDB("test");
@@ -1085,7 +1085,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(CreateIndexOperation).")
+    @Ignore("this testcase is failing, as CreateIndexesOperation is not instrumented")
     public void testCreateIndex()  {
 
         DB database = mongoClient.getDB("test");
@@ -1110,7 +1110,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(CreateIndexOperation)..")
+    @Ignore("this testcase is failing, as CreateIndexesOperation is not instrumented")
     public void testCreateIndex1()  {
 
         DB database = mongoClient.getDB("test");
@@ -1135,7 +1135,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(CreateIndexOperation)..")
+    @Ignore("this testcase is failing, as CreateIndexesOperation is not instrumented")
     public void testCreateIndex2()  {
 
         DB database = mongoClient.getDB("test");
@@ -1160,7 +1160,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(DropCollectionOperation).")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDrop()  {
 
         DB database = mongoClient.getDB("test");
@@ -1184,7 +1184,7 @@ public class OperationExecutorDBTest {
     }
 
     @Test
-    @Ignore("this testcase may fail, because this is not instrumented(DropIndexOperation).")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndex()  {
 
         DB database = mongoClient.getDB("test");
@@ -1207,7 +1207,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndex1()  {
 
         DB database = mongoClient.getDB("test");
@@ -1228,7 +1228,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndexes()  {
 
         DB database = mongoClient.getDB("test");
@@ -1249,7 +1249,7 @@ public class OperationExecutorDBTest {
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
     @Test
-    @Ignore("this testcase may fail, because it is not instrumented(DropIndexOperation)")
+    @Ignore("this test case is failing, as DropIndexOperation is not instrumented.")
     public void testDropIndexes1()  {
 
         DB database = mongoClient.getDB("test");

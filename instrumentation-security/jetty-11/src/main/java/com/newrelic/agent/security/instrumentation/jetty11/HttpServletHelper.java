@@ -98,7 +98,7 @@ public class HttpServletHelper {
     }
 
     public static boolean acquireServletLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VulnerabilityCaseType.REFLECTED_XSS, getNrSecCustomAttribName());
+        return GenericHelper.acquireLockIfPossible(getNrSecCustomAttribName());
     }
 
     public static void releaseServletLock() {
@@ -155,7 +155,7 @@ public class HttpServletHelper {
     public static void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response,
                                                String className, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive()) {
+            if(!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(response.getStatus());
