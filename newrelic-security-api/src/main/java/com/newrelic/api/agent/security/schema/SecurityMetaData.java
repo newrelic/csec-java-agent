@@ -3,8 +3,7 @@ package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,6 +26,10 @@ public class SecurityMetaData {
 
     private Map<String, Object> customData;
 
+    private Set<AbstractOperation> unregisteredOperations;
+
+    private DeserializationInvocation deserializationInvocation;
+
     public SecurityMetaData() {
         request = new HttpRequest();
         response = new HttpResponse();
@@ -35,6 +38,7 @@ public class SecurityMetaData {
         fileLocalMap = new HashMap<>();
         fuzzRequestIdentifier = new K2RequestIdentifier();
         customData = new ConcurrentHashMap<>();
+        unregisteredOperations = new HashSet<>();
     }
 
     public SecurityMetaData(SecurityMetaData securityMetaData) {
@@ -45,6 +49,7 @@ public class SecurityMetaData {
         fileLocalMap = new HashMap<>(securityMetaData.getFileLocalMap());
         fuzzRequestIdentifier = new K2RequestIdentifier(securityMetaData.getFuzzRequestIdentifier());
         customData = new ConcurrentHashMap<>(securityMetaData.customData);
+        unregisteredOperations = new HashSet<>(securityMetaData.unregisteredOperations);
     }
 
     public HttpRequest getRequest() {
@@ -107,6 +112,14 @@ public class SecurityMetaData {
         return klass.cast(this.customData.get(key));
     }
 
+    public Set<AbstractOperation> getUnregisteredOperations() {
+        return unregisteredOperations;
+    }
+
+    public void addUnregisteredOperation(AbstractOperation operation) {
+        this.unregisteredOperations.add(operation);
+    }
+
     public void removeCustomAttribute(String key) {
         this.customData.remove(key);
     }
@@ -114,4 +127,31 @@ public class SecurityMetaData {
         customData.clear();
     }
 
+    public boolean addToDeserializationRoot(DeserializationInfo dinfo) {
+        if (getCustomAttribute("deserializationRoot", DeserializationInfo.class) == null){
+            addCustomAttribute("deserializationRoot", dinfo);
+            return true;
+        } else {
+            DeserializationInfo root = getCustomAttribute("deserializationRoot", DeserializationInfo.class);
+            root.getUnlinkedChildren().add(dinfo);
+            return false;
+        }
+    }
+
+    public void resetDeserializationRoot() {
+        this.removeCustomAttribute("deserializationRoot");
+        this.metaData.clearLinkedEventIds();
+    }
+
+    public DeserializationInfo peekDeserializationRoot() {
+        return getCustomAttribute("deserializationRoot", DeserializationInfo.class);
+    }
+
+    public DeserializationInvocation getDeserializationInvocation() {
+        return deserializationInvocation;
+    }
+
+    public void setDeserializationInvocation(DeserializationInvocation deserializationInvocation) {
+        this.deserializationInvocation = deserializationInvocation;
+    }
 }

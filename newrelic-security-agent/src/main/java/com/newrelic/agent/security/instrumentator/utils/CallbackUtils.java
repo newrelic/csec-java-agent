@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.utils.TransactionUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -55,6 +56,8 @@ public class CallbackUtils {
     // TODO: use complete response instead of just response body.
     public static Set<String> checkForReflectedXSS(HttpRequest httpRequest, HttpResponse httpResponse) {
         Set<String> toReturn = new HashSet<>();
+
+        TransactionUtils.trimResponseBody(httpResponse);
 
         Set<String> combinedRequestData = decodeRequestData(httpRequest);
         if (combinedRequestData.isEmpty()) {
@@ -251,7 +254,7 @@ public class CallbackUtils {
     public static Set<String> decodeResponseData(HttpResponse httpResponse) {
         Set<String> processedData = new HashSet<>();
         String contentType = httpResponse.getResponseContentType();
-        String responseBody = httpResponse.getResponseBody().toString();
+        String responseBody = httpResponse.getBody().toString();
         String processedBody = responseBody;
 
 

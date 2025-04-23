@@ -52,7 +52,7 @@ public class GenericHelper {
         return false;
     }
 
-    private static boolean isLockAcquirePossible(VulnerabilityCaseType caseType) {
+    public static boolean isLockAcquirePossible(VulnerabilityCaseType caseType) {
         if (!NewRelicSecurity.isHookProcessingActive()){
             return false;
         }
@@ -62,9 +62,9 @@ public class GenericHelper {
         if (caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isRequestParsed()){
             return false;
         }
-        if (!caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-            return false;
-        }
+//        if (!caseType.equals(VulnerabilityCaseType.REFLECTED_XSS) && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+//            return false;
+//        }
         boolean enabled = false;
         switch (caseType) {
             case SYSTEM_COMMAND:
@@ -103,6 +103,12 @@ public class GenericHelper {
             case TRUSTBOUNDARY:
             case HASH:
                 enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInsecureSettingsEnabled();
+                break;
+            case UNSAFE_DESERIALIZATION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getUnsafeDeserializationEnabled();
+                break;
+            case REFLECTION:
+                enabled = NewRelicSecurity.getAgent().getIastDetectionCategory().getInsecureReflectionEnabled();
                 break;
             default:
                 break;

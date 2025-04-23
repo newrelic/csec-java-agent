@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
+import com.newrelic.api.agent.security.utils.ExecutionIDGenerator;
+
 public abstract class AbstractOperation {
 
     public static final String EMPTY = "";
@@ -36,9 +38,10 @@ public abstract class AbstractOperation {
     }
 
     public AbstractOperation(String className, String methodName){
-        this.className = className;
-        this.methodName = methodName;
-        this.blockingEndTime = 0L;
+            this.className = className;
+            this.methodName = methodName;
+            this.blockingEndTime = 0L;
+            this.executionId = ExecutionIDGenerator.getExecutionId();
     }
 
     public String getClassName() {

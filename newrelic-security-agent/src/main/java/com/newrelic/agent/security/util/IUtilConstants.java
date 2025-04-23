@@ -13,6 +13,7 @@ public interface IUtilConstants {
     String SCAN_TIME_DURATION = "security.scan_schedule.duration";
     String SCAN_TIME_COLLECT_SAMPLES = "security.scan_schedule.always_sample_traces";
     String SCAN_REQUEST_RATE_LIMIT = "security.scan_controllers.iast_scan_request_rate_limit";
+    String REPORT_HTTP_RESPONSE_BODY = "security.scan_controllers.report_http_response_body";
 
     String SKIP_IAST_SCAN = "security.exclude_from_iast_scan";
     String SKIP_IAST_SCAN_API = SKIP_IAST_SCAN + ".api";
@@ -31,6 +32,8 @@ public interface IUtilConstants {
     String SKIP_XPATH_INJECTION = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".xpath_injection";
     String SKIP_SSRF = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".ssrf";
     String SKIP_RXSS = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".rxss";
+    String SKIP_UNSAFE_DESERIALIZATION = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".unsafe_deserialization";
+    String SKIP_UNSAFE_REFLECTION = SKIP_IAST_SCAN_PARAMETERS_IAST_DETECTION_CATEGORY + ".unsafe_reflection";
 
     String RESTRICTION_CRITERIA_SCAN_TIME_SCHEDULE = "security.restriction_criteria.scan_time.schedule";
     String RESTRICTION_CRITERIA_SCAN_TIME_DURATION = "security.restriction_criteria.scan_time.duration";

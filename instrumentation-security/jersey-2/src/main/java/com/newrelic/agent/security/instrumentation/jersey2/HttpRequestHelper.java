@@ -79,7 +79,7 @@ public class HttpRequestHelper {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))) {
                 return;
             }
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(getHeaders(wrappedMessageContext));
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
@@ -107,7 +107,7 @@ public class HttpRequestHelper {
         for (String key : outboundMessageContext.getStringHeaders().keySet()) {
             headers.put(key, outboundMessageContext.getHeaderString(key));
             if(StringUtils.equalsAny(StringUtils.lowerCase(key), CONTENT_TYPE, HEADER_CONTENT_TYPE)){
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(outboundMessageContext.getHeaderString(key));
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(outboundMessageContext.getHeaderString(key));
             }
         }
         return headers;

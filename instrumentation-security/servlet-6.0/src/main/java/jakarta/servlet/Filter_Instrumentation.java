@@ -95,10 +95,10 @@ public abstract class Filter_Instrumentation {
             }
             if(NewRelic.getAgent().getTransaction().isWebTransaction() && response != null) {
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseCode(httpServletResponse.getStatus());
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(httpServletResponse.getContentType());
-            }
-            ServletHelper.executeBeforeExitingTransaction();
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setStatusCode(httpServletResponse.getStatus());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setContentType(httpServletResponse.getContentType());
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setHeaders(HttpServletHelper.getHttpResponseHeaders(httpServletResponse));            }
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

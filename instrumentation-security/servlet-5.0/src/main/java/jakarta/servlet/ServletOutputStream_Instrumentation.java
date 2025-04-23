@@ -40,7 +40,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append((char) b);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append((char) b);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -62,7 +62,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -84,7 +84,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -105,7 +105,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -126,7 +126,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -147,7 +147,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -168,7 +168,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -189,7 +189,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -210,7 +210,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -231,8 +231,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -253,8 +253,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -275,8 +275,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -297,8 +297,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -319,8 +319,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -341,8 +341,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -363,8 +363,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(isLockAcquired){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
