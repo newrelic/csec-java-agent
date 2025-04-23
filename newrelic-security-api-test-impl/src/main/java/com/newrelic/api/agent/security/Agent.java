@@ -85,6 +85,8 @@ public class Agent implements SecurityAgent {
             return;
         }
         operation.setApiID(apiId);
+        String executionId = "dummy-exec-id";
+        operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
