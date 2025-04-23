@@ -1118,7 +1118,7 @@ public class Agent implements SecurityAgent {
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
                 logger.log(LogLevel.FINEST, "Transaction cancelled with token: " + transaction.getSecurityMetaData().toString(), Agent.class.getName());
                 TransactionUtils.executeBeforeExitingTransaction();
-                TransactionUtils.reportHttpResponse();
+//                TransactionUtils.reportHttpResponse();
             }
         } catch (Exception e){
             logger.log(LogLevel.FINEST, "Error while processing transaction cancelled event", e, Agent.class.getName());
@@ -1131,7 +1131,7 @@ public class Agent implements SecurityAgent {
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
                 logger.log(LogLevel.FINEST, "Transaction finished with token: " + NewRelic.getAgent().getTransaction().getSecurityMetaData().toString(), Agent.class.getName());
                 TransactionUtils.executeBeforeExitingTransaction();
-                TransactionUtils.reportHttpResponse();
+//                TransactionUtils.reportHttpResponse();
             }
         } catch (Exception e){
             logger.log(LogLevel.FINEST, "Error while processing transaction finished event", e, Agent.class.getName());
