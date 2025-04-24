@@ -30,6 +30,7 @@ public abstract class Method_Instrumentation {
         if(NewRelicSecurity.isHookProcessingActive()) {
             operation = preprocessSecurityHook(obj, getDeclaringClass(), getParameterTypes(), getName(), args);
         }
+        NewRelicSecurity.getAgent().incrementReflectionInvocations();
         Object returnValue = Weaver.callOriginal();
         registerExitOperation(operation);
         return returnValue;

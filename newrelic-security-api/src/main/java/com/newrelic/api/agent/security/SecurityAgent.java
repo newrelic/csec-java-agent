@@ -86,4 +86,6 @@ public interface SecurityAgent {
     void dispatcherTransactionCancelled();
 
     void dispatcherTransactionFinished();
+
+    void incrementReflectionInvocations();
 }

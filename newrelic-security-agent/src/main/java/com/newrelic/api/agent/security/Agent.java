@@ -376,7 +376,7 @@ public class Agent implements SecurityAgent {
             return;
         }
 
-        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
+//        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
         try {
@@ -1141,6 +1141,10 @@ public class Agent implements SecurityAgent {
         } catch (Exception e){
             logger.log(LogLevel.FINEST, "Error while processing transaction finished event", e, Agent.class.getName());
         }
+    }
+
+    public void incrementReflectionInvocations() {
+        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
     }
 
 }

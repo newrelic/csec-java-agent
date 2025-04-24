@@ -249,4 +249,8 @@ public class Agent implements SecurityAgent {
     @Override
     public void dispatcherTransactionFinished() {
     }
+
+    public void incrementReflectionInvocations() {
+
+    }
 }

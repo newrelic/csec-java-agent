@@ -168,4 +168,7 @@ class NoOpAgent implements SecurityAgent {
 
     }
 
+    public void incrementReflectionInvocations(){
+
+    }
 }
