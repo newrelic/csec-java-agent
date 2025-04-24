@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-403](https://github.com/newrelic/csec-java-agent/pull/403) GraphQL Supported Version Range: Restricted the supported version range for GraphQL due to the release of a new version on April 7th, 2025
 
 ### Fixes
-- [PR-372](https://github.com/newrelic/csec-java-agent/pull/372) **Repeat IAST Request Relay Commands**: Reconfigured logic to repeat IAST control commands until the endpoint is confirmed.
+- [PR-372](https://github.com/newrelic/csec-java-agent/pull/372) **Repeat IAST Request Replay Commands**: Reconfigured logic to repeat IAST control commands until the endpoint is confirmed.
 
 
 ## [1.6.1] - 2025-3-1
