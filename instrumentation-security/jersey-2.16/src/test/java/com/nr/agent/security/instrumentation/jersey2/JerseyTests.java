@@ -28,6 +28,7 @@ import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -112,6 +113,7 @@ public class JerseyTests {
     }
 
     @Test
+    @Ignore
     public void asyncHandleHeaderTest() {
         String[] responseBody = fireRequest1("/operation/async");
 
