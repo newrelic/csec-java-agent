@@ -4,7 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.0] - TBD
+## [1.7.0] - 2025-4-25
 ### Adds
 - [PR-395](https://github.com/newrelic/csec-java-agent/pull/395) **Support for Deserialization Vulnerability Detection**: Implemented mechanisms to detect vulnerabilities arising from unsafe deserialization processes.
 - [PR-395](https://github.com/newrelic/csec-java-agent/pull/395) **Support for Vulnerability Detection of Remote Code Invocation via Reflection**: Enhanced capability to identify security risks associated with remote code execution through reflection.
@@ -16,8 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-403](https://github.com/newrelic/csec-java-agent/pull/403) GraphQL Supported Version Range: Restricted the supported version range for GraphQL due to the release of a new version on April 7th, 2025
 
 ### Fixes
-- [PR-372](https://github.com/newrelic/csec-java-agent/pull/372) **Repeat IAST Request Relay Commands**: Reconfigured logic to repeat IAST control commands until the endpoint is confirmed.
+- [PR-372](https://github.com/newrelic/csec-java-agent/pull/372) **Repeat IAST Request Replay Commands**: Reconfigured logic to repeat IAST control commands until the endpoint is confirmed.
 
+### Note
+- The instrumentation for the module `com.newrelic.instrumentation.security.java-reflection` is disabled by default. This is due to its impact on CPU utilization, which can significantly increase when the module is active.
+- **Action Required**: To detect unsafe reflection vulnerabilities effectively, enable the `com.newrelic.instrumentation.security.java-reflection` module.
 
 ## [1.6.1] - 2025-3-1
 ### Adds

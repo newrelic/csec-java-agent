@@ -8,7 +8,7 @@ dependencies {
 
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.java-reflection' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.java-reflection', 'Enabled': 'false'  }
 }
 
 verifyInstrumentation {

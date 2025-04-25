@@ -203,6 +203,9 @@ tasks.register('generate-sbom') {
     def parsedJson = new JsonSlurper().parseText(req.getInputStream().getText())
 
     try {
+        if (!project.buildDir.exists()) {
+            mkdir project.buildDir;
+        }
         def reportsDir = Paths.get("$buildDir", "reports")
         def sbomFile = new File("$buildDir/reports", "SBOM.json")
         if (Files.exists(reportsDir) || Files.createDirectory(reportsDir)) {

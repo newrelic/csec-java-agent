@@ -19,8 +19,8 @@ import org.mule.module.http.internal.domain.HttpEntity;
 @Weave(type = MatchType.ExactClass, originalName = "org.mule.module.http.internal.domain.response.HttpResponseBuilder")
 public class HttpResponseBuilder_Instrumentation {
     
-    private final ResponseStatus responseStatus = Weaver.callOriginal();
-    private final HttpEntity body = Weaver.callOriginal();
+    private ResponseStatus responseStatus = Weaver.callOriginal();
+    private HttpEntity body = Weaver.callOriginal();
 
     public HttpResponse build() {
         HttpResponse response = Weaver.callOriginal();

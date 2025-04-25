@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
+import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -85,6 +86,8 @@ public class Agent implements SecurityAgent {
             return;
         }
         operation.setApiID(apiId);
+        String executionId = "dummy-exec-id";
+        operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
@@ -93,6 +96,9 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerExitEvent(AbstractOperation operation) {
+        if (operation instanceof SecureCookieOperationSet) {
+            this.getSecurityMetaData().getCustomAttribute(OPERATIONS, List.class).add(operation);
+        }
         this.getSecurityMetaData().getCustomAttribute(EXIT_OPERATIONS, List.class).add(operation);
     }
 
