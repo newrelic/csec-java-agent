@@ -136,6 +136,8 @@ The agent automatically instruments the following HTTP clients and messaging ser
 * Secure Cookie
 * XQuery Injection
 * JavaScript Code Injection
+* Unsafe Deserialization
+* Unsafe Reflection
 
 ## **Building**
 

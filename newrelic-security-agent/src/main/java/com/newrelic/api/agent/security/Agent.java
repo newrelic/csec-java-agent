@@ -1106,14 +1106,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void dispatcherTransactionStarted() {
-        try {
-            Transaction transaction = NewRelic.getAgent().getTransaction();
-            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
-                logger.log(LogLevel.FINEST, "Transaction started with token: " + transaction.getToken().toString(), Agent.class.getName());
-            }
-        } catch (Exception e){
-            logger.log(LogLevel.FINEST, "Error while processing transaction started event", e, Agent.class.getName());
-        }
+        // Do Nothing
     }
 
     @Override
@@ -1121,7 +1114,6 @@ public class Agent implements SecurityAgent {
         try {
             Transaction transaction = NewRelic.getAgent().getTransaction();
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
-                logger.log(LogLevel.FINEST, "Transaction cancelled with token: " + transaction.getSecurityMetaData().toString(), Agent.class.getName());
                 TransactionUtils.executeBeforeExitingTransaction();
 //                TransactionUtils.reportHttpResponse();
             }
@@ -1134,7 +1126,6 @@ public class Agent implements SecurityAgent {
     public void dispatcherTransactionFinished() {
         try {
             if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
-                logger.log(LogLevel.FINEST, "Transaction finished with token: " + NewRelic.getAgent().getTransaction().getSecurityMetaData().toString(), Agent.class.getName());
                 TransactionUtils.executeBeforeExitingTransaction();
 //                TransactionUtils.reportHttpResponse();
             }
