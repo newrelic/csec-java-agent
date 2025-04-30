@@ -46,7 +46,7 @@ public class MysqlMultiHost602Test {
     @BeforeClass
     public static void setUpDb() {
 
-        // System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
+        System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
         mysql = new MySQLContainer<>(DockerImageName.parse("mysql:5.7.43"))
                 .withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/docker-entrypoint-initdb.d/");
         mysql.start();
