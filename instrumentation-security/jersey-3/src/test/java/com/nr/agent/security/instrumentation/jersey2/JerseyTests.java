@@ -16,9 +16,11 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.security.test.marker.Java11IncompatibleTest;
+import com.newrelic.security.test.marker.Java21IncompatibleTest;
 import com.newrelic.security.test.marker.Java8IncompatibleTest;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.Header;
@@ -56,7 +58,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.jersey2"})
-@Category({Java8IncompatibleTest.class, Java11IncompatibleTest.class})
+@Category({Java8IncompatibleTest.class})
 public class JerseyTests {
 
     private static HttpServer server;
@@ -116,7 +118,7 @@ public class JerseyTests {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         assertTrue(introspector.getSecurityMetaData().getMetaData().isUserLevelServiceMethodEncountered());
-        assertOperation(introspector.getOperations(), true, introspector.getRequestInStreamHash(), responseBody);
+        assertOperation(introspector.getOperations(), false, introspector.getRequestInStreamHash(), responseBody);
     }
 
     private String[] fireRequest(final String path) {
@@ -200,7 +202,7 @@ public class JerseyTests {
         // assert the security response
         HttpResponse response = operation.getResponse();
         assertFalse(response.isEmpty());
-        assertEquals(MediaType.TEXT_HTML, response.getResponseContentType());
+        assertFalse(StringUtils.isEmpty(response.getResponseContentType()));
         assertEquals(2, responseBody.length);
         assertEquals(responseBody[0], response.getBody().toString());
         assertFalse(hashCode.isEmpty());

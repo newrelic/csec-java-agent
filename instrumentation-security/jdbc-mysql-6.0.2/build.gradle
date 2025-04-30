@@ -16,6 +16,13 @@ verifyInstrumentation {
     excludeRegex 'mysql:mysql-connector-java:8.*'
 }
 
+test {
+    onlyIf {
+        // test is incompatible with java version 8 above
+        project.hasProperty("test8")
+    }
+}
+
 site {
     title 'MySQL'
     type 'Datastore'

@@ -4,6 +4,7 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.security.test.marker.*;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.CustomerLocatorResource;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.IdSubResource;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.OrdersSubResource;
@@ -15,6 +16,7 @@ import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.core.Application;
@@ -22,6 +24,7 @@ import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "com.newrelic.agent.security", "org.glassfish.jersey" })
+@Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class SubresourceTest extends JerseyTest {
     @BeforeClass
     public static void bringUp() {

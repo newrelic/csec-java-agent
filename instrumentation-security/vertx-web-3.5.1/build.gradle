@@ -14,6 +14,14 @@ verifyInstrumentation {
     excludeRegex '.*milestone[0-9]*'
 }
 
+test {
+    // this version of Vert.x uses some DirectBuffer things that are now hidden in its module
+    if (project.hasProperty("test17") || project.hasProperty("test21") || project.hasProperty("test23")) {
+        jvmArgs += '--add-opens=java.base/java.nio=ALL-UNNAMED'
+        jvmArgs += '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+    }
+}
+
 site {
     title 'Vertx'
     type 'Framework'

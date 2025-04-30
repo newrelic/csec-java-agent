@@ -399,7 +399,9 @@ public class AgentUtils {
             logger.log(LogLevel.INFO, String.format(NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S,
                     JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
             try {
-                WSClient.getInstance().send(JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
+                if(WSClient.getInstance().isOpen()) {
+                    WSClient.getInstance().send(JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
+                }
                 AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
                 EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
                 return true;

@@ -16,6 +16,13 @@ verifyInstrumentation {
     excludeRegex '.*-(b|gfa|beta|RC)[0-9]*'
 }
 
+test {
+    onlyIf {
+        // test is incompatible with version of java greater than 1.8
+        project.hasProperty("test8")
+    }
+}
+
 site {
     title 'Tomcat'
     type 'Appserver'

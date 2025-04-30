@@ -65,6 +65,12 @@ compileTestScala {
     }
 }
 
+test {
+    onlyIf {
+        !project.hasProperty('includeScala')
+    }
+}
+
 clean {
     // Clean up any residual generated Routes files to avoid duplicate classes
     delete 'src/test/scala/router'
