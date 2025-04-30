@@ -39,8 +39,8 @@ public class HttpResponseBuilder_Instrumentation {
             }
             com.newrelic.api.agent.security.schema.HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
             MuleHelper.processHttpResponseHeaders(securityResponse, response);
-            securityResponse.setResponseCode(response.getStatusCode());
-            securityResponse.setResponseContentType(MuleHelper.getContentType(securityResponse.getHeaders()));
+            securityResponse.setStatusCode(response.getStatusCode());
+            securityResponse.setContentType(MuleHelper.getContentType(securityResponse.getHeaders()));
         } catch (Throwable e) {
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, MuleHelper.MULE_37, e.getMessage()), e, this.getClass().getName());

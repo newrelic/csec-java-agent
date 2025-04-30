@@ -4,14 +4,17 @@ import com.nr.builder.DependencyPatcher
 import com.nr.builder.GitUtil
 import com.nr.builder.Log4j2PluginFileMover
 import com.nr.builder.publish.PublishConfig
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.Clock
 
 plugins {
     id("java-library")
     id("maven-publish")
     id("signing")
-    id 'org.cyclonedx.bom' version '1.7.3'
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -35,11 +38,6 @@ configurations {
 
 configurations.implementation.extendsFrom(configurations.shadowIntoJar)
 configurations.implementation.extendsFrom(configurations.jarIntoJar)
-
-cyclonedxBom {
-    outputFormat = "json"
-    outputName = "SBOM"
-}
 
 project.ext {
     instrumentProjects = {
@@ -189,6 +187,40 @@ task transformedShadowJar(type: ShadowJar) {
 }
 
 /**
+ * <p> The gradle task generate-sbom is responsible for generating an aggregate of all direct and transitive dependencies associated with the project.
+ * It utilizes the GitHub REST API to produce SBOM in the standardized SPDX format.
+ * For more information, please refer to <a href="https://docs.github.com/en/rest/dependency-graph/sboms"> this</a>.</p>
+ * <ul>The output of this task should contain:
+ * <li>The SBOM json file, which is located in newrelic-security-agent/reports/ directory.</li>
+ * </ul>
+*/
+tasks.register('generate-sbom') {
+    def url = new URL("https://api.github.com/repos/newrelic/csec-java-agent/dependency-graph/sbom")
+    def req =  (HttpURLConnection) url.openConnection()
+    req.addRequestProperty("Accept", "application/vnd.github+json")
+    req.connect()
+    req.getResponseCode()
+    def parsedJson = new JsonSlurper().parseText(req.getInputStream().getText())
+
+    try {
+        if (!project.buildDir.exists()) {
+            mkdir project.buildDir;
+        }
+        def reportsDir = Paths.get("$buildDir", "reports")
+        def sbomFile = new File("$buildDir/reports", "SBOM.json")
+        if (Files.exists(reportsDir) || Files.createDirectory(reportsDir)) {
+            sbomFile.exists() && sbomFile.delete();
+            if (sbomFile.createNewFile()) {
+                sbomFile.write(new JsonBuilder(parsedJson).toPrettyString())
+            }
+        }
+    } catch (e) {
+        printf("Error while creating SBOM file: %s", e.getMessage())
+        e.printStackTrace()
+    }
+}
+
+/**
  * The newrelicVersionedAgentJar task builds the final output jar. This jar contains:
  * <ul>
  *     <li>All the files from the transformedShadowJar task</li>
@@ -202,8 +234,7 @@ task newrelicVersionedAgentJar(type: Jar) {
     group("build")
     dependsOn("transformedShadowJar")
     dependsOn(instrumentProjects().collect { it.tasks["jar"] })
-    dependsOn("cyclonedxBom")
-
+    dependsOn("generate-sbom")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from("$rootDir/LICENSE.md")

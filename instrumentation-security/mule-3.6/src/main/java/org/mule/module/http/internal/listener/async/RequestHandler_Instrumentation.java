@@ -78,7 +78,7 @@ public class RequestHandler_Instrumentation {
                 return;
             }
             ServletHelper.registerUserLevelCode(MuleHelper.LIBRARY_NAME);
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

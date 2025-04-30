@@ -59,13 +59,17 @@ public class Filter_Instrumentation {
             securityRequest.setProtocol(HttpServerHelper.getProtocol(exchange));
             securityRequest.setUrl(String.valueOf(exchange.getRequestURI()));
 
+            String queryString = exchange.getRequestURI().getQuery();
+            if (queryString != null && !queryString.trim().isEmpty()) {
+                securityRequest.setUrl(securityRequest.getUrl() + HttpServerHelper.QUESTION_MARK + queryString);
+            }
+
             securityRequest.setContentType(HttpServerHelper.getContentType(securityRequest.getHeaders()));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
         }
     }
-
     private void postProcessSecurityHook(HttpExchange exchange) {
         try {
             if(!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
@@ -73,11 +77,11 @@ public class Filter_Instrumentation {
             }
 
             HttpResponse securityResponse = NewRelicSecurity.getAgent().getSecurityMetaData().getResponse();
-            securityResponse.setResponseCode(exchange.getResponseCode());
-            HttpServerHelper.processHttpResponseHeaders(exchange.getResponseHeaders(), securityResponse);
-            securityResponse.setResponseContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
+            securityResponse.setStatusCode(exchange.getResponseCode());
+            securityResponse.setHeaders(HttpServerHelper.getHttpResponseHeaders(exchange.getResponseHeaders()));
+            securityResponse.setContentType(HttpServerHelper.getContentType(securityResponse.getHeaders()));
 
-            ServletHelper.executeBeforeExitingTransaction();
+//            ServletHelper.executeBeforeExitingTransaction();
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 

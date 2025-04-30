@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentator.utils;
+package com.newrelic.api.agent.security.utils;
 
 import java.util.concurrent.atomic.AtomicLong;
 

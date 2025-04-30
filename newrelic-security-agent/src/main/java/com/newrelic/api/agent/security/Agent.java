@@ -20,6 +20,7 @@ import com.newrelic.agent.security.intcodeagent.utils.*;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperationSet;
 import com.newrelic.api.agent.security.schema.policy.IastDetectionCategory;
+import com.newrelic.api.agent.security.utils.ExecutionIDGenerator;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -40,8 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -368,6 +367,15 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if(operation instanceof RXSSOperation && NewRelicSecurity.getAgent().getIastDetectionCategory().getRxssEnabled()){
+            return;
+        }
+
+        if(NewRelicSecurity.getAgent().getSecurityMetaData() != null && NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().addUnregisteredOperation(operation);
+            return;
+        }
+
         AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
         // added to fetch request/response in case of grpc requests
         boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
@@ -385,7 +393,7 @@ public class Agent implements SecurityAgent {
                 if (securityMetaData != null && securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-                    securityMetaData.getResponse().setResponseBody(
+                    securityMetaData.getResponse().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
@@ -397,27 +405,27 @@ public class Agent implements SecurityAgent {
                     return;
                 }
 
-                String executionId = ExecutionIDGenerator.getExecutionId();
-                operation.setExecutionId(executionId);
                 operation.setStartTime(Instant.now().toEpochMilli());
                 if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
                     logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
                 }
-                if (operation instanceof RXSSOperation) {
-                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
-                    securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
-                } else if (operation instanceof SecureCookieOperationSet) {
-                    operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
-                } else {
-                    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                    operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
+                if (operation.getStackTrace() == null || operation.getStackTrace().length <= 0) {
+                    if (operation instanceof RXSSOperation) {
+                        operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                        securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
+                    } else if (operation instanceof SecureCookieOperationSet) {
+                        operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                    } else {
+                        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                        operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
+                    }
                 }
 
                 // added to fetch request/response in case of grpc requests
                 if (securityMetaData.getRequest().getIsGrpc()) {
                     securityMetaData.getRequest().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-                    securityMetaData.getResponse().setResponseBody(
+                    securityMetaData.getResponse().setBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
@@ -451,8 +459,14 @@ public class Agent implements SecurityAgent {
                     operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
                 }
                 processStackTrace(operation);
-//        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
-//        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
+                if(securityMetaData.getDeserializationInvocation() != null && securityMetaData.getDeserializationInvocation().getActive()){
+                    securityMetaData.getMetaData().addLinkedEventId(operation.getExecutionId());
+                    securityMetaData.getMetaData().setParentEventId(securityMetaData.getDeserializationInvocation().getEid());
+                    securityMetaData.getMetaData().setTriggerViaDeserialisation(true);
+                } else {
+                    securityMetaData.getMetaData().setTriggerViaDeserialisation(false);
+                }
+
                 HttpRequest request = securityMetaData.getRequest();
                 Framework frameWork = Framework.UNKNOWN;
                 if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && StringUtils.isNotBlank(securityMetaData.getMetaData().getFramework())) {
@@ -584,29 +598,34 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
-        boolean isNettyReactor = false, isNRGeneratedEvent = false;
-        for (int i = 0, j = -1; i < operation.getStackTrace().length; i++) {
-            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
-                    "com.nr.instrumentation.TokenLinkingSubscriber",
-                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
-                    "com.nr.vertx.instrumentation.VertxUtil$1",
-                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
-                isNettyReactor = true;
-                continue;
-            }
-
-            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                j++;
-            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                isNRGeneratedEvent = true;
-                break;
+        for (int i = 1; i < operation.getStackTrace().length; i++) {
+            if(StringUtils.startsWith(operation.getStackTrace()[i].getClassName(), "com.newrelic.")) {
+                return true;
             }
         }
-        if (isNettyReactor) {
-            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
-        }
-        return isNRGeneratedEvent;
+        return false;
+//        boolean isNettyReactor = false, isNRGeneratedEvent = false;
+//        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+//            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(),
+//                    "com.nr.instrumentation.TokenLinkingSubscriber",
+//                    "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber",
+//                    "com.nr.vertx.instrumentation.VertxUtil$1",
+//                    "com.nr.vertx.instrumentation.HttpClientRequestPromiseWrapper")){
+//                isNettyReactor = true;
+//                continue;
+//            }
+//
+//            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+//            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+//                j++;
+//            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+//                return true;
+//            }
+//        }
+//        if (isNettyReactor) {
+//            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
+//        }
+//        return isNRGeneratedEvent;
     }
 
     private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
@@ -1066,7 +1085,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean recordExceptions(SecurityMetaData securityMetaData, Throwable exception) {
-        int responseCode = securityMetaData.getResponse().getResponseCode();
+        int responseCode = securityMetaData.getResponse().getStatusCode();
         String route = securityMetaData.getRequest().getUrl();
         if(StringUtils.isNotBlank(securityMetaData.getRequest().getRoute())){
             route = securityMetaData.getRequest().getRoute();
@@ -1083,6 +1102,36 @@ public class Agent implements SecurityAgent {
     @Override
     public void reportURLMapping() {
         SchedulerHelper.getInstance().scheduleURLMappingPosting(AgentUtils::sendApplicationURLMappings);
+    }
+
+    @Override
+    public void dispatcherTransactionStarted() {
+        // Do Nothing
+    }
+
+    @Override
+    public void dispatcherTransactionCancelled() {
+        try {
+            Transaction transaction = NewRelic.getAgent().getTransaction();
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                TransactionUtils.executeBeforeExitingTransaction();
+//                TransactionUtils.reportHttpResponse();
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction cancelled event", e, Agent.class.getName());
+        }
+    }
+
+    @Override
+    public void dispatcherTransactionFinished() {
+        try {
+            if (isInitialised() && NewRelicSecurity.isHookProcessingActive()) {
+                TransactionUtils.executeBeforeExitingTransaction();
+//                TransactionUtils.reportHttpResponse();
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.FINEST, "Error while processing transaction finished event", e, Agent.class.getName());
+        }
     }
 
 }
