@@ -18,8 +18,8 @@ verifyInstrumentation {
 
 test {
     onlyIf {
-        // test is incompatible with java version greater than equal to 21
-        !project.hasProperty("test21")
+        // test is incompatible with java version 8 above
+        project.hasProperty("test8")
     }
 }
 
