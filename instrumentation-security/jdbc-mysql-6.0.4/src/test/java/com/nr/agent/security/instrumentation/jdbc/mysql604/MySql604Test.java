@@ -50,7 +50,7 @@ public class MySql604Test {
         QUERIES.add("select * from testQuery");
         PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
 
-        System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
+        // System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
         mysql = new MySQLContainer<>(DockerImageName.parse("mysql:5.7.43"))
 //                .withCommand("--default-authentication-plugin=mysql_native_password")
                 .withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/docker-entrypoint-initdb.d/");

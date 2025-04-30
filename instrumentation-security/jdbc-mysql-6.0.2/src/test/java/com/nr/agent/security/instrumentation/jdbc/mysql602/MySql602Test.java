@@ -51,7 +51,7 @@ public class MySql602Test {
         QUERIES.add("select * from testQuery");
         PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
 
-        System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
+        // System.setProperty("DOCKER_DEFAULT_PLATFORM", "linux/amd64");
         mysql = new MySQLContainer<>(DockerImageName.parse("mysql:5.7.43"))
                 .withCopyFileToContainer(MountableFile.forClasspathResource("maria-db-test.sql"), "/docker-entrypoint-initdb.d/");
         mysql.setPortBindings(Collections.singletonList(PORT + ":3808"));
