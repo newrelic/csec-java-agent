@@ -1,11 +1,5 @@
-/*
- *
- *  * Copyright 2020 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
-
 package org.apache.solr.client.solrj.impl;
+
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -28,6 +22,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -81,22 +76,29 @@ public abstract class HttpSolrClient_Instrumentation {
             String method = request.getMethod().toString();
             String path = request.getPath();
             SolrParams solrParams = request.getParams();
-            Map<String, String> params = Collections.emptyMap();
-            if(solrParams != null){
-                params = SolrParams.toMap(solrParams.toNamedList());
-            }
+
             List<SolrInputDocument> documents = Collections.emptyList();
             if(request instanceof UpdateRequest) {
                 documents = ((UpdateRequest) request).getDocuments();
             }
             SolrDbOperation solrDbOperation = new SolrDbOperation(this.getClass().getName(), methodName);
             solrDbOperation.setCollection(collection);
-            solrDbOperation.setParams(params);
+
+            solrDbOperation.setParams(Collections.emptyMap());
+
+            if(solrParams != null){
+                HashMap<String, String> map = new HashMap<>();
+                NamedList<Object> params = solrParams.toNamedList();
+                for (int i = 0; i < params.size(); i++) {
+                    map.put(params.getName(i), params.getVal(i).toString());
+                }
+                solrDbOperation.setParams(map);
+            }
             solrDbOperation.setDocuments(documents);
             solrDbOperation.setConnectionURL(getBaseURL());
             solrDbOperation.setMethod(method);
             solrDbOperation.setPath(path);
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Solr request %s, %s, %s, %s, %s", collection, method, path, params, documents), this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Solr request %s, %s, %s, %s, %s", collection, method, path, solrDbOperation.getParams(), documents), this.getClass().getName());
             NewRelicSecurity.getAgent().registerOperation(solrDbOperation);
             return solrDbOperation;
         } catch (MalformedURLException e){
