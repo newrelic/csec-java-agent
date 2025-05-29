@@ -87,3 +87,4 @@ jobs:
         uses: ./.github/actions/unit-test
         with:
           java-version: ${{ matrix.java-version }}
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
