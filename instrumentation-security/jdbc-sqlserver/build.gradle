@@ -9,10 +9,9 @@ jar {
 }
 
 verifyInstrumentation {
-    passes("com.microsoft.sqlserver:mssql-jdbc:[0,12.7.0)")
-    excludeRegex(".*jre9.*")
-    excludeRegex(".*jre1\\d.*")
-    excludeRegex(".*preview.*")
+    passes("com.microsoft.sqlserver:mssql-jdbc:[0,)")
+    exclude("com.microsoft.sqlserver:mssql-jdbc:12.7.0")
+    excludeRegex(".*jre7-preview")
     verifyClasspath = false
 }
 
