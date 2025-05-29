@@ -1,0 +1,1 @@
+var fun1 = function(name) { return 'Hi, ' + name; };
