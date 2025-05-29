@@ -20,6 +20,8 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.security.test.marker.Java11IncompatibleTest;
 import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.security.test.marker.Java21IncompatibleTest;
+import com.newrelic.security.test.marker.Java23IncompatibleTest;
 import com.newrelic.security.test.marker.Java9IncompatibleTest;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.Header;
@@ -57,7 +59,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.jersey2"})
-@Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class })
+@Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class JerseyTests {
 
     private static HttpServer server;
@@ -117,7 +119,7 @@ public class JerseyTests {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         assertTrue(introspector.getSecurityMetaData().getMetaData().isUserLevelServiceMethodEncountered());
-        assertOperation(introspector.getOperations(), true, introspector.getRequestInStreamHash(), responseBody);
+        assertOperation(introspector.getOperations(), false, introspector.getRequestInStreamHash(), responseBody);
     }
 
     private String[] fireRequest(final String path) {

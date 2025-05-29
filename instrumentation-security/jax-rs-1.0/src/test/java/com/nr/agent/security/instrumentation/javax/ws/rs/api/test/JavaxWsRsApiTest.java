@@ -4,13 +4,20 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.security.test.marker.Java11IncompatibleTest;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.security.test.marker.Java21IncompatibleTest;
+import com.newrelic.security.test.marker.Java23IncompatibleTest;
+import com.newrelic.security.test.marker.Java9IncompatibleTest;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.App;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.javax.ws.rs.api")
+@Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class JavaxWsRsApiTest {
     @Test
     public void testPut() {

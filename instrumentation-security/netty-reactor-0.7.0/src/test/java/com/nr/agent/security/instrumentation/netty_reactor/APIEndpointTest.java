@@ -7,11 +7,13 @@ import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.Framework;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.security.test.marker.*;
 import io.netty.handler.codec.http.HttpMethod;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import reactor.core.publisher.Mono;
 import reactor.ipc.netty.http.server.HttpServer;
@@ -27,6 +29,7 @@ import java.util.Set;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "reactor.ipc.netty.http.server")
+@Category({ Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class })
 public class APIEndpointTest {
     private static BlockingNettyContext server;
 

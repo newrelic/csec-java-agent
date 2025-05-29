@@ -8,6 +8,8 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RandomOperation;
 import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.security.test.marker.Java21IncompatibleTest;
+import com.newrelic.security.test.marker.Java23IncompatibleTest;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -22,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.random")
-@Category({ Java17IncompatibleTest.class})
+@Category({ Java17IncompatibleTest.class, Java21IncompatibleTest.class, Java23IncompatibleTest.class})
 public class RandomTest {
     private static final String SECURE_RANDOM = "SECURERANDOM";
     private static final String WEAK_RANDOM = "WEAKRANDOM";
