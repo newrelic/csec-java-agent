@@ -25,6 +25,7 @@ public interface SecurityIntrospector {
     Set getResponseWriterHash();
 
     Set getResponseOutStreamHash();
+
     Log4JStrSubstitutor getLog4JStrSubstitutor();
 
     SecurityMetaData getSecurityMetaData();
@@ -50,4 +51,6 @@ public interface SecurityIntrospector {
     void clear();
 
     int getRandomPort();
+
+    List<Exception> getApplicationRuntimeError();
 }
