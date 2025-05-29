@@ -1,0 +1,38 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.graalvm.truffle:truffle-api:24.1.0")
+    implementation("org.graalvm.js:js:24.1.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.graalvm-jsinjection-24.1.0' }
+}
+
+verifyInstrumentation {
+    passes 'org.graalvm.truffle:truffle-api:[24.1.0,)'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+compileJava {
+    options.fork = true
+    options.bootstrapClasspath = null
+}
+
+test {
+    // These instrumentation tests only run on Java 17+ regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        !project.hasProperty('test8') && !project.hasProperty('test11')
+    }
+}
+
+site {
+    title 'JSInjection'
+    type 'Messaging'
+}
