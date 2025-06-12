@@ -11,7 +11,7 @@ jobs:
     secrets: inherit
     with:
       apm-repo: 'k2io/newrelic-java-agent'
-      apm-source-ref: 'csec-dev'
+      apm-source-ref: 'dev'
       csec-run-unittest: 'false'
       csec-run-instrumentation-verify: 'false'
       is-release: 'true'
