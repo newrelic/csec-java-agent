@@ -14,7 +14,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'io.lettuce:lettuce-core:[5.0.0.RELEASE,)'
-    excludeRegex '.*(RC|M|alpha|beta)[0-9]*'
+    excludeRegex '.*(RC|M|alpha|BETA)[0-9]*'
 }
 
 site {
