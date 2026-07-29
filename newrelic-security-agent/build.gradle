@@ -141,6 +141,10 @@ task relocatedShadowJar(type: ShadowJar) {
             // log4j2
             "META-INF/versions/9/module-info.class",
             "META-INF/services/org.apache.logging*",
+            // jackson-core's fast-double-parser: shadow 6.0.0's bundled ASM
+            // can't parse Java 17/21 bytecode
+            "META-INF/versions/17/**",
+            "META-INF/versions/21/**",
             // asm
             "module-info.class",
             // httpclient
