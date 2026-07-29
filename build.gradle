@@ -53,7 +53,6 @@ subprojects {
             url 'https://oss.sonatype.org/content/repositories/snapshots/'
         }
         mavenCentral()
-        jcenter()
     }
 
     // SNAPSHOTs are considered to be "changing dependencies" and they are cached by gradle for 24 hours by default.

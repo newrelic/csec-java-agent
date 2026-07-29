@@ -12,19 +12,19 @@ can be found at https://github.com/newrelic/.
 
 ### Dependencies 
 
-**1**. **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.14.2` 
+**1**. **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.18.8` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-databind-2.14.2.jar/META-INF/LICENSE](./third-party-dependencies/jackson-databind-2.14.2.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.14.2.jar/META-INF/NOTICE](./third-party-dependencies/jackson-databind-2.14.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.18.8.jar/META-INF/LICENSE](./third-party-dependencies/jackson-databind-2.18.8.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.18.8.jar/META-INF/NOTICE](./third-party-dependencies/jackson-databind-2.18.8.jar/META-INF/NOTICE)
 
-**2**. **Group:** `com.fasterxml.jackson.dataformat` **Name:** `jackson-dataformat-properties` **Version:** `2.14.2` 
+**2**. **Group:** `com.fasterxml.jackson.dataformat` **Name:** `jackson-dataformat-properties` **Version:** `2.18.8` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-dataformats-text](https://github.com/FasterXML/jackson-dataformats-text)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-dataformat-properties-2.14.2.jar/META-INF/LICENSE](./third-party-dependencies/jackson-dataformat-properties-2.14.2.jar/META-INF/LICENSE) 
-    - [jackson-dataformat-properties-2.14.2.jar/META-INF/NOTICE](./third-party-dependencies/jackson-dataformat-properties-2.14.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-dataformat-properties-2.18.8.jar/META-INF/LICENSE](./third-party-dependencies/jackson-dataformat-properties-2.18.8.jar/META-INF/LICENSE) 
+    - [jackson-dataformat-properties-2.18.8.jar/META-INF/NOTICE](./third-party-dependencies/jackson-dataformat-properties-2.18.8.jar/META-INF/NOTICE)
 
 **3**. **Group:** `com.github.erosb` **Name:** `everit-json-schema` **Version:** `1.14.2` 
 > - **POM Project URL**: [https://github.com/erosb/everit-json-schema](https://github.com/erosb/everit-json-schema)
@@ -83,19 +83,19 @@ can be found at https://github.com/newrelic/.
 > - **POM License**: The Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **Embedded license files**: [newrelic-api-8.3.0-SNAPSHOT.jar/LICENSE](./third-party-dependencies/newrelic-api-8.3.0-SNAPSHOT.jar/LICENSE)
 
-**14**. **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.14.2` 
+**14**. **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.18.8` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-databind-2.14.2.jar/META-INF/LICENSE](./third-party-dependencies/jackson-databind-2.14.2.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.14.2.jar/META-INF/NOTICE](./third-party-dependencies/jackson-databind-2.14.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.18.8.jar/META-INF/LICENSE](./third-party-dependencies/jackson-databind-2.18.8.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.18.8.jar/META-INF/NOTICE](./third-party-dependencies/jackson-databind-2.18.8.jar/META-INF/NOTICE)
 
-**15**. **Group:** `com.fasterxml.jackson.dataformat` **Name:** `jackson-dataformat-properties` **Version:** `2.14.2` 
+**15**. **Group:** `com.fasterxml.jackson.dataformat` **Name:** `jackson-dataformat-properties` **Version:** `2.18.8` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-dataformats-text](https://github.com/FasterXML/jackson-dataformats-text)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-dataformat-properties-2.14.2.jar/META-INF/LICENSE](./third-party-dependencies/jackson-dataformat-properties-2.14.2.jar/META-INF/LICENSE) 
-    - [jackson-dataformat-properties-2.14.2.jar/META-INF/NOTICE](./third-party-dependencies/jackson-dataformat-properties-2.14.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-dataformat-properties-2.18.8.jar/META-INF/LICENSE](./third-party-dependencies/jackson-dataformat-properties-2.18.8.jar/META-INF/LICENSE) 
+    - [jackson-dataformat-properties-2.18.8.jar/META-INF/NOTICE](./third-party-dependencies/jackson-dataformat-properties-2.18.8.jar/META-INF/NOTICE)
 
 **16**. **Group:** `com.googlecode.json-simple` **Name:** `json-simple` **Version:** `1.1.1` 
 > - **POM Project URL**: [http://code.google.com/p/json-simple/](http://code.google.com/p/json-simple/)
