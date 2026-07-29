@@ -14,6 +14,13 @@ repositories {
     }
 }
 
+// aws-java-sdk-dynamodb 1.11.x is compiled against jackson-databind 2.6.x, which still
+// has PropertyNamingStrategy.PascalCaseStrategy. The project-wide test jackson-databind
+// bump (for CVE remediation) would otherwise win dependency resolution and break it.
+configurations.testRuntimeClasspath {
+    resolutionStrategy.force 'com.fasterxml.jackson.core:jackson-databind:2.6.7.1'
+}
+
 jar {
     manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.dynamodb-1.11.390' }
 }
