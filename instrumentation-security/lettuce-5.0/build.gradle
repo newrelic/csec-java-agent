@@ -13,8 +13,8 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'io.lettuce:lettuce-core:[5.0.0.RELEASE,6.8.2.RELEASE)'
-    excludeRegex '.*(RC|M).*'
+    passesOnly 'io.lettuce:lettuce-core:[5.0.0.RELEASE,)'
+    excludeRegex '.*(RC|M|alpha|beta)[0-9]*'
 }
 
 site {
