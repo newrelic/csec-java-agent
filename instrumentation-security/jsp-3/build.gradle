@@ -16,6 +16,7 @@ verifyInstrumentation {
     passesOnly('jakarta.servlet.jsp:jakarta.servlet.jsp-api:[3.0.0-M1,)') {
         implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
     }
+    excludeRegex '.*-(M|beta)[0-9]*'
 }
 
 java {
