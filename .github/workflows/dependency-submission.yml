@@ -3,6 +3,8 @@ name: Dependency Submission
 on:
   push:
     branches: ['main']
+  pull_request:
+    branches: ['main']
 
 permissions:
   contents: write
@@ -23,5 +25,16 @@ jobs:
         with:
           dependency-graph-include-projects: ':newrelic-security-(agent|api)'
           build-scan-publish: true
-          build-scan-terms-of-use-url: "https://gralde.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
           build-scan-terms-of-use-agree: "yes"
+
+  dependency-review:
+    needs: dependency-submission # Wait for graph submission to finish
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: 'low' # Fails the action if CVE is found
+          retry-on-snapshot-warnings: true
+          retry-on-snapshot-warnings-timeout: 300
