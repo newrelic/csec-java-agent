@@ -67,6 +67,9 @@ on:
         type: string
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   unit-test:
     name: Run Unit Test

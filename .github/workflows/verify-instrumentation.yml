@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   # GHA Matrix strategy only allows 255 entries.
   # So 2 pages should be good until we have around 500 instrumentation modules

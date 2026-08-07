@@ -4,6 +4,9 @@ on:
     types:
       - published
 
+permissions:
+  contents: read
+
 jobs:
   publish_release_to_maven_central:
     name: Publish release artifacts to Maven repos
