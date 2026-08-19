@@ -30,7 +30,8 @@ jobs:
 
   dependency-review:
     needs: dependency-submission # Wait for graph submission to finish
-    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
     steps:
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
