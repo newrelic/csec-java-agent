@@ -17,7 +17,7 @@ allprojects {
         }
     }
 
-    group = 'io.github.lovesh-ap.agent.java.security'
+    group = 'com.newrelic.java.security'
     version = agentVersion + (project.findProperty("release") == "true" ? "" : "-SNAPSHOT")
     version = version + (project.findProperty("release-suffix") != null ? project.findProperty("release-suffix") : "")
     idea.module {
