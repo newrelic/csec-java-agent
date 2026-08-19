@@ -62,19 +62,21 @@ dependencies {
     shadowIntoJar ('com.googlecode.json-simple:json-simple:1.1.1'){
         exclude(module:'junit', group:'junit')
     }
-    shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.14.3'
+    shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
     shadowIntoJar 'org.java-websocket:Java-WebSocket:1.5.3'
     shadowIntoJar 'commons-io:commons-io:2.14.0'
     shadowIntoJar 'org.apache.commons:commons-text:1.10.0'
     shadowIntoJar 'commons-net:commons-net:3.9.0'
     shadowIntoJar 'org.apache.commons:commons-compress:1.26.0'
+    // commons-text/commons-compress pull in a vulnerable commons-lang3 transitively (CVE-2026-54512); pin the patched version
+    shadowIntoJar 'org.apache.commons:commons-lang3:3.18.0'
     shadowIntoJar 'org.apache.commons:commons-collections4:4.4'
     shadowIntoJar 'org.unbescape:unbescape:1.1.6.RELEASE'
     shadowIntoJar 'commons-codec:commons-codec:1.15'
     shadowIntoJar 'org.slf4j:slf4j-simple:1.7.30'
     shadowIntoJar 'net.openhft:zero-allocation-hashing:0.16'
     shadowIntoJar 'com.github.oshi:oshi-core:6.4.1'
-    shadowIntoJar 'com.google.code.gson:gson:2.10.1'
+    shadowIntoJar 'com.google.code.gson:gson:2.14.0'
     shadowIntoJar 'org.apache.httpcomponents:httpclient:4.5.14'
     implementation "com.newrelic.agent.java:newrelic-api:${nrAPIVersion}"
 }
@@ -141,6 +143,10 @@ task relocatedShadowJar(type: ShadowJar) {
             // log4j2
             "META-INF/versions/9/module-info.class",
             "META-INF/services/org.apache.logging*",
+            // jackson-core's fast-double-parser: shadow 6.0.0's bundled ASM
+            // can't parse Java 17/21 bytecode
+            "META-INF/versions/17/**",
+            "META-INF/versions/21/**",
             // asm
             "module-info.class",
             // httpclient

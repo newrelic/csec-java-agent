@@ -4,6 +4,14 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-08-19
+### Changes
+- Upgraded core dependencies—including _com.fasterxml.jackson.core:jackson-databind_ (to 2.18.9), _com.google.code.gson:gson_ (to 2.14.0), and pinned transitive dependency _org.apache.commons:commons-lang3_ (to 3.18.0)—to remediate known security vulnerabilities (CVE-2026-54512, CVE-2026-54513, and CVE-2025-48924).
+- Removed the defunct `jcenter()` repository from `buildSrc`, root, and `unittest-helper-agent` build files, replacing it with `mavenCentral()`/`gradlePluginPortal()` where needed, to unblock dependency resolution now that JCenter is shut down.
+- For JSP and Servlet excluded milestone (`-M`) and beta pre-release versions from verification.
+- Refined Lettuce instrumentation's to support the full `[5.0.0.RELEASE,)` version range.
+
+
 ## [1.7.0] - 2025-4-25
 ### Adds
 - [PR-395](https://github.com/newrelic/csec-java-agent/pull/395) **Support for Deserialization Vulnerability Detection**: Implemented mechanisms to detect vulnerabilities arising from unsafe deserialization processes.

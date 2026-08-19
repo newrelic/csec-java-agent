@@ -15,6 +15,9 @@ on:
         required: true
         default: ''
 
+permissions:
+  contents: read
+
 jobs:
   verify_instrumentation_single:
     name: Verify Instrumentation Single

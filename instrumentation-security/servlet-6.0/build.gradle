@@ -13,6 +13,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'jakarta.servlet:jakarta.servlet-api:[6.0.0,)'
+    excludeRegex '.*-(M|beta)[0-9]*'
 }
 
 java {

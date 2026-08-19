@@ -3,6 +3,9 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   publish_snapshots_to_maven_central:
     name: Publish snapshot artifacts to Maven repos
