@@ -77,6 +77,8 @@ public class LogWriter implements Runnable {
 
             maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
+            FileLoggerThreadPool.getInstance().getCracResource().addAction(writer, LogWriter::createLogFile);
+
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
             }

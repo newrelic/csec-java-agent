@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
+import org.crac.Core;
 
 import java.io.IOException;
 import java.util.concurrent.*;
@@ -30,6 +31,8 @@ public class FileLoggerThreadPool {
     protected boolean isLoggingToStdOut = false;
 
     private static OSVariables osVariables;
+
+    private static CracResource cracResource;
 
     private FileLoggerThreadPool() throws IOException {
         maxfiles = LogFileHelper.logFileCount();
@@ -87,8 +90,19 @@ public class FileLoggerThreadPool {
                 return t;
             }
         });
+
+        if (!isLoggingToStdOut) {
+            // We create the resource centrally here because both LogWriter and InitLogWriter
+            // are tightly coupled to this single-threaded executor
+            cracResource = new CracResource();
+            Core.getGlobalContext().register(cracResource);
+        }
     }
 
+    CracResource getCracResource() {
+        assert !isLoggingToStdOut;
+        return cracResource;
+    }
 
     public void shutDownThreadPoolExecutor() {
 

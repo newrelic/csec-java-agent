@@ -93,6 +93,8 @@ public class InitLogWriter implements Runnable {
             writer.flush();
             maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
+            FileLoggerThreadPool.getInstance().getCracResource().addAction(writer, InitLogWriter::createLogFile);
+
             // k2.log.handler.maxfilesize=10
             // k2.log.handler.maxfilesize.unit=MB
             if (!osVariables.getWindows()) {
