@@ -26,7 +26,6 @@ site {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
-        vendor = JvmVendorSpec.ADOPTOPENJDK
     }
 }
 

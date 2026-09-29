@@ -13,14 +13,14 @@ runs:
         cd ..
 
     - name: Capture custom jar
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # pin@v7
       with:
         name: newrelic-artifact
         path: |
           newrelic-java-agent/newrelic-java/build/zips/newrelic.zip
 
     - name: configure aws credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # pin@v6
       with:
         role-to-assume: arn:aws:iam::280901927509:role/github-actions/repo
         aws-region: us-east-2
